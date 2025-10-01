@@ -48,3 +48,16 @@ ggplot(sites, aes(x=area)) + geom_histogram() +
   geom_vline(xintercept = mean_size, linetype = 2, colour = "red") +
   annastheme
 ggsave(paste(output_directory,"MeanPolygonSize.png",sep="/"), width = 30, height = 12, units = "cm")
+
+
+
+
+geo.hab<-read_stars(
+  file.path('C:/Users/vhaller/OneDrive - Australian Institute of Marine Science/DecisionSupport/BiodiversityReefPartition/geomorph_gbr10_res.tif'))
+plot(geo.hab)
+ggplot() + 
+  geom_stars(data = geo.hab) +
+  coord_equal() +
+  theme_void() +
+  scale_x_discrete(expand=c(0,0))+
+  scale_y_discrete(expand=c(0,0))
