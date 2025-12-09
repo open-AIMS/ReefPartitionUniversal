@@ -97,7 +97,7 @@ create_site_polygons <- function(output_directory, cluster_properties, bathymetr
 
     # Convert to sf if needed
     reef_map <- sf::read_sf(reef_outline_file)
-    reef_map$UNIQUE_ID<-c(1:nrow(reef_map))
+    # reef_map$UNIQUE_ID<-c(1:nrow(reef_map))
     # reef_map <- reef_map %>%
     #   unite("name", class,UNIQUE_ID , sep = "_", remove = FALSE)
     
@@ -171,8 +171,8 @@ create_site_polygons <- function(output_directory, cluster_properties, bathymetr
     # ROI <- reef_map  %>%
     #   dplyr::filter(UNIQUE_ID %in% region_IDs) %>%
     #   st_transform(4326)  # Reproject to WGS84 (EPSG:4326)
-      ROI<-reef_map
-      region_IDs<-c(1:nrow(ROI))
+       ROI<-reef_map
+    #   region_IDs<-c(1:nrow(ROI))
     
     # Initialize reef_Names
     reef_Names <- vector("character", length(region_IDs))
@@ -183,7 +183,8 @@ create_site_polygons <- function(output_directory, cluster_properties, bathymetr
       }
     }
     
-    
+    geomorphic_raster <- rast(full_geo_file_path)
+    bathymetry_raster <- rast(bathy_file)
     
     # Check the ROI
     print(ROI)
@@ -195,11 +196,24 @@ create_site_polygons <- function(output_directory, cluster_properties, bathymetr
     
     hab<-list()
     sites<-list()
-    
+
+    hex_size<-data.frame(Res=c(7:15),
+                       Size=c(5161293,737327,105332,15047,2149,307.09,43.87,6.267,0.895))
+    max_cluster_size <- (1/3) # Reefs should have at least 3 clusters
+
+    reef_areas <- ROI[ROI$UNIQUE_ID %in% region_IDs, ]
+    reef_areas$area <- NA
+    reef_areas$MaxCount <- NA
+    reef_areas$spdep_skater_time <- NA
+    reef_areas$pixel_preprocessing_time <- NA
+    for (id in reef_areas$UNIQUE_ID) {
+        reef_area <- st_area(st_union(st_make_valid(reef_areas[reef_areas$UNIQUE_ID == id, ]$geometry)))
+        reef_areas[reef_areas$UNIQUE_ID == id, ]$area <- reef_area
+        reef_areas[reef_areas$UNIQUE_ID == id, ]$MaxCount <- round(reef_area * max_cluster_size / hex_size$Size[hex_size$Res==resolution])
+    }    
+  
     #reef_geomorphic_file_path= file.path(reef_geomorphic_path,reef_geomorphic_file)
     if (!use_past_polygons) { # only do this if we want to create new polygons
-      
-      
       
       for (ID in region_IDs) {
         
@@ -208,30 +222,49 @@ create_site_polygons <- function(output_directory, cluster_properties, bathymetr
         print(reef_Names[index])
         
         # CreatePixels2 - this creates all the hexagonal pixels and assigns depth
-        hab[[which(region_IDs == ID)]] <- CreatePixels(
-          reef_name = reef_Names[index], 
-          ROI = ROI[ROI$UNIQUE_ID == ID, ], reshex, site_size, bathy_file,
-          full_geo_file_path, geozone_list, geo_zone_names, TRUE, resolution
-        )
+        # hab[[which(region_IDs == ID)]] <- CreatePixels(
+        #   reef_name = reef_Names[index], 
+        #   ROI = ROI[ROI$UNIQUE_ID == ID, ], reshex, site_size, bathy_file,
+        #   full_geo_file_path, geozone_list, geo_zone_names, TRUE, resolution
+        # )
+        tic()
+        hab[[which(region_IDs == ID)]] <- CreatePixels_mod(
+            reef_name = reef_Names[index],
+            ROI = st_make_valid(ROI[ROI$UNIQUE_ID == ID, ]), reshex, site_size, bathymetry_raster,
+            geomorphic_raster, geozone_list, geo_zone_names, TRUE, resolution
+          )
+        toc(log=TRUE, quiet=TRUE)
+        
+        reef_areas[reef_areas$UNIQUE_ID == ID, ]$pixel_preprocessing_time <- tic.log()[[1]]
+        tic.clearlog()
         
         print("Pixels created")
         sites_hab <- do.call(rbind, hab)
       }
       
-      # Standardize X, Y, and Depth values
+      # Standardize X, Y, and Depth values ### BG Should this be happening within each reef, because that is the scale of pixel clustering?
       sites_hab$X_standard <- scale(sites_hab$X)
       sites_hab$Y_standard <- scale(sites_hab$Y)
       sites_hab$Depth_standard <- scale(sites_hab$Depth)
+
+      sites_hab <- left_join(sites_hab, st_drop_geometry(reef_areas[, c("UNIQUE_ID", "MaxCount")]), by="UNIQUE_ID")
       
       # CreatePolygonsFromPixelsNew clusters the pixels together
       for (ID in region_IDs) {
         
+        # Testing timing of SPDEP skater sites algorithm
+        tic()
         sites[[which(region_IDs == ID)]] <- CreatePolygonsFromPixelsNew(
           hab.pts = sites_hab[sites_hab$UNIQUE_ID == ID, ], 
           site_size = site_size, 
           reef_name = reef_Names[which(region_IDs == ID)], 
-          saveDirectory = new_spatial_folder
+          saveDirectory = new_spatial_folder,
+          MaxCount=as.numeric(unique(sites_hab[sites_hab$UNIQUE_ID == ID, ]$MaxCount))
         )
+        toc(log=TRUE, quiet=TRUE)
+
+        reef_areas[reef_areas$UNIQUE_ID == ID, ]$spdep_skater_time <- tic.log()[[1]]
+        tic.clearlog()
         
         print("Pixels clustered")
         
@@ -241,6 +274,8 @@ create_site_polygons <- function(output_directory, cluster_properties, bathymetr
         print(reef_Names[which(region_IDs == ID)])
       }
     }
+
+    reef_areas$skater_time <- unlist(tic.log())
     
     sites<-sites_cluster
     
@@ -302,12 +337,12 @@ create_site_polygons <- function(output_directory, cluster_properties, bathymetr
     ggplot() +
       geom_sf(data = subset(sites), aes(fill = site_id, geometry = geometry), colour = "black") +
       annastheme +
-      scale_fill_manual(values = col_vector) +
-      theme(legend.key.size = unit(0.1, 'cm'), #change legend key size
-            legend.key.height = unit(0.3, 'cm'), #change legend key height
-            legend.key.width = unit(0.3, 'cm'), #change legend key width
-            legend.title = element_text(size=8), #change legend title font size
-            legend.text = element_text(size=8)) +#change legend text font size
+    #   scale_fill_manual(values = col_vector) +
+    #   theme(legend.key.size = unit(0.1, 'cm'), #change legend key size
+    #         legend.key.height = unit(0.3, 'cm'), #change legend key height
+    #         legend.key.width = unit(0.3, 'cm'), #change legend key width
+    #         legend.title = element_text(size=8), #change legend title font size
+    #         legend.text = element_text(size=8)) +#change legend text font size
       theme(legend.position="none")
 
     ggsave(paste(new_spatial_folder,"/maps/Cluster_map_largerPostProcessing.png",sep=""), width = 30, height = 20, dpi = 600)
