@@ -173,3 +173,165 @@ parallel_time = end - start_time
 
 # spdep::set.ClusterOption(NULL)
 # parallel::stopCluster(cl)
+
+
+#### Full test of constr.hclust() #### 
+region_IDs = ACRS_example_reef
+
+# Load the bathymetry file using terra
+bathy_file <- file.path(paste(bathymetric_path, sep = "/"), bathymetric_file)
+bathymetry_raster <- rast(bathy_file)
+geomorphic_raster <- rast(full_geo_file_path)
+
+hex_size<-data.frame(Res=c(7:15),
+                    Size=c(5161293,737327,105332,15047,2149,307.09,43.87,6.267,0.895))
+max_cluster_size <- (1/3) # Reefs should have at least 3 clusters
+reef_map <- sf::read_sf(reef_outline_file)
+
+reef_areas <- reef_map[reef_map$UNIQUE_ID %in% region_IDs, ]
+reef_areas$area <- NA
+reef_areas$MaxCount <- NA
+reef_areas$spdep_skater_time <- NA
+reef_areas$pixel_preprocessing_time <- NA
+for (id in reef_areas$UNIQUE_ID) {
+    reef_area <- st_area(st_union(st_make_valid(reef_areas[reef_areas$UNIQUE_ID == id, ]$geometry)))
+    reef_areas[reef_areas$UNIQUE_ID == id, ]$area <- reef_area
+    reef_areas[reef_areas$UNIQUE_ID == id, ]$MaxCount <- round(reef_area * max_cluster_size / hex_size$Size[hex_size$Res==resolution])
+}
+
+    hab<-list()
+    sites<-list()
+
+source("CreateSitePolygons_functions.R")
+
+for (ID in region_IDs) {
+
+    index <- match(ID, region_IDs)
+    
+    # CreatePixels2 - this creates all the hexagonal pixels and assigns depth
+    # hab[[which(region_IDs == ID)]] <- CreatePixels(
+    #   reef_name = reef_Names[index], 
+    #   ROI = ROI[ROI$UNIQUE_ID == ID, ], reshex, site_size, bathy_file,
+    #   full_geo_file_path, geozone_list, geo_zone_names, TRUE, resolution
+    # )
+    tic()
+    hab[[which(region_IDs == ID)]] <- CreatePixels_mod(
+        reef_name = "OTIR",
+        ROI = st_make_valid(reef_map[reef_map$UNIQUE_ID == ID, ]), reshex, site_size, bathymetry_raster,
+        geomorphic_raster, geozone_list, geo_zone_names, TRUE, resolution
+        )
+    toc(log=TRUE, quiet=TRUE)
+    
+    reef_areas[reef_areas$UNIQUE_ID == ID, ]$pixel_preprocessing_time <- tic.log()[[1]]
+    tic.clearlog()
+    
+    print("Pixels created")
+    sites_hab <- do.call(rbind, hab)
+}
+    
+# Standardize X, Y, and Depth values ### BG Should this be happening within each reef, because that is the scale of pixel clustering?
+sites_hab$X_standard <- scale(sites_hab$X)
+sites_hab$Y_standard <- scale(sites_hab$Y)
+sites_hab$Depth_standard <- scale(sites_hab$Depth)
+
+sites_hab <- left_join(sites_hab, st_drop_geometry(reef_areas[, c("UNIQUE_ID", "MaxCount")]), by="UNIQUE_ID")
+
+alpha_values <- seq(0.1, 1, 0.1) # Test all alpha values from 0.1 to 1 (inclusive)
+
+alpha_clusters <- lapply(alpha_values, function(x) {
+    hab.pts <- sites_hab[sites_hab$UNIQUE_ID == ID, ]
+    
+    hab.pts<-dplyr::distinct(hab.pts) #anna changes here from unique() which was giving an error
+    
+    UNIQUE_ID<-unique(hab.pts$UNIQUE_ID)
+    Reef<-unique(hab.pts$Reef)
+    
+    #scale variables
+    hab.pts$X_standard<-scale(hab.pts$X)
+    hab.pts$Y_standard<-scale(hab.pts$Y)
+    hab.pts$Depth_standard<-scale(hab.pts$Depth)
+
+    #this turns to a list
+    hab.pts <- hab.pts %>%
+      split(., hab.pts$habitat, drop=TRUE)
+    
+    ##Make Clusters
+    hab.pts = lapply(hab.pts,
+                     FUN = site_hrclust, saveDirectory=saveDirectory, alpha=x)
+    hab.pts <- do.call(rbind, hab.pts)
+    
+    ##Make Sites
+    # hab.pts$site_id <- as.factor(paste(Reef, hab.pts$habitat, hab.pts$site_id,sep="_"))
+    hab.pts$site_id <- hab.pts$hclust_site_id
+    sampled_levels <- sample(levels(hab.pts$site_id))
+    hab.pts$sampled_site_id <- factor(hab.pts$site_id, levels=sampled_levels)
+
+    ##Make Sites
+    split_hab.pts <- hab.pts %>% split(., hab.pts$site_id)
+    
+    #use function 'group_hex' to group hexagons into polygon or multipolygon
+    sites <- lapply(split_hab.pts, group_hex)
+    
+    sites = do.call(rbind, sites)
+
+    sites$sampled_site_id <- factor(sites$site_id, levels=sampled_levels)
+    sites$Reef<-Reef
+    sites$UNIQUE_ID<-UNIQUE_ID
+    sites$alpha <- x
+    hab.pts$alpha <- x
+
+    return(list(sites=sites, hab.pts=hab.pts))
+})
+
+clustered_pixels <- do.call(rbind, lapply(alpha_clusters, function(x) x$hab.pts))
+clustered_pixels$hexagons <- h3_to_geo_boundary_sf(clustered_pixels$h3_index)
+clustered_pixels$depth <- abs(exact_extract(bathymetry_raster, clustered_pixels$hexagons, "mean"))
+
+clustered_sites <- do.call(rbind, lapply(alpha_clusters, function(x) x$sites))
+clustered_sites$depth <- abs(exact_extract(bathymetry_raster, clustered_sites, "mean"))
+
+pixel_sd <- clustered_pixels %>%
+    group_by(alpha, habitat, site_id) %>%
+    summarise(depth_sd = sd(depth), .groups="keep") %>%
+    group_by(alpha, habitat) %>%
+    summarise(mean_habitat_sd = mean(depth_sd), variance_habitat_sd = var(depth_sd))
+
+pixel_sd$habitat <- as.character(pixel_sd$habitat)
+pixel_sd <- pivot_longer(pixel_sd, c("mean_habitat_sd", "variance_habitat_sd"))
+
+habitat_labels <- c(
+    "15" = "reef crest",
+    "22" = "reef_slope",
+    "14" = "outer reef slope",
+    "21" = "sheltered reef slope"
+)
+
+pixel_sd_plot <- ggplot() + 
+    geom_line(
+        data=pixel_sd[pixel_sd$name == "mean_habitat_sd",],
+        aes(x=alpha, 
+        y=value, 
+        color=habitat
+    )) +
+    ylab("Within site depth SD (metres)") +
+    xlab("Weighting applied to depth in clustering") + 
+    scale_color_discrete(labels=habitat_labels)
+
+full_reef_sites <- ggplot() + 
+    geom_sf(data = clustered_sites, aes(fill=sampled_site_id)) + 
+    facet_wrap(~alpha, labeller=function(variable, value) {paste("Depth weight", value)}) + 
+    theme(legend.position="none")
+full_reef_depth <- ggplot() + 
+    geom_sf(data = clustered_sites, aes(fill=depth)) + 
+    facet_wrap(~alpha, labeller=function(variable, value) {paste("Depth weight", value)}) + 
+    scale_fill_fermenter(palette="Greens", direction=1, breaks=c(2.5,5,7.5,10,12.5,15,17.5,20))
+
+sub_clust_sites <- st_crop(clustered_sites, xmin=152.06, xmax=152.11, ymin=-23.480, ymax=-23.515)
+sub_slope_sites <- ggplot() + 
+    geom_sf(data = sub_clust_sites[sub_clust_sites$habitat == 22,], aes(fill=sampled_site_id)) + 
+    facet_wrap(~alpha, labeller=function(variable, value) {paste("Depth weight", value)}) + 
+    theme(legend.position="none")
+sub_slope_depth <- ggplot() + 
+    geom_sf(data = sub_clust_sites[sub_clust_sites$habitat == 22, ], aes(fill=depth)) + 
+    facet_wrap(~alpha, labeller=function(variable, value) {paste("Depth weight", value)}) + 
+    scale_fill_fermenter(palette="Greens", direction=1, breaks=c(2.5,5,7.5,10,12.5,15,17.5,20))
