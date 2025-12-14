@@ -1,9 +1,9 @@
-prepare_mst <- function(x, additional_variable_cols = c("Depth_standard")) {
+prepare_mst <- function(x, additional_variable_cols = c("depth_standard")) {
   coords <- st_centroid(st_geometry(x))
 
   # Triangulate edges between pixel points
   tri <- tri2nb(coords)
-  Costs_tri <- nbcosts(tri, data = x[, additional_variable_cols], method = "manhattan")
+  Costs_tri <- nbcosts(tri, data = x[, additional_variable_cols, drop = TRUE], method = "manhattan")
   Costs_tri <- unlist(Costs_tri)
 
   Edges_tri <- expp::neighborsDataFrame(tri)

@@ -48,21 +48,21 @@ cluster_reef_pixels <- function(
 
   # Formatting input data
   pixels <- distinct(pixels) # Remove duplicate pixel rows
-  reef_id <- unique(pixels[, reef_id_col])
+  reef_id <- unique(pixels[, reef_id_col, drop = TRUE])
 
   # Scale clustering variables including any additional variables added to pixels
-  pixels$x_standard <- scale(pixels[, x_col])
-  pixels$y_standard <- scale(pixels[, y_col])
+  pixels$X_standard <- scale(pixels[, x_col, drop = TRUE])
+  pixels$Y_standard <- scale(pixels[, y_col, drop = TRUE])
 
   for (variable in additional_variable_cols) {
-    pixels[, paste0(variable, "_standard")] <- scale(pixels[, variable])
+    pixels[, paste0(variable, "_standard")] <- scale(pixels[, variable, drop = TRUE])
   }
 
-  habitat_list <- split(pixels, pixels[, habitat_col], drop = TRUE)
+  habitat_list <- split(pixels, pixels[, habitat_col, drop = TRUE])
 
   # Make Clusters
   reef_start_time <- Sys.time()
-  pixels_clustered <- lapply(habitat_list, function(x) habitat_clustering_function(x, ...))
+  pixels_clustered <- lapply(habitat_list, function(x) habitat_clustering_function(x))
   reef_end_time <- Sys.time()
   pixels_clustered <- do.call(rbind, pixels_clustered)
 

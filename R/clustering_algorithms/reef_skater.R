@@ -9,7 +9,7 @@ reef_skater <- function(
     parallelisation="Windows", 
     resolution = 12
 ) {
-    site_prefix <- paste(unique(x[, id_col]), unique(x[, habitat_col]), sep="_")
+    site_prefix <- paste(unique(x[, id_col, drop = TRUE]), unique(x[, habitat_col, drop = TRUE]), sep="_")
     x <- st_drop_geometry(x)
 
     # H3 hexagon average size

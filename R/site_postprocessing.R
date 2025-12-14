@@ -26,7 +26,7 @@ clustered_pixels_to_polygons <- function(
     return(pixels)
   }
 
-  pixel_cluster_list <- split(clustered_pixels, clustered_pixels[, site_id_col])
+  pixel_cluster_list <- split(clustered_pixels, clustered_pixels[, site_id_col, drop = TRUE])
 
   # use function 'group_hex' to group hexagons into polygon or multipolygon
   sites <- lapply(pixel_cluster_list, hex_to_polygons)
@@ -34,7 +34,7 @@ clustered_pixels_to_polygons <- function(
   sites <- do.call(rbind, sites)
 
   for (col in reef_cols_to_keep) {
-    sites[, col] <- unique(clustered_pixels[, col])
+    sites[, col] <- unique(clustered_pixels[, col, drop = TRUE])
   }
 
   sites
@@ -52,12 +52,12 @@ clustered_pixels_to_polygons <- function(
 #'   `site_id_col` values.
 #'
 hex_to_polygons <- function(x, h3_id_col = "id", site_id_col = "site_id") {
-  site_polygon <- h3_set_to_multi_polygon(x[, h3_id_col]) %>%
+  site_polygon <- h3_set_to_multi_polygon(x[, h3_id_col, drop = TRUE]) %>%
     st_buffer(dist = 0) %>%
     st_as_sf() %>%
     rename(geometry = x)
 
-  site_polygon[, site_id_col] <- unique(x[, site_id_col])
+  site_polygon[, site_id_col] <- unique(x[, site_id_col, drop = TRUE])
 
   site_polygon
 }

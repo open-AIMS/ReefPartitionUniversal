@@ -3,14 +3,14 @@ constrained_hclust <- function(
     edges, 
     x_col = "X_standard", 
     y_col = "Y_standard", 
-    additional_variable_cols = c("Depth_standard"), 
+    additional_variable_cols = c("depth_standard"), 
     id_col = "UNIQUE_ID", 
     habitat_col = "habitat", 
     distance_method = "manhattan", 
     alpha = 0.4, 
     n_clust = (round(nrow(x) / 200))
 ) {
-    site_prefix <- paste(unique(x[, id_col]), unique(x[, habitat_col]), sep="_")
+    site_prefix <- paste(unique(x[, id_col, drop = TRUE]), unique(x[, habitat_col, drop = TRUE]), sep="_")
     coordinates <- st_drop_geometry(x[, c(x_col, y_col)])
 
     # Calculate weights for combining the distance matrices
@@ -18,7 +18,7 @@ constrained_hclust <- function(
     geo_weight <- 1 - alpha
 
     # Calculate the raw distance matrices for additional variables and geographic distance
-    D_additional_vars <- dist(x[, additional_variable_cols], method = distance_method)
+    D_additional_vars <- dist(x[, additional_variable_cols, drop = TRUE], method = distance_method)
     D_geo <- dist(coordinates)
 
     # Create the combined geographical and additional variable distance matrix for clustering

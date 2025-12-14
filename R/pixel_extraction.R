@@ -120,7 +120,7 @@ extract_pixel_points <- function(
   pixel_points[, additional_variable_name] <- additional_var_values[, additional_variable_name]
 
   # Remove points that have an invalid value for the additional variable
-  pixel_points <- pixel_points[!is.na(pixel_points$Depth), ]
+  pixel_points <- pixel_points[!is.na(pixel_points[, additional_variable_name]), ]
   hexid <- hexid[hexid %in% pixel_points$h3_index]
 
   # Clean up pixels and extracted data
@@ -143,6 +143,6 @@ extract_pixel_points <- function(
     rename(geomorph = "categorical_habitat") %>%
     st_transform(output_epsg) %>% # project to GDA94 / Geosicence Australia Lambert https://epsg.io/3112
     bind_cols(., base::as.data.frame(st_coordinates(.))) %>%
-    filter(!is.na(geomorph), if (!is.null(geozone_list)) geomorph %in% geozone_list else TRUE) %>% # Handle NULL geozone_list
+    filter(!is.na(geomorph), if (!is.null(habitat_categories)) geomorph %in% habitat_categories else TRUE) %>% # Handle NULL geozone_list
     rename(habitat = geomorph)
 }
