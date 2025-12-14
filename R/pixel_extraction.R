@@ -130,7 +130,7 @@ extract_pixel_points <- function(
   pixel_points <- pixel_points %>%
     filter(!is.na(st_dimension(.))) %>% # Remove NA dimensions
     st_make_valid()
-
+ 
   # Extract habitat data for pixels
   cells <- st_as_sf(as.polygons(habitat_cropped), as_points = TRUE)
 
