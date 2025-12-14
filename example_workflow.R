@@ -6,7 +6,15 @@ library(sfnetworks)
 library(igraph)
 library(spdep)
 library(adespatial)
+
 # library(ReefPartition) # after package has been built
+# As package is not ready for building we need to source each function
+source("./R/pixel_extraction.R")
+source("./R/cluster_reef_pixels.R")
+source("./R/clustering_algorithms/constrained_hclust.R")
+source("./R/clustering_algorithms/prepare_cluster_edges.R")
+source("./R/clustering_algorithms/reef_skater.R")
+source("./R/site_postprocessing.R")
 
 # Set seed for reproducibility
 set.seed(123)
