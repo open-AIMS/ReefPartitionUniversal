@@ -3,3 +3,6 @@
 export(cluster_reef_pixels)
 export(clustered_pixels_to_polygons)
 export(extract_pixel_points)
+import(rlang)
+importFrom(glue,glue)
+importFrom(lifecycle,deprecated)
