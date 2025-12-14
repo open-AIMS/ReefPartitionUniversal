@@ -1,16 +1,16 @@
 reef_skater <- function(
     x, 
     n_clust = round(minimum(10000, nrow(x)) / 200), 
+    site_size = 250 * 250,
     x_col = "X_standard", 
     y_col = "Y_standard", 
     habitat_col = "habitat", 
     id_col = "UNIQUE_ID", 
-    additional_variable_cols = c("Depth_standard"), 
+    additional_variable_cols = c("depth_standard"), 
     parallelisation="Windows", 
     resolution = 12
 ) {
     site_prefix <- paste(unique(x[, id_col, drop = TRUE]), unique(x[, habitat_col, drop = TRUE]), sep="_")
-    x <- st_drop_geometry(x)
 
     # H3 hexagon average size
     hex_size <- data.frame(
@@ -50,7 +50,7 @@ reef_skater <- function(
     }
     
     # Clustering minimum spanning tree
-    clusters <- skater(edges = as_edgelist(mst), data = x[, additional_variable_cols], ncuts = n_clust, crit = c(min_counts, Inf)) # this seems quite intensive in terms of time
+    clusters <- skater(edges = as_edgelist(mst), data = x[, additional_variable_cols, drop = TRUE], ncuts = n_clust, crit = c(min_counts, Inf)) # this seems quite intensive in terms of time
 
     if (parallelisation == "Windows") {
         spdep::set.ClusterOption(NULL)
@@ -61,8 +61,8 @@ reef_skater <- function(
 
     if (interpolation == TRUE) {
       skater_sites <- class::knn(
-        data.frame(x)[, c(x_col, y_col)],
-        data.frame(x_old)[, c(x_col, y_col)], 
+        x[, c(x_col, y_col), drop = TRUE],
+        x_old[, c(x_col, y_col), drop = TRUE], 
         skater_sites
       )
       x <- x_old
