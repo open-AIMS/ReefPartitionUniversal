@@ -6,6 +6,7 @@ library(sfnetworks)
 library(igraph)
 library(spdep)
 library(adespatial)
+library(tidyverse)
 
 # library(ReefPartition) # after package has been built
 # As package is not ready for building we need to source each function
@@ -86,4 +87,5 @@ skater_pixels <- cluster_reef_pixels(
     pixel_data,
     habitat_clustering_function = function(x) reef_skater(x)
 )
+saveRDS(skater_pixels, "OTIReef_skater.rds")
 skater_sites <- clustered_pixels_to_polygons(skater_pixels)
