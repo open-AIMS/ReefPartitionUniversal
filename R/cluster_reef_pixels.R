@@ -47,7 +47,7 @@ cluster_reef_pixels <- function(
   }
 
   # Formatting input data
-  pixels <- distinct(pixels) # Remove duplicate pixel rows
+  pixels <- dplyr::distinct(pixels) # Remove duplicate pixel rows
   reef_id <- unique(pixels[, reef_id_col, drop = TRUE])
 
   # Scale clustering variables including any additional variables added to pixels
@@ -69,6 +69,8 @@ cluster_reef_pixels <- function(
   # Assign ID and execution time
   pixels_clustered[, reef_id_col] <- reef_id
   pixels_clustered[, "clustering_time"] <- reef_end_time - reef_start_time
+  
+   pixels_clustered$depth_extract <- pixels$depth_extract
 
   pixels_clustered
 }
