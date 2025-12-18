@@ -21,9 +21,9 @@ clustered_pixels_to_polygons <- function(
     clustered_pixels,
     site_id_col = "site_id",
     reef_cols_to_keep = c("clustering_time", "UNIQUE_ID")) {
-  if (nrow(pixels) < 1) {
+  if (nrow(clustered_pixels) < 1) {
     warning("Input dataframe contains no rows, returning input dataframe.")
-    return(pixels)
+    return(clustered_pixels)
   }
 
   pixel_cluster_list <- split(clustered_pixels, clustered_pixels[, site_id_col, drop = TRUE])
@@ -52,9 +52,9 @@ clustered_pixels_to_polygons <- function(
 #'   `site_id_col` values.
 #'
 hex_to_polygons <- function(x, h3_id_col = "id", site_id_col = "site_id") {
-  site_polygon <- h3_set_to_multi_polygon(x[, h3_id_col, drop = TRUE]) %>%
-    st_buffer(dist = 0) %>%
-    st_as_sf() %>%
+  site_polygon <- h3::h3_set_to_multi_polygon(x[, h3_id_col, drop = TRUE]) %>%
+    sf::st_buffer(dist = 0) %>%
+    sf::st_as_sf() %>%
     rename(geometry = x)
 
   site_polygon[, site_id_col] <- unique(x[, site_id_col, drop = TRUE])

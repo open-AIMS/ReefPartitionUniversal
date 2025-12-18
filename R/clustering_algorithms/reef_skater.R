@@ -11,6 +11,7 @@ reef_skater <- function(
     resolution = 12
 ) {
     site_prefix <- paste(unique(x[, id_col, drop = TRUE]), unique(x[, habitat_col, drop = TRUE]), sep="_")
+    x$npixels <- nrow(x)
 
     # H3 hexagon average size
     hex_size <- data.frame(
@@ -50,7 +51,12 @@ reef_skater <- function(
     }
     
     # Clustering minimum spanning tree
-    clusters <- skater(edges = as_edgelist(mst), data = x[, additional_variable_cols, drop = TRUE], ncuts = n_clust, crit = c(min_counts, Inf)) # this seems quite intensive in terms of time
+    clusters <- spdep::skater(
+        edges = igraph::as_edgelist(mst), 
+        data = x[, additional_variable_cols, drop = TRUE], 
+        ncuts = n_clust, 
+        crit = c(min_counts, Inf)
+    ) # this seems quite intensive in terms of time
 
     if (parallelisation == "Windows") {
         spdep::set.ClusterOption(NULL)
@@ -69,7 +75,6 @@ reef_skater <- function(
     }
 
     x$site_id <- skater_sites
-    x$npixels <- nrow(x)
 
  x
 }

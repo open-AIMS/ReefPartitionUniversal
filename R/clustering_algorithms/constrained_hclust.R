@@ -7,8 +7,10 @@ constrained_hclust <- function(
     id_col = "UNIQUE_ID", 
     habitat_col = "habitat", 
     distance_method = "manhattan", 
-    alpha = 0.4, 
-    n_clust = (round(nrow(x) / 200))
+    alpha = 0.4,
+    beta = -1,
+    n_clust = (round(nrow(x) / 200)),
+    method = "ward.D2"
 ) {
     site_prefix <- paste(unique(x[, id_col, drop = TRUE]), unique(x[, habitat_col, drop = TRUE]), sep="_")
     coordinates <- st_drop_geometry(x[, c(x_col, y_col)])
@@ -25,14 +27,14 @@ constrained_hclust <- function(
     D_combined <- (additional_variable_weight * D_additional_vars) + (geo_weight * D_geo)
 
     # Apply constr.hclust clustering algorithm from package adespatial.
-    res_hclust <- constr.hclust(
+    res_hclust <- adespatial::constr.hclust(
         d = D_combined,
-        method = "flexible",
-        beta = -1,
+        method = method,
+        beta = beta,
         links = edges,
         coords = coordinates
     )
-    hclust_sites <- cutree(res_hclust, k = n_clust)
+    hclust_sites <- adespatial::cutree(res_hclust, k = n_clust)
 
     hclust_sites <- as.factor(paste(site_prefix, hclust_sites, sep = "_"))
     x$site_id <- hclust_sites

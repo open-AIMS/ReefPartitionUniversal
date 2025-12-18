@@ -45,19 +45,23 @@ extract_pixel_points <- function(
   # Perform input data checks before proceeding with computations
 
   # Ensure that the reef_polygon and categorical habitat raster have the same CRS
-  reef_crs <- st_crs(reef_polygon)
-  if (st_crs(habitat_raster) != reef_crs) {
+  reef_crs <- sf::st_crs(reef_polygon)
+  if (sf::st_crs(habitat_raster) != reef_crs) {
     stop("Ensure st_crs(habitat_raster) == st_crs(reef_polygon) before proceeding.")
   }
 
   # Ensure that the habitat raster and additional variable raster have the same CRS
-  if (st_crs(habitat_raster) != st_crs(add_var_raster)) {
+  if (sf::st_crs(habitat_raster) != sf::st_crs(add_var_raster)) {
     stop("Ensure st_crs(habitat_raster) == st_crs(add_var_raster) before proceeding.")
   }
 
   # Check if reef_polygon intersects with the habitat_raster
-  hab_raster_bbox <- st_bbox(habitat_raster)
-  habitat_intersects <- st_intersects(st_as_sfc(hab_raster_bbox), reef_polygon, sparse = FALSE)
+  hab_raster_bbox <- sf::st_bbox(habitat_raster)
+  habitat_intersects <- sf::st_intersects(
+    sf::st_as_sfc(hab_raster_bbox), 
+    reef_polygon, 
+    sparse = FALSE
+    )
 
   if (!any(habitat_intersects)) {
     stop("
@@ -67,8 +71,12 @@ extract_pixel_points <- function(
   }
 
   # Check if reef_polygon intersects with the habitat_raster
-  add_var_raster_bbox <- st_bbox(add_var_raster)
-  add_var_intersects <- st_intersects(st_as_sfc(add_var_raster_bbox), reef_polygon, sparse = FALSE)
+  add_var_raster_bbox <- sf::st_bbox(add_var_raster)
+  add_var_intersects <- sf::st_intersects(
+    sf::st_as_sfc(add_var_raster_bbox), 
+    reef_polygon, 
+    sparse = FALSE
+    )
 
   if (!any(add_var_intersects)) {
     stop("
@@ -78,9 +86,9 @@ extract_pixel_points <- function(
   }
 
   # Crop the input raster layers for faster extraction
-  reef_polygon_terra <- vect(reef_polygon)
-  habitat_cropped <- crop(habitat_raster, reef_polygon_terra)
-  add_var_cropped <- crop(add_var_raster, reef_polygon_terra)
+  reef_polygon_terra <- terra::vect(reef_polygon)
+  habitat_cropped <- terra::crop(habitat_raster, reef_polygon_terra)
+  add_var_cropped <- terra::crop(add_var_raster, reef_polygon_terra)
 
   if (ncell(habitat_cropped) == 0) {
     stop("Cropping resulted in empty raster - check if reef_polygon overlaps with valid raster data.")
@@ -92,7 +100,7 @@ extract_pixel_points <- function(
   habitat_cropped[!(habitat_cropped %in% habitat_categories)] <- NA
   # Filter just pixels that overlap the target reef.
   # Crop uses a bounding box, so must be followed with mask.
-  habitat_cropped <- mask(habitat_cropped, reef_polygon_terra)
+  habitat_cropped <- terra::mask(habitat_cropped, reef_polygon_terra)
 
   # Extract habitat pixels
   hexid <- terra::as.data.frame( # Extracts pixel centroid points from the raster data
@@ -100,20 +108,20 @@ extract_pixel_points <- function(
     xy = TRUE,
     na.rm = TRUE
   ) %>%
-    st_as_sf(., coords = c("x", "y"), crs = reef_crs) %>%
+    sf::st_as_sf(., coords = c("x", "y"), crs = reef_crs) %>%
     rename(class = "categorical_habitat") %>%
-    st_cast("POINT") %>%
-    geo_to_h3(., res = hex_resolution) # Convert pixel centroid points to hexagons ID format.
+    sf::st_cast("POINT") %>%
+    h3::geo_to_h3(., res = hex_resolution) # Convert pixel centroid points to hexagons ID format.
 
   hexid <- unique(hexid) # Remove pixels with the same coordinates
-  pixel_points <- h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
+  pixel_points <- h3::h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
 
   if (length(hexid) < 2) {
     stop("Less than 2 pixels identified from inputs.")
   }
 
   # Extract values from the additional variable raster layer and attach them to points
-  add_var_resampled <- disagg(add_var_cropped, fact = 5, method = resample_method)
+  add_var_resampled <- terra::disagg(add_var_cropped, fact = 5, method = resample_method)
 
   additional_var_values <- terra::extract(add_var_resampled, pixel_points, df = TRUE)
   colnames(additional_var_values)[2] <- additional_variable_name
@@ -125,24 +133,27 @@ extract_pixel_points <- function(
 
   # Clean up pixels and extracted data
   # Transform Pixels to match the datas' CRS (by default h3 points do not have a CRS)
-  pixel_points <- st_transform(pixel_points, reef_crs)
+  pixel_points <- sf::st_transform(pixel_points, reef_crs)
 
   pixel_points <- pixel_points %>%
-    filter(!is.na(st_dimension(.))) %>% # Remove NA dimensions
-    st_make_valid()
+    filter(!is.na(sf::st_dimension(.))) %>% # Remove NA dimensions
+    sf::st_make_valid()
  
   # Extract habitat data for pixels
-  cells <- st_as_sf(as.polygons(habitat_cropped), as_points = TRUE)
+  cells <- sf::st_as_sf(as.polygons(habitat_cropped), as_points = TRUE)
 
   hab_pts <- pixel_points %>%
     mutate(
       id = hexid,
-      area = hex_area(res = hex_resolution, unit = unit)
+      area = h3::hex_area(res = hex_resolution, unit = unit)
     ) %>% # is this km2 ok?? #Anna - not sure this is actually working
-    st_join(., cells, join = st_nearest_feature) %>%
+    sf::st_join(., cells, join = st_nearest_feature) %>%
     rename(geomorph = "categorical_habitat") %>%
-    st_transform(output_epsg) %>% # project to GDA94 / Geosicence Australia Lambert https://epsg.io/3112
-    bind_cols(., base::as.data.frame(st_coordinates(.))) %>%
-    filter(!is.na(geomorph), if (!is.null(habitat_categories)) geomorph %in% habitat_categories else TRUE) %>% # Handle NULL geozone_list
+    sf::st_transform(output_epsg) %>% # project to GDA94 / Geosicence Australia Lambert https://epsg.io/3112
+    bind_cols(., as.data.frame(st_coordinates(.))) %>%
+    filter(
+        !is.na(geomorph), 
+        if (!is.null(habitat_categories)) geomorph %in% habitat_categories else TRUE
+    ) %>% # Handle NULL geozone_list
     rename(habitat = geomorph)
 }
