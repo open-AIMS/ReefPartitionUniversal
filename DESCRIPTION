@@ -12,6 +12,16 @@ RoxygenNote: 7.3.3
 Imports: 
     cli,
     glue,
+    parallel,
     lifecycle,
     rlang,
-    withr
+    withr,
+    sf,
+    terra,
+    sfnetworks,
+    h3,
+    igraph,
+    spdep,
+    adespatial,
+    dplyr,
+    exactextractr
