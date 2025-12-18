@@ -18,12 +18,14 @@
 #' 
 #' @return igraph::mst Minimum spanning tree object.
 #' 
+#' @importFrom dplyr mutate
+#' 
 #' @export
 #' 
 prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), alpha = 0.5, hex_resolution = 12) {
     add_var_weight <- alpha
     geo_weight <- 1 - alpha
-    coords <- sf::st_centroid(st_geometry(pixels))
+    coords <- sf::st_centroid(sf::st_geometry(pixels))
 
   # Triangulate edges between pixel points
   tri <- spdep::tri2nb(coords)
@@ -33,20 +35,21 @@ prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), 
   Edges_tri <- expp::neighborsDataFrame(tri)
 
   Edges_tri2 <- data.frame(from = as.numeric(Edges_tri$id), to = as.numeric(Edges_tri$id_neigh), weights = Costs_tri)
-  Network_withEdgesTri <- sfnetwork::sfnetwork(pixels, Edges_tri2[, c(1, 2)], directed = FALSE)
-  E(Network_withEdgesTri)$weight <- Costs_tri
+  Network_withEdgesTri <- sfnetworks::sfnetwork(pixels, Edges_tri2[, c(1, 2)], directed = FALSE)
+  igraph::E(Network_withEdgesTri)$weight <- Costs_tri
 
   Network_withEdgesTri <- Network_withEdgesTri %>%
     tidygraph::activate("edges") %>%
     mutate(length = sfnetworks::edge_length())
-  Length_scaled <- scale(as.numeric(E(Network_withEdgesTri)$length))
-  Weight_scaled <- scale(as.numeric(E(Network_withEdgesTri)$weight))
+
+  Length_scaled <- scale(as.numeric(igraph::E(Network_withEdgesTri)$length))
+  Weight_scaled <- scale(as.numeric(igraph::E(Network_withEdgesTri)$weight))
 
   Eucliden_weight_old <- sqrt((Length_scaled^2) * geo_weight + (Weight_scaled^2) * add_var_weight)
-  E(Network_withEdgesTri)$weight <- Eucliden_weight_old
+  igraph::E(Network_withEdgesTri)$weight <- Eucliden_weight_old
 
   # Triangulation
-  mst_tri <- igraph::mst(Network_withEdgesTri, weights = E(Network_withEdgesTri)$weight) #+Length_scaled)
+  mst_tri <- igraph::mst(Network_withEdgesTri, weights = igraph::E(Network_withEdgesTri)$weight) #+Length_scaled)
 
   mst_tri
 }

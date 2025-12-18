@@ -52,7 +52,7 @@ constrained_hclust <- function(
     method = "ward.D2"
 ) {
     site_prefix <- paste(unique(pixels[, id_col, drop = TRUE]), unique(pixels[, habitat_col, drop = TRUE]), sep="_")
-    coordinates <- st_drop_geometry(pixels[, c(x_col, y_col)])
+    coordinates <- sf::st_drop_geometry(pixels[, c(x_col, y_col)])
 
     # Calculate weights for combining the distance matrices
     additional_variable_weight <- alpha
@@ -73,7 +73,7 @@ constrained_hclust <- function(
         links = edges,
         coords = coordinates
     )
-    hclust_sites <- adespatial::cutree(res_hclust, k = n_clust)
+    hclust_sites <- stats::cutree(res_hclust, k = n_clust)
 
     hclust_sites <- as.factor(paste(site_prefix, hclust_sites, sep = "_"))
     pixels$site_id <- hclust_sites
