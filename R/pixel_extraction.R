@@ -29,6 +29,10 @@
 #'
 #' @return data.frame containing `habitat_raster` pixels covering `reef_polygon`
 #'   for selected habitats in `habitat_categories`, alongside extracted data from `add_var_raster`.
+#' 
+#' @importFrom terra %in%
+#' @importFrom dplyr rename
+#' @importFrom dplyr mutate
 #'
 #' @export
 #'
@@ -90,14 +94,16 @@ extract_pixel_points <- function(
   habitat_cropped <- terra::crop(habitat_raster, reef_polygon_terra)
   add_var_cropped <- terra::crop(add_var_raster, reef_polygon_terra)
 
-  if (ncell(habitat_cropped) == 0) {
+  if (terra::ncell(habitat_cropped) == 0) {
     stop("Cropping resulted in empty raster - check if reef_polygon overlaps with valid raster data.")
   }
 
   names(habitat_cropped)[1] <- "categorical_habitat"
 
   # Filter just the desired habitat type pixels
-  habitat_cropped[!(habitat_cropped %in% habitat_categories)] <- NA
+  habitat_cropped <- terra::ifel(habitat_cropped %in% habitat_categories, 
+                               habitat_cropped, 
+                               NA)
   # Filter just pixels that overlap the target reef.
   # Crop uses a bounding box, so must be followed with mask.
   habitat_cropped <- terra::mask(habitat_cropped, reef_polygon_terra)
@@ -136,22 +142,22 @@ extract_pixel_points <- function(
   pixel_points <- sf::st_transform(pixel_points, reef_crs)
 
   pixel_points <- pixel_points %>%
-    filter(!is.na(sf::st_dimension(.))) %>% # Remove NA dimensions
+    dplyr::filter(!is.na(sf::st_dimension(.))) %>% # Remove NA dimensions
     sf::st_make_valid()
  
   # Extract habitat data for pixels
-  cells <- sf::st_as_sf(as.polygons(habitat_cropped), as_points = TRUE)
+  cells <- sf::st_as_sf(terra::as.polygons(habitat_cropped), as_points = TRUE)
 
   hab_pts <- pixel_points %>%
     mutate(
       id = hexid,
       area = h3::hex_area(res = hex_resolution, unit = unit)
     ) %>% # is this km2 ok?? #Anna - not sure this is actually working
-    sf::st_join(., cells, join = st_nearest_feature) %>%
+    sf::st_join(., cells, join = sf::st_nearest_feature) %>%
     rename(geomorph = "categorical_habitat") %>%
     sf::st_transform(output_epsg) %>% # project to GDA94 / Geosicence Australia Lambert https://epsg.io/3112
-    bind_cols(., as.data.frame(st_coordinates(.))) %>%
-    filter(
+    dplyr::bind_cols(., as.data.frame(sf::st_coordinates(.))) %>%
+    dplyr::filter(
         !is.na(geomorph), 
         if (!is.null(habitat_categories)) geomorph %in% habitat_categories else TRUE
     ) %>% # Handle NULL geozone_list

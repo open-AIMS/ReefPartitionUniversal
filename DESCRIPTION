@@ -24,4 +24,5 @@ Imports:
     spdep,
     adespatial,
     dplyr,
-    exactextractr
+    exactextractr,
+    magrittr
