@@ -52,6 +52,16 @@ constrained_hclust <- function(
     method = "ward.D2"
 ) {
     site_prefix <- paste(unique(pixels[, id_col, drop = TRUE]), unique(pixels[, habitat_col, drop = TRUE]), sep="_")
+
+    interpolation <- FALSE
+    if (nrow(pixels) > 20000) {
+        interpolation <- TRUE
+        samplepoints <- sample(c(1:nrow(pixels)), 20000)
+        x_old <- pixels
+        pixels <- pixels[samplepoints, ]
+
+        min_counts <- min_counts * (20000 / nrow(x_old))
+    }
     coordinates <- sf::st_drop_geometry(pixels[, c(x_col, y_col)])
 
     # Calculate weights for combining the distance matrices
@@ -76,6 +86,16 @@ constrained_hclust <- function(
     hclust_sites <- stats::cutree(res_hclust, k = n_clust)
 
     hclust_sites <- as.factor(paste(site_prefix, hclust_sites, sep = "_"))
+    
+    if (interpolation == TRUE) {
+      hclust_sites <- class::knn(
+        pixels[, c(x_col, y_col), drop = TRUE],
+        x_old[, c(x_col, y_col), drop = TRUE], 
+        hclust_sites
+      )
+      pixels <- x_old
+    }
+
     pixels$site_id <- hclust_sites
     pixels$npixels <- nrow(pixels)
     pixels
