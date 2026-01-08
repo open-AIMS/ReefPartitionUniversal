@@ -35,7 +35,6 @@
 cluster_reef_pixels <- function(
     pixels,
     habitat_clustering_function,
-    px_per_cluster = 200,
     habitat_col = "habitat",
     x_col = "X",
     y_col = "Y",
