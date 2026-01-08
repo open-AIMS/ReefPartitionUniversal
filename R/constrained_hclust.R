@@ -54,13 +54,13 @@ constrained_hclust <- function(
     site_prefix <- paste(unique(pixels[, id_col, drop = TRUE]), unique(pixels[, habitat_col, drop = TRUE]), sep="_")
 
     interpolation <- FALSE
-    if (nrow(pixels) > 20000) {
+    if (nrow(pixels) > 30000) {
         interpolation <- TRUE
-        samplepoints <- sample(c(1:nrow(pixels)), 20000)
+        samplepoints <- sample(c(1:nrow(pixels)), 30000)
         x_old <- pixels
         pixels <- pixels[samplepoints, ]
 
-        min_counts <- min_counts * (20000 / nrow(x_old))
+        min_counts <- min_counts * (30000 / nrow(x_old))
     }
     coordinates <- sf::st_drop_geometry(pixels[, c(x_col, y_col)])
 
