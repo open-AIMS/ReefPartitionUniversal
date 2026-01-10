@@ -20,7 +20,7 @@
 #'   (attached to `id_col` value and site_id values on output). Default = "habitat".
 #' @param distance_method character. Distance matrix creation method. Default =
 #'   "manhattan" (see dist()).
-#' @param alpha float numeric. Weighting applied to `additional_variable_cols`
+#' @param distance_alpha float numeric. Weighting applied to `additional_variable_cols`
 #'   distance matrix when combining with geographic distances. (1 - alpha) weighting
 #'   is applied to the geographic distance matrix. Default = 0.5 (symmetric weighting).
 #' @param beta float numeric. Beta parameter used by adespatial::constr.hclust.
@@ -46,7 +46,7 @@ constrained_hclust <- function(
     id_col = "UNIQUE_ID", 
     habitat_col = "habitat", 
     distance_method = "manhattan", 
-    alpha = 0.4,
+    distance_alpha = 0.4,
     beta = -1,
     n_clust = (round(nrow(pixels) / 200)),
     method = "ward.D2"
@@ -99,4 +99,48 @@ constrained_hclust <- function(
     pixels$site_id <- hclust_sites
     pixels$npixels <- nrow(pixels)
     pixels
+}
+
+#' Default habitat clustering function using adespatial::constr.hclust.
+#' 
+#' @description Take a dataframe of pixels containing `additional_variable_cols`
+#'   values, create a minimum spanning tree using `prepare_mst_edges()` and then
+#'   cluster pixels using pixel data and edges with `constrained_hclust()`.
+#'   Any additional arguments for `prepare_mst_edges()` or `constrained_hclust()`
+#'   (excluding `distance_alpha`) can be included.
+#' 
+#' @param pixels data.frame. Contains values for X and Y coordinates, as well as
+#'   `additional_variable_cols`.
+#' @param distance_alpha float numeric. Weighting applied to the additional variable
+#'   distance values when creating the distance matrix for clustering. This argument
+#'   is not included in `...` for discoverability.
+#' @param ... additional arguments. Additional arguments can be used here and will
+#'   be passed onto `prepare_mst_edges()` and `constrained_hclust()` functions.
+#'   These arguments must be named. `distance_alpha` argument is not included in
+#'   these additional arguments. For information on arguments available in these
+#'   functions and default values when arguments are not used, see `prepare_mst_edges()`
+#'   and `constrained_hclust()`.
+#' 
+#' @return data.frame of pixels with allocated site_ids based on cluster outputs
+#'   from `constrained_hclust()` using `prepare_mst_edges` to create a minimum
+#'   spanning tree for input. `site_id` values are a combination of the `id_col` 
+#'   value, `habitat_col` value and the cluster allocation.
+#' 
+#' @export
+#' 
+constrained_hclust_mst <- function(pixels, distance_alpha=0.5, ...) {
+    dots <- list(...)
+    passed_arguments <- names(dots)
+  
+    mst_params <- passed_arguments[names(passed_arguments) %in% names(formals(prepare_mst_edges))]
+    mst_edges <- do.call(prepare_mst_edges, c(list(pixels = pixels), mst_params))
+  
+    # Extract clust_ prefixed args and strip the prefix
+    constrained_clust_params <- passed_arguments[names(passed_arguments) %in% names(formals(constrained_hclust))]
+    clustered_pixels <- do.call(
+        constrained_hclust, 
+        c(list(pixels = pixel_data, edges = mst_edges, distance_alpha = alpha), constrained_clust_params)
+    )
+
+    return(clustered_pixels)
 }
