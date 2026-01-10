@@ -10,7 +10,7 @@
 #'   `additional_variable_cols`
 #' @param additional_variable_cols character vector. Names of the columns to extract
 #'   additional (non-geometric) data from for cost weighting.
-#' @param alpha float numeric. Weighting applied to `additional_variable_cols`
+#' @param mst_alpha float numeric. Weighting applied to `additional_variable_cols`
 #'   distance in edge cost weighting when combining with geographic distances.
 #'   (1 - alpha) weight is applied to the geographic distance. Default = 0.5
 #'   (same weight for `additional_variable_cols` and geographic distances).
@@ -22,7 +22,7 @@
 #' 
 #' @export
 #' 
-prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), alpha = 0.5, hex_resolution = 12) {
+prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), mst_alpha = 0.5, hex_resolution = 12) {
     add_var_weight <- alpha
     geo_weight <- 1 - alpha
     coords <- sf::st_centroid(sf::st_geometry(pixels))
