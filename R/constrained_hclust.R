@@ -139,7 +139,7 @@ constrained_hclust_mst <- function(pixels, distance_alpha=0.5, ...) {
     constrained_clust_params <- passed_arguments[names(passed_arguments) %in% names(formals(constrained_hclust))]
     clustered_pixels <- do.call(
         constrained_hclust, 
-        c(list(pixels = pixels, edges = mst_edges, distance_alpha = alpha), constrained_clust_params)
+        c(list(pixels = pixels, edges = mst_edges, distance_alpha = distance_alpha), constrained_clust_params)
     )
 
     return(clustered_pixels)
