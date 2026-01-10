@@ -65,8 +65,8 @@ constrained_hclust <- function(
     coordinates <- sf::st_drop_geometry(pixels[, c(x_col, y_col)])
 
     # Calculate weights for combining the distance matrices
-    additional_variable_weight <- alpha
-    geo_weight <- 1 - alpha
+    additional_variable_weight <- distance_alpha
+    geo_weight <- 1 - distance_alpha
 
     # Calculate the raw distance matrices for additional variables and geographic distance
     D_additional_vars <- dist(pixels[, additional_variable_cols, drop = TRUE], method = distance_method)
