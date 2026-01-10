@@ -6,29 +6,18 @@
 \usage{
 cluster_reef_pixels(
   pixels,
-  habitat_clustering_function,
-  px_per_cluster = 200,
   habitat_col = "habitat",
   x_col = "X",
   y_col = "Y",
   additional_variable_cols = c("depth"),
-  reef_id_col = "UNIQUE_ID"
+  reef_id_col = "UNIQUE_ID",
+  habitat_clustering_function = constrained_hclust_mst,
+  ...
 )
 }
 \arguments{
 \item{pixels}{data.frame. Contains a row for each pixel and values for each variable to
 be input into \code{habitat_clustering_function}.}
-
-\item{habitat_clustering_function}{function. A function that takes a dataframe of pixels
-for a single habitat type as the first argument and additional arguments, and returns
-a dataframe of input pixels with an additional column containing assigned \code{site_id} values.
-Additional arguments must include \code{px_per_cluster}, \code{habitat_col}, \code{x_col}, \code{y_col}
-and \code{additional_variable_cols}.
-Default options available include \code{reef_skater} and \code{constrained_hclust}.}
-
-\item{px_per_cluster}{integer. The number of pixels to be allocated into each cluster using
-\code{habitat_clustering_function}. If \code{habitat_clustering_function} defines k-clusters, this
-must be \code{round(nrow(x) / px_per_cluster)}. Default = 200 pixels.}
 
 \item{habitat_col}{character or integer. Column containing the categorical habitat allocations
 of pixels. Default = "habitat".}
@@ -45,6 +34,17 @@ be standardised and output as \verb{*variable*_standard}. Default = c("Depth").}
 
 \item{reef_id_col}{character or integer. Column containing the single unique reef ID to
 be assigned as an identifier before outputting cluster allocations. Default = "UNIQUE_ID".}
+
+\item{habitat_clustering_function}{function. A function that takes a dataframe of pixels
+for a single habitat type as the first argument and additional arguments, and returns
+a dataframe of input pixels with an additional column containing assigned \code{site_id} values.
+Additional arguments must include \code{px_per_cluster}, \code{habitat_col}, \code{x_col}, \code{y_col}
+and \code{additional_variable_cols}.
+Default options available include \code{reef_skater} and \code{constrained_hclust}.}
+
+\item{px_per_cluster}{integer. The number of pixels to be allocated into each cluster using
+\code{habitat_clustering_function}. If \code{habitat_clustering_function} defines k-clusters, this
+must be \code{round(nrow(x) / px_per_cluster)}. Default = 200 pixels.}
 }
 \value{
 data.frame containing pixels that have a site ID allocated in \code{site_id} column.

@@ -13,7 +13,7 @@ constrained_hclust(
   id_col = "UNIQUE_ID",
   habitat_col = "habitat",
   distance_method = "manhattan",
-  alpha = 0.4,
+  distance_alpha = 0.4,
   beta = -1,
   n_clust = (round(nrow(pixels)/200)),
   method = "ward.D2"
@@ -41,7 +41,7 @@ to contribute to the distance matrix. Default = c("depth_standard").}
 \item{distance_method}{character. Distance matrix creation method. Default =
 "manhattan" (see dist()).}
 
-\item{alpha}{float numeric. Weighting applied to \code{additional_variable_cols}
+\item{distance_alpha}{float numeric. Weighting applied to \code{additional_variable_cols}
 distance matrix when combining with geographic distances. (1 - alpha) weighting
 is applied to the geographic distance matrix. Default = 0.5 (symmetric weighting).}
 
