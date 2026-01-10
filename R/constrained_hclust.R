@@ -133,7 +133,7 @@ constrained_hclust_mst <- function(pixels, distance_alpha=0.5, ...) {
     passed_arguments <- names(dots)
   
     mst_params <- passed_arguments[names(passed_arguments) %in% names(formals(prepare_mst_edges))]
-    mst_edges <- do.call(prepare_mst_edges, c(list(pixels = pixels), mst_params))
+    mst_edges <- do.call(prepare_mst, c(list(pixels = pixels), mst_params))
   
     # Extract clust_ prefixed args and strip the prefix
     constrained_clust_params <- passed_arguments[names(passed_arguments) %in% names(formals(constrained_hclust))]
