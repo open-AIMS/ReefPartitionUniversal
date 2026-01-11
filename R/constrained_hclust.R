@@ -46,7 +46,7 @@ constrained_hclust <- function(
     id_col = "UNIQUE_ID", 
     habitat_col = "habitat", 
     distance_method = "manhattan", 
-    distance_alpha = 0.4,
+    distance_alpha = 0.5,
     beta = -1,
     n_clust = (round(nrow(pixels) / 200)),
     method = "ward.D2"
@@ -133,13 +133,14 @@ constrained_hclust_mst <- function(pixels, distance_alpha=0.5, ...) {
     passed_arguments <- names(dots)
   
     mst_params <- passed_arguments[names(passed_arguments) %in% names(formals(prepare_mst))]
-    mst_edges <- do.call(prepare_mst, c(list(pixels = pixels), mst_params))
+    mst <- do.call(prepare_mst, append(list(pixels = pixels), mst_params))
+    mst_edges <- igraph::as_edgelist(mst)
   
     # Extract clust_ prefixed args and strip the prefix
     constrained_clust_params <- passed_arguments[names(passed_arguments) %in% names(formals(constrained_hclust))]
     clustered_pixels <- do.call(
         constrained_hclust, 
-        c(list(pixels = pixels, edges = mst_edges, distance_alpha = distance_alpha), constrained_clust_params)
+        append(list(pixels = pixels, edges = mst_edges, distance_alpha = distance_alpha), constrained_clust_params)
     )
 
     return(clustered_pixels)
