@@ -132,12 +132,12 @@ constrained_hclust_mst <- function(pixels, distance_alpha=0.5, ...) {
     dots <- list(...)
     passed_arguments <- names(dots)
   
-    mst_params <- passed_arguments[names(passed_arguments) %in% names(formals(prepare_mst))]
+    mst_params <- dots[passed_arguments %in% names(formals(prepare_mst))]
     mst <- do.call(prepare_mst, append(list(pixels = pixels), mst_params))
     mst_edges <- igraph::as_edgelist(mst)
   
     # Extract clust_ prefixed args and strip the prefix
-    constrained_clust_params <- passed_arguments[names(passed_arguments) %in% names(formals(constrained_hclust))]
+    constrained_clust_params <- dots[passed_arguments %in% names(formals(constrained_hclust))]
     clustered_pixels <- do.call(
         constrained_hclust, 
         append(list(pixels = pixels, edges = mst_edges, distance_alpha = distance_alpha), constrained_clust_params)
