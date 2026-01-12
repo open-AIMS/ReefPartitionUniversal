@@ -13,7 +13,7 @@ constrained_hclust(
   id_col = "UNIQUE_ID",
   habitat_col = "habitat",
   distance_method = "manhattan",
-  distance_alpha = 0.4,
+  distance_alpha = 0.5,
   beta = -1,
   n_clust = (round(nrow(pixels)/200)),
   method = "ward.D2"
