@@ -18,29 +18,29 @@
 #' @export
 #'
 site_postprocessing <- function(reef_site_polygons, min_site_area) {
-    site_polygons$area <- st_area(site_polygons)
+    reef_site_polygons$area <- st_area(reef_site_polygons)
 
     RowsToRemove<-c()
     ExtraSites<-c("a","b","c","d","e","f")
-    NewSites<-site_polygons[1,] #data.frame("site_id","habitat","area","UNIQUE_ID","Reef","geometry")
-    site_polygons_crs= sf::st_crs(site_polygons)
+    NewSites<-reef_site_polygons[1,] #data.frame("site_id","habitat","area","UNIQUE_ID","Reef","geometry")
+    reef_site_polygons_crs= sf::st_crs(reef_site_polygons)
 
-    for (i in 1:nrow(site_polygons)){
+    for (i in 1:nrow(reef_site_polygons)){
         #print(i)
-        if (as.numeric(site_polygons$area[i]) < min_site_area*307/10^6){ #Removes sites that are smaller than a minimum threshold (50 hexagons * 307m²/10⁶) #that 50 is now parameter, use parameter name instead
+        if (as.numeric(reef_site_polygons$area[i]) < min_site_area*307/10^6){ #Removes sites that are smaller than a minimum threshold (50 hexagons * 307m²/10⁶) #that 50 is now parameter, use parameter name instead
         RowsToRemove<-c(RowsToRemove,i)
         print(str_glue("{i} too small"))
         } else {
-        if (class(site_polygons$geometry[i])[1]=="sfc_MULTIPOLYGON"){ #Processing Multi-polygons:
+        if (class(reef_site_polygons$geometry[i])[1]=="sfc_MULTIPOLYGON"){ #Processing Multi-polygons:
             #When a site consists of multiple polygons (sfc_MULTIPOLYGON)
             #Separates multi-polygons into individual polygons
             #Assigns new IDs using letters (a,b,c,d,e,f)
             #Creates new rows for each separated polygon
-            NewPolygons <- multipolygon_processing(polygon=site_polygons[i,],min_site_area,site_polygons_crs)
+            NewPolygons <- multipolygon_processing(polygon=site_polygons[i,],min_site_area,reef_site_polygons_crs)
             
             RowsToRemove<-c(RowsToRemove,i)
         
-            NewRows<-site_polygons[i,]%>% slice(rep(1:n(), each = nrow(NewPolygons)))
+            NewRows<-reef_site_polygons[i,]%>% slice(rep(1:n(), each = nrow(NewPolygons)))
             for (m in 1:nrow(NewPolygons)){
             NewRows$geometry[m]<-NewPolygons$geometry[m]
             }
@@ -52,9 +52,9 @@ site_postprocessing <- function(reef_site_polygons, min_site_area) {
         }
     }
 
-    site_polygons<-site_polygons[-RowsToRemove,]
+    reef_site_polygons<-reef_site_polygons[-RowsToRemove,]
     NewSites<-NewSites[-1,]
-    site_polygons<-rbind(site_polygons,NewSites)
+    reef_site_polygons<-rbind(reef_site_polygons,NewSites)
 }
 
 multipolygon_processing <- function(polygon, min_site_area=50, site_polygons_crs=4326){
