@@ -23,7 +23,7 @@ site_postprocessing <- function(reef_site_polygons, min_site_area) {
     RowsToRemove<-c()
     ExtraSites<-c("a","b","c","d","e","f")
     NewSites<-reef_site_polygons[1,] #data.frame("site_id","habitat","area","UNIQUE_ID","Reef","geometry")
-    reef_site_polygons_crs= sf::st_crs(reef_site_polygons)
+    site_polygons_crs= sf::st_crs(reef_site_polygons)
 
     for (i in 1:nrow(reef_site_polygons)){
         #print(i)
