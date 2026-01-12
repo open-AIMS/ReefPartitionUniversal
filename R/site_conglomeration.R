@@ -36,7 +36,7 @@ site_postprocessing <- function(reef_site_polygons, min_site_area) {
             #Separates multi-polygons into individual polygons
             #Assigns new IDs using letters (a,b,c,d,e,f)
             #Creates new rows for each separated polygon
-            NewPolygons <- multipolygon_processing(polygon=site_polygons[i,],min_site_area,reef_site_polygons_crs)
+            NewPolygons <- multipolygon_processing(polygon = reef_site_polygons[i,], min_site_area, site_polygons_crs)
             
             RowsToRemove<-c(RowsToRemove,i)
         
