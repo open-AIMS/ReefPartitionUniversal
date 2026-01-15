@@ -48,7 +48,7 @@ constrained_hclust <- function(
     distance_method = "manhattan", 
     distance_alpha = 0.5,
     beta = -1,
-    n_clust = (round(nrow(pixels) / 200)),
+    n_clust = (round(nrow(pixels) / 300)),
     method = "ward.D2"
 ) {
     site_prefix <- paste(unique(pixels[, id_col, drop = TRUE]), unique(pixels[, habitat_col, drop = TRUE]), sep="_")
