@@ -15,7 +15,8 @@ constrained_hclust(
   distance_method = "manhattan",
   distance_alpha = 0.5,
   beta = -1,
-  n_clust = (round(nrow(pixels)/200)),
+  n_pixels = 204,
+  n_clust = (round(nrow(pixels)/n_pixels)),
   method = "ward.D2"
 )
 }
@@ -48,8 +49,12 @@ is applied to the geographic distance matrix. Default = 0.5 (symmetric weighting
 \item{beta}{float numeric. Beta parameter used by adespatial::constr.hclust.
 Parameter value is only used if \code{method} == "flexible". Default = -1.}
 
+\item{n_pixels}{integer numeric. Desired number of pixels in resulting clusters.
+Used to calculate n_clust (number of output clusters). Value only used in
+n_clust specification. Default = 204.}
+
 \item{n_clust}{integer numeric. Number of clusters in result output. (Point to
-cut hierarchical clustering tree). Default = (round(nrow(pixels) / 200))
+cut hierarchical clustering tree). Default = (round(nrow(pixels) / n_pixels))
 (dividing habitat into clusters containing an average of 200 pixels).}
 
 \item{method}{character. Clustering method to be applied. See adespatial::constr.hclust()
@@ -66,5 +71,8 @@ values and edges between pixels in the dataframe and cluster using the
 constr.hclust algorithm. This clustering is performed bottom-up based on a
 combined distance matrix of geographic and \code{additional_variable_cols} distances
 Only pixels connected by \code{edges} are able to cluster together. For additional
-information see \strong{insert citation/link}.
+information see \strong{insert citation/link}. If pixels contains over 30,000
+observations then interpolation will be used to reduce RAM usage. This process
+randomly samples 30,000 for clustering and assigns clusters to the remaining
+pixels using nearest neighbour interpolation.
 }
