@@ -32,7 +32,7 @@ prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), 
   Costs_tri <- spdep::nbcosts(tri, data = pixels[, additional_variable_cols, drop = TRUE], method = "manhattan")
   Costs_tri <- unlist(Costs_tri)
 
-  Edges_tri <- expp::neighborsDataFrame(tri)
+  Edges_tri <- neighborsDataFrame(tri)
 
   Edges_tri2 <- data.frame(from = as.numeric(Edges_tri$id), to = as.numeric(Edges_tri$id_neigh), weights = Costs_tri)
   Network_withEdgesTri <- sfnetworks::sfnetwork(pixels, Edges_tri2[, c(1, 2)], directed = FALSE)
@@ -70,11 +70,11 @@ prepare_tri_edges <- function(pixels) {
 
   tri <- spdep::tri2nb(coords)
 
-  Edges_tri <- expp::neighborsDataFrame(tri)
+  Edges_tri <- neighborsDataFrame(tri)
 
-  links_matrix_expp <- as.matrix(Edges_tri[, c("id", "id_neigh")])
+  links_matrix <- as.matrix(Edges_tri[, c("id", "id_neigh")])
 
-  links_matrix_expp
+  links_matrix
 }
 
 #' Create k-nearest-neighbour edges for clustering inputs.
@@ -99,4 +99,22 @@ prepare_knn_edges <- function(pixels, k = 7) {
   links_matrix_knn <- igraph::as_edgelist(links_knn)
 
   links_matrix_knn
+}
+
+#' Helper function taken from package `expp` on 2025-01-20 that converts an
+#' spdep::nb neighbors object into a dataframe with columns `id` and `id_neigh`.
+#' Function copied from `expp` package to avoid expp dependency as this package
+#' is no longer maintained.
+neighborsDataFrame <- function(nb) {
+	stopifnot( inherits(nb, 'nb'))
+	
+	ks = data.frame(k = unlist( mapply(rep, 1:length(nb), sapply(nb, length), SIMPLIFY = FALSE) ), k_nb = unlist(nb) )
+	
+	nams = data.frame(id = attributes(nb)$region.id, k = 1:length(nb) )
+	
+	o = merge(ks, nams, by.x = 'k', by.y = 'k')
+	o = merge(o, nams, by.x = 'k_nb', by.y = 'k', suffixes = c("","_neigh"))
+	
+	o[, c("id", "id_neigh")]
+
 }
