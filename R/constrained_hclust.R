@@ -90,7 +90,7 @@ constrained_hclust <- function(
         links = edges,
         coords = coordinates
     )
-    if (nclust<1)nclust=1
+    if (n_clust<1)n_clust=1
     hclust_sites <- stats::cutree(res_hclust, k = n_clust)
 
     hclust_sites <- as.factor(paste(site_prefix, hclust_sites, sep = "_"))
