@@ -97,23 +97,16 @@ fast_constrained_balanced_cut <- function(hclust_obj, edges, target_k, min_size_
       sizes[ts] <- 0
     } else {
       # Isolated cluster - force merge with largest overall
-      largest_cluster <- which.max(sizes)
-      if (largest_cluster != ts) {
-        clusters[clusters == ts] <- largest_cluster
-        sizes[largest_cluster] <- sizes[largest_cluster] + sizes[ts]
-        sizes[ts] <- 0
-      }
+      # largest_cluster <- which.max(sizes)
+      # if (largest_cluster != ts) {
+      #   clusters[clusters == ts] <- largest_cluster
+      #   sizes[largest_cluster] <- sizes[largest_cluster] + sizes[ts]
+      #   sizes[ts] <- 0
+      #}
     }
   }
   
   clusters <- as.integer(factor(clusters))
   return(clusters)
 }
-
-# Usage
-hclust_sites <- fast_constrained_balanced_cut(
-  res_hclust,
-  edges,  # Same edges used in constr.hclust
-  target_k = 123
-)
 

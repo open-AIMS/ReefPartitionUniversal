@@ -93,7 +93,7 @@ constrained_hclust <- function(
     if (n_clust<1)n_clust=1
     
     
-    # Usage (FAST - minimal overhead)
+    #Usage (FAST - minimal overhead)
     if (n_clust>2){
       #hclust_sites <- fast_balanced_cut(res_hclust, target_k = n_clust)
       hclust_sites <- fast_constrained_balanced_cut(
