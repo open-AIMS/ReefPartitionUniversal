@@ -95,7 +95,12 @@ constrained_hclust <- function(
     
     # Usage (FAST - minimal overhead)
     if (n_clust>2){
-      hclust_sites <- fast_balanced_cut(res_hclust, target_k = n_clust)
+      #hclust_sites <- fast_balanced_cut(res_hclust, target_k = n_clust)
+      hclust_sites <- fast_constrained_balanced_cut(
+        res_hclust,
+        edges,  # Same edges used in constr.hclust
+        target_k = n_clust
+      )
     } else {
       hclust_sites <- stats::cutree(res_hclust, k = n_clust)
     }
