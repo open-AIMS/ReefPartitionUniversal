@@ -52,12 +52,28 @@ clustered_pixels_to_polygons <- function(
 #'   `site_id_col` values.
 #'
 hex_to_polygons <- function(x, h3_id_col = "id", site_id_col = "site_id") {
+  
+  # Calculate statistics BEFORE creating polygons (more efficient)
+  stats_df <- x %>%
+    st_drop_geometry() %>%
+    group_by(!!sym(site_id_col)) %>%
+    summarise(
+      depth_median = median(depth, na.rm = TRUE),
+      depth_sd = sd(depth, na.rm = TRUE),
+      n_cells = n(),
+      .groups = "drop"
+    )
+  
+  
+  
   site_polygon <- h3::h3_set_to_multi_polygon(x[, h3_id_col, drop = TRUE]) %>%
     sf::st_buffer(dist = 0) %>%
     sf::st_as_sf() %>%
     rename(geometry = x)
 
   site_polygon[, site_id_col] <- unique(x[, site_id_col, drop = TRUE])
+  
+  site_polygon<- left_join(site_polygon,stats_df,by=site_id_col)
 
   site_polygon
 }

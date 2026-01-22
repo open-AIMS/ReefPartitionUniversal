@@ -91,7 +91,37 @@ constrained_hclust <- function(
         coords = coordinates
     )
     if (n_clust<1)n_clust=1
-    hclust_sites <- stats::cutree(res_hclust, k = n_clust)
+    
+    
+    # Usage (FAST - minimal overhead)
+    if (n_clust>2){
+      hclust_sites <- fast_balanced_cut(res_hclust, target_k = n_clust)
+    } else {
+      hclust_sites <- stats::cutree(res_hclust, k = n_clust)
+    }
+    
+    
+    
+    
+    # # Estimate height
+    # heights <- res_hclust$height
+    # n_points <- length(res_hclust$order)
+    # 
+    # # Height where we have approximately target_k clusters
+    # # Percentile-based estimate
+    # percentile <- 1 - (n_clust / n_points)
+    # estimated_h <- quantile(heights, probs = percentile, names = FALSE)
+    #estimated_h <- estimate_height_from_data(res_hclust, n_clust)
+
+    # Create a sorted version of the hclust object
+    # sorted_hclust <- res_hclust
+    # sorted_idx <- order(res_hclust$height)
+    # sorted_hclust$height <- res_hclust$height[sorted_idx]
+    # sorted_hclust$merge <- res_hclust$merge[sorted_idx, ]
+    # 
+    # hclust_sites <- stats::cutree(sorted_hclust, h = 10000)
+
+    #hclust_sites <- stats::cutree(res_hclust, k = n_clust)
 
     hclust_sites <- as.factor(paste(site_prefix, hclust_sites, sep = "_"))
     
