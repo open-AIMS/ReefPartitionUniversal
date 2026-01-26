@@ -5,6 +5,7 @@
 
 outputs/
 docs
+inst/doc
 
 vignettes/*_files
 vignettes/.quarto/
