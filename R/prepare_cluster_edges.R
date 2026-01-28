@@ -54,53 +54,6 @@ prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), 
   mst_tri
 }
 
-#' Create triangulated edges from geographic coordinates of pixels.
-#' 
-#' @description Take a dataframe of pixels `pixels` and triangulate the vertices.
-#'   Then extract the edges between pixels for clustering inputs.
-#' 
-#' @param pixels sf data.frame. Holds values for pixel geometries.
-#' 
-#' @return Matrix containing trianguated edge values between pixels.
-#' 
-#' @export
-#' 
-prepare_tri_edges <- function(pixels) {
-  coords <- sf::st_centroid(st_geometry(pixels))
-
-  tri <- spdep::tri2nb(coords)
-
-  Edges_tri <- neighborsDataFrame(tri)
-
-  links_matrix <- as.matrix(Edges_tri[, c("id", "id_neigh")])
-
-  links_matrix
-}
-
-#' Create k-nearest-neighbour edges for clustering inputs.
-#' 
-#' @description Take a dataframe of pixels `pixels` and create k-nearest-neighbour
-#'   graphs between pixels based on geographic distances.
-#' 
-#' @param pixels sf data.frame. Holds values for pixel geometries.
-#' 
-#' @param k integer. K-nearest-neighbours
-#' 
-#' @return Matrix containing k-n-n edge values between pixels.
-#' 
-#' @export
-#' 
-prepare_knn_edges <- function(pixels, k = 7) {
-  coords <- sf::st_centroid(st_geometry(pixels))
-
-  k_neighbor_list <- spdep::knearneigh(coords, k = k)
-  links_knn <- spdep::knn2nb(k_neighbor_list)
-
-  links_matrix_knn <- igraph::as_edgelist(links_knn)
-
-  links_matrix_knn
-}
-
 #' Helper function taken from package `expp` on 2025-01-20 that converts an
 #' spdep::nb neighbors object into a dataframe with columns `id` and `id_neigh`.
 #' Function copied from `expp` package to avoid expp dependency as this package
