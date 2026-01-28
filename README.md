@@ -14,7 +14,7 @@ defines two spatial clustering algorithm options, using adespatial::constr.hclus
 # Installation
 ```R
 # Install package using GitHub repo
-remotes::install_github("VHallerBull/ReefPartitionAllenAtlas", ref="package-template")
+remotes::install_github("open-AIMS/ReefPartitionUniversal", ref="package-template")
 ```
 
 The package combines functionality from raster and vector data processing packages.
