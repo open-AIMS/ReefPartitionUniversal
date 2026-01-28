@@ -36,7 +36,7 @@
 #' 
 reef_skater <- function(
     pixels, 
-    n_clust = round(min(10000, nrow(pixels)) / 200), 
+    n_clust = (round(nrow(pixels) / n_pixels)), 
     site_size = 250 * 250,
     x_col = "X_standard", 
     y_col = "Y_standard", 
