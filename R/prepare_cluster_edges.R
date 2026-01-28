@@ -23,8 +23,8 @@
 #' @export
 #' 
 prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), mst_alpha = 0.5, hex_resolution = 12) {
-    add_var_weight <- mst_alpha
-    geo_weight <- 1 - mst_alpha
+    add_var_weight <- 1#mst_alpha
+    geo_weight <- 1 #- mst_alpha
     coords <- sf::st_centroid(sf::st_geometry(pixels))
 
   # Triangulate edges between pixel points
