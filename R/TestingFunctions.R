@@ -110,3 +110,27 @@ fast_constrained_balanced_cut <- function(hclust_obj, edges, target_k, min_size_
   return(clusters)
 }
 
+
+# Function to scale dissimilarity matrix to [0, 1]
+scale_dissimilarity <- function(d) {
+  # Convert to matrix if it's a dist object
+  if (inherits(d, "dist")) {
+    d <- as.matrix(d)
+  }
+  
+  min_val <- min(d, na.rm = TRUE)
+  max_val <- max(d, na.rm = TRUE)
+  
+  # Apply min-max scaling
+  scaled_d <- (d - min_val) / (max_val - min_val)
+  
+  # Return as dist object if input was dist
+  if (inherits(d, "dist")) {
+    return(as.dist(scaled_d))
+  }
+  return(scaled_d)
+}
+
+
+
+

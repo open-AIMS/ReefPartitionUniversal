@@ -79,8 +79,14 @@ constrained_hclust <- function(
     D_additional_vars <- dist(pixels[, additional_variable_cols, drop = TRUE], method = distance_method)
     D_geo <- dist(coordinates)
 
+    
+    # Scale both matrices
+    scaled_D_additional_vars <- scale_dissimilarity(D_additional_vars)
+    scaled_D_geo <- scale_dissimilarity(D_geo)
+    
+    
     # Create the combined geographical and additional variable distance matrix for clustering
-    D_combined <- (additional_variable_weight * D_additional_vars) + (geo_weight * D_geo)
+    D_combined <- (additional_variable_weight * scaled_D_additional_vars) + (geo_weight * scaled_D_geo)
 
     # Apply constr.hclust clustering algorithm from package adespatial.
     res_hclust <- adespatial::constr.hclust(
