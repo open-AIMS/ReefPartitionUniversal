@@ -1,63 +1,107 @@
-#' Convert pixels for an entire reef that have been allocated site IDs into site polygons.
+#' Perform post-processing steps on site polygons.
 #'
-#' @description From a dataframe of pixels and pixel data, this function clusters pixels into
-#'   sites (within each habitat type), using a user defined clustering method that considers
-#'   both geographical data and additional extracted data (such as depth).
+#' @description Perform post-processing steps on site polygons for a reef. Post-
+#'   processing applies to multipolygons (sites made up of smaller non-continuous
+#'   polygons) only. This process involves identifying the largest single polygon and
+#'   removing any polygons that are outside a user-defined distance threshold from the largest
+#'   polygon. Post-processing also involves removing any site polygons that are too
+#'   small, based on a user defined minimum site area.
 #'
-#' @param clustered_pixels data.frame. Contains a row for each pixel and cluster allocations.
-#' @param site_id_col character or integer. Column containing site allocations for pixels.
-#'   Default = "site_id".
-#' @param reef_cols_to_keep character vector. Columns containing unique values per reef that
-#'   can be allocated to the collated site polygons to conserve IDs and other reef level
-#'   information. Examples include reef level mean depth, or reef distance to coastline.
-#'   Default = c("clustering_time", "UNIQUE_ID").
+#' @param reef_site_polygons data.frame. Contains a row for each unique site, for
+#'   a target reef of interest.
+#' @param min_site_area numeric. Minimum threshold for removing sites that are too
+#'   small in their total site area. Must be in the same units returned by `sf::st_area()`.
 #'
-#' @return sf data.frame containing site polygons created from pixels using allocated
-#'   `site_id_col` values.
+#' @return data.frame containing all site polygons for the target reef after post-
+#'   processing has taken place on undersized or multipolygon sites.
 #'
 #' @export
 #'
-clustered_pixels_to_polygons <- function(
-    clustered_pixels,
-    site_id_col = "site_id",
-    reef_cols_to_keep = c("clustering_time", "UNIQUE_ID")) {
-  if (nrow(clustered_pixels) < 1) {
-    warning("Input dataframe contains no rows, returning input dataframe.")
-    return(clustered_pixels)
-  }
+site_postprocessing <- function(reef_site_polygons, min_site_area) {
+    reef_site_polygons$area <- st_area(reef_site_polygons)
 
-  pixel_cluster_list <- split(clustered_pixels, clustered_pixels[, site_id_col, drop = TRUE])
+    RowsToRemove<-c()
+    ExtraSites<-c("a","b","c","d","e","f")
+    NewSites<-reef_site_polygons[1,] #data.frame("site_id","habitat","area","UNIQUE_ID","Reef","geometry")
+    site_polygons_crs= sf::st_crs(reef_site_polygons)
 
-  # use function 'group_hex' to group hexagons into polygon or multipolygon
-  sites <- lapply(pixel_cluster_list, hex_to_polygons)
+    for (i in 1:nrow(reef_site_polygons)){
+        #print(i)
+        if (as.numeric(reef_site_polygons$area[i]) < min_site_area*307/10^6){ #Removes sites that are smaller than a minimum threshold (50 hexagons * 307m²/10⁶) #that 50 is now parameter, use parameter name instead
+        RowsToRemove<-c(RowsToRemove,i)
+        print(str_glue("{i} too small"))
+        } else {
+        if (class(reef_site_polygons$geometry[i])[1]=="sfc_MULTIPOLYGON"){ #Processing Multi-polygons:
+            #When a site consists of multiple polygons (sfc_MULTIPOLYGON)
+            #Separates multi-polygons into individual polygons
+            #Assigns new IDs using letters (a,b,c,d,e,f)
+            #Creates new rows for each separated polygon
+            NewPolygons <- multipolygon_processing(polygon = reef_site_polygons[i,], min_site_area, site_polygons_crs)
+            
+            RowsToRemove<-c(RowsToRemove,i)
+        
+            NewRows<-reef_site_polygons[i,]%>% slice(rep(1:n(), each = nrow(NewPolygons)))
+            for (m in 1:nrow(NewPolygons)){
+            NewRows$geometry[m]<-NewPolygons$geometry[m]
+            }
+            
+            NewRows$site_id<-paste0(NewRows$site_id,ExtraSites[1:nrow(NewPolygons)])
+            
+            NewSites<-rbind(NewSites,NewRows)
+        }
+        }
+    }
 
-  sites <- do.call(rbind, sites)
-
-  for (col in reef_cols_to_keep) {
-    sites[, col] <- unique(clustered_pixels[, col, drop = TRUE])
-  }
-
-  sites
+    reef_site_polygons<-reef_site_polygons[-RowsToRemove,]
+    NewSites<-NewSites[-1,]
+    reef_site_polygons<-rbind(reef_site_polygons,NewSites)
 }
 
-#' Helper function to convert pixels in a single site into an sf poylgon.
-#'
-#' @param x data.frame. Contains pixel values for the target site.
-#' @param h3_id_col character or integer. Column containing the H3 ID values for each pixel
-#'   to be collated into the polygon. Default = "id".
-#' @param site_id_col charcater vector. Column containing the unique site ID for the target
-#'   site contained in `x`. Default = "site_id".
-#'
-#' @return sf data.frame containing site polygons created from pixels using allocated
-#'   `site_id_col` values.
-#'
-hex_to_polygons <- function(x, h3_id_col = "id", site_id_col = "site_id") {
-  site_polygon <- h3::h3_set_to_multi_polygon(x[, h3_id_col, drop = TRUE]) %>%
-    sf::st_buffer(dist = 0) %>%
-    sf::st_as_sf() %>%
-    rename(geometry = x)
+multipolygon_processing <- function(polygon, min_site_area=50, site_polygons_crs=4326){
+  
+  PolygonSeperate<-data.frame(index=1:length(polygon$geometry[[1]]))
+  NewPolygons<-data.frame(index=1)
+  NumberPolygons<-1
+  PolygonSeperate$area<-NA
+  PolygonSeperate$geometry<-NA
+  NewPolygons$geometry<-NA
+  PolygonSeperate$Number<-NA
+  NewPolygons$area<-NA
 
-  site_polygon[, site_id_col] <- unique(x[, site_id_col, drop = TRUE])
-
-  site_polygon
+    # Separate the polygons that are contained in the target multipolygon feature
+    # into individual polygon elements in a data frame.
+  for (lists in 1:length(polygon$geometry[[1]])){
+    PolygonSeperate$geometry[lists]<-st_sfc(st_polygon(polygon$geometry[[1]][[lists]]))%>% 
+      sf::st_set_crs(site_polygons_crs)
+    PolygonSeperate$area[lists]<-nrow(polygon$geometry[[1]][[lists]][[1]])
+  }
+  
+  while(nrow(PolygonSeperate)>0){
+    LargestIndex<-which(PolygonSeperate$area==max(PolygonSeperate$area))[1]
+    Dist<-NA
+    for (parts in 1:nrow(PolygonSeperate)){
+      Dist[parts]<-100000*st_distance(PolygonSeperate$geometry[[LargestIndex]],PolygonSeperate$geometry[[parts]])
+    }
+    
+    if (any(Dist[-LargestIndex]<100)){
+      #combine polygons into multipolygon
+      Indices<-which(Dist<100)
+      Multi<-st_union(st_sfc(PolygonSeperate$geometry[Indices]))
+      NewPolygons[NumberPolygons,]<-NumberPolygons
+      NewPolygons$geometry[NumberPolygons]<-Multi
+      NewPolygons$area[NumberPolygons]<-sum(PolygonSeperate$area[Indices])
+      PolygonSeperate<-PolygonSeperate[-Indices,]
+      NumberPolygons<-NumberPolygons+1
+    } else {
+      NewPolygons[NumberPolygons,]<-NumberPolygons
+      NewPolygons$geometry[NumberPolygons]<-PolygonSeperate$geometry[LargestIndex]
+      NewPolygons$area[NumberPolygons]<-PolygonSeperate$area[LargestIndex]
+      PolygonSeperate<-PolygonSeperate[-LargestIndex,]
+      NumberPolygons<-NumberPolygons+1
+    }
+  }
+  
+  NewPolygons<-NewPolygons[which(NewPolygons$area>min_site_area),] #minmum polygon size to filter with
+  
+  return(NewPolygons)
 }
