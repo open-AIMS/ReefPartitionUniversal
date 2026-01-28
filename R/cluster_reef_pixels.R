@@ -40,8 +40,7 @@ cluster_reef_pixels <- function(
     additional_variable_cols = c("depth"),
     reef_id_col = "UNIQUE_ID",
     habitat_clustering_function = constrained_hclust_mst,
-    ...
-) {
+    ...) {
   if (nrow(pixels) < 1) {
     warning("Input dataframe contains no rows, returning input dataframe.")
     return(pixels)
@@ -64,7 +63,7 @@ cluster_reef_pixels <- function(
   # Make Clusters
   reef_start_time <- Sys.time()
   pixels_clustered <- lapply(
-    habitat_list, 
+    habitat_list,
     function(habitat_pixels) habitat_clustering_function(habitat_pixels, ...)
   )
   reef_end_time <- Sys.time()
@@ -73,9 +72,8 @@ cluster_reef_pixels <- function(
   # Assign ID and execution time
   pixels_clustered[, reef_id_col] <- reef_id
   pixels_clustered[, "clustering_time"] <- reef_end_time - reef_start_time
-  
-   pixels_clustered$depth_extract <- pixels$depth_extract
+
+  pixels_clustered$depth_extract <- pixels$depth_extract
 
   pixels_clustered
 }
-

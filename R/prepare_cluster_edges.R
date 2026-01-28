@@ -1,12 +1,12 @@
 #' Create a minimum spanning tree from geographic coordinates of pixels and extracted
 #' data.
-#' 
+#'
 #' @description Take a dataframe of pixels `pixels` and create a minimum spanning tree
 #'   between pixel coordinates, using edge costs that are a combination of geographic
 #'   distances and distances between pixels by `additional_variable_cols` values.
 #'   For additional details on minimum spanning tree creation see igraph::mst().
-#' 
-#' @param pixels sf data.frame. Holds values for pixel geometries and 
+#'
+#' @param pixels sf data.frame. Holds values for pixel geometries and
 #'   `additional_variable_cols`
 #' @param additional_variable_cols character vector. Names of the columns to extract
 #'   additional (non-geometric) data from for cost weighting.
@@ -15,17 +15,17 @@
 #'   (1 - alpha) weight is applied to the geographic distance. Default = 0.5
 #'   (same weight for `additional_variable_cols` and geographic distances).
 #' @param hex_resolution integer. H3 hex resolution of pixels. Default = 12.
-#' 
+#'
 #' @return igraph::mst Minimum spanning tree object.
-#' 
+#'
 #' @importFrom dplyr mutate
-#' 
+#'
 #' @export
-#' 
+#'
 prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), mst_alpha = 0.5, hex_resolution = 12) {
-    add_var_weight <- mst_alpha
-    geo_weight <- 1 - mst_alpha
-    coords <- sf::st_centroid(sf::st_geometry(pixels))
+  add_var_weight <- mst_alpha
+  geo_weight <- 1 - mst_alpha
+  coords <- sf::st_centroid(sf::st_geometry(pixels))
 
   # Triangulate edges between pixel points
   tri <- spdep::tri2nb(coords)
@@ -59,15 +59,14 @@ prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), 
 #' Function copied from `expp` package to avoid expp dependency as this package
 #' is no longer maintained.
 neighborsDataFrame <- function(nb) {
-	stopifnot( inherits(nb, 'nb'))
-	
-	ks = data.frame(k = unlist( mapply(rep, 1:length(nb), sapply(nb, length), SIMPLIFY = FALSE) ), k_nb = unlist(nb) )
-	
-	nams = data.frame(id = attributes(nb)$region.id, k = 1:length(nb) )
-	
-	o = merge(ks, nams, by.x = 'k', by.y = 'k')
-	o = merge(o, nams, by.x = 'k_nb', by.y = 'k', suffixes = c("","_neigh"))
-	
-	o[, c("id", "id_neigh")]
+  stopifnot(inherits(nb, "nb"))
 
+  ks <- data.frame(k = unlist(mapply(rep, 1:length(nb), sapply(nb, length), SIMPLIFY = FALSE)), k_nb = unlist(nb))
+
+  nams <- data.frame(id = attributes(nb)$region.id, k = 1:length(nb))
+
+  o <- merge(ks, nams, by.x = "k", by.y = "k")
+  o <- merge(o, nams, by.x = "k_nb", by.y = "k", suffixes = c("", "_neigh"))
+
+  o[, c("id", "id_neigh")]
 }

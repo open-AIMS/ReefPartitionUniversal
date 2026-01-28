@@ -29,7 +29,7 @@
 #'
 #' @return data.frame containing `habitat_raster` pixels covering `reef_polygon`
 #'   for selected habitats in `habitat_categories`, alongside extracted data from `add_var_raster`.
-#' 
+#'
 #' @importFrom terra %in%
 #' @importFrom dplyr rename
 #' @importFrom dplyr mutate
@@ -62,10 +62,10 @@ extract_pixel_points <- function(
   # Check if reef_polygon intersects with the habitat_raster
   hab_raster_bbox <- sf::st_bbox(habitat_raster)
   habitat_intersects <- sf::st_intersects(
-    sf::st_as_sfc(hab_raster_bbox), 
-    reef_polygon, 
+    sf::st_as_sfc(hab_raster_bbox),
+    reef_polygon,
     sparse = FALSE
-    )
+  )
 
   if (!any(habitat_intersects)) {
     stop("
@@ -77,10 +77,10 @@ extract_pixel_points <- function(
   # Check if reef_polygon intersects with the habitat_raster
   add_var_raster_bbox <- sf::st_bbox(add_var_raster)
   add_var_intersects <- sf::st_intersects(
-    sf::st_as_sfc(add_var_raster_bbox), 
-    reef_polygon, 
+    sf::st_as_sfc(add_var_raster_bbox),
+    reef_polygon,
     sparse = FALSE
-    )
+  )
 
   if (!any(add_var_intersects)) {
     stop("
@@ -101,9 +101,11 @@ extract_pixel_points <- function(
   names(habitat_cropped)[1] <- "categorical_habitat"
 
   # Filter just the desired habitat type pixels
-  habitat_cropped <- terra::ifel(habitat_cropped %in% habitat_categories, 
-                               habitat_cropped, 
-                               NA)
+  habitat_cropped <- terra::ifel(
+    habitat_cropped %in% habitat_categories,
+    habitat_cropped,
+    NA
+  )
   # Filter just pixels that overlap the target reef.
   # Crop uses a bounding box, so must be followed with mask.
   habitat_cropped <- terra::mask(habitat_cropped, reef_polygon_terra)
@@ -144,7 +146,7 @@ extract_pixel_points <- function(
   pixel_points <- pixel_points %>%
     dplyr::filter(!is.na(sf::st_dimension(.))) %>% # Remove NA dimensions
     sf::st_make_valid()
- 
+
   # Extract habitat data for pixels
   cells <- sf::st_as_sf(terra::as.polygons(habitat_cropped), as_points = TRUE)
 
@@ -158,8 +160,8 @@ extract_pixel_points <- function(
     sf::st_transform(output_epsg) %>% # project to GDA94 / Geosicence Australia Lambert https://epsg.io/3112
     dplyr::bind_cols(., as.data.frame(sf::st_coordinates(.))) %>%
     dplyr::filter(
-        !is.na(geomorph), 
-        if (!is.null(habitat_categories)) geomorph %in% habitat_categories else TRUE
+      !is.na(geomorph),
+      if (!is.null(habitat_categories)) geomorph %in% habitat_categories else TRUE
     ) %>% # Handle NULL geozone_list
     rename(habitat = geomorph)
 }
