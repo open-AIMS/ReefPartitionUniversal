@@ -39,15 +39,7 @@ pixels$UNIQUE_ID <- "ReefOne"
 
 # Cluster pixels using adespatial::constr.hclust algorithm
 # The
-mst_hclust_pixels <- cluster_reef_pixels(
-    pixels,
-    # Define a clustering function using exported options (can be replaced by user defined function)
-    habitat_clust = function(x) {
-        mst <- prepare_mst(x)
-        clusters <- constrained_hclust(x, igraph::as_edgelist(mst))
-        clusters
-    }
-)
+mst_hclust_pixels <- cluster_reef_pixels(pixels)
 
 # Collate pixels from each site/cluster into polygons
 mst_hclust_sites <- clustered_pixels_to_polygons(mst_hclust_pixels)
