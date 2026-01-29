@@ -1,3 +1,4 @@
+#' @export
 CreatePixels <- function(reef_name, ROI, reshex, site_size, bathy_file, full_geo_file_path,geozone_list,geo_zone_names,overwrite = T,resolution=12) {
   
   ## read in the geomorphic habitat map, the base map for clustering hexagons to create polygons
