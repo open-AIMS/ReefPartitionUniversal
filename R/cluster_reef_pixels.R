@@ -33,14 +33,15 @@
 #' @export
 #'
 cluster_reef_pixels <- function(
-    pixels,
-    habitat_col = "habitat",
-    x_col = "X",
-    y_col = "Y",
-    additional_variable_cols = c("depth"),
-    reef_id_col = "UNIQUE_ID",
-    habitat_clustering_function = constrained_hclust_mst,
-    ...) {
+  pixels,
+  habitat_col = "habitat",
+  x_col = "X",
+  y_col = "Y",
+  additional_variable_cols = c("depth"),
+  reef_id_col = "UNIQUE_ID",
+  habitat_clustering_function = constrained_hclust_mst,
+  ...
+) {
   if (nrow(pixels) < 1) {
     warning("Input dataframe contains no rows, returning input dataframe.")
     return(pixels)
@@ -55,7 +56,10 @@ cluster_reef_pixels <- function(
   pixels$Y_standard <- scale(pixels[, y_col, drop = TRUE])
 
   for (variable in additional_variable_cols) {
-    pixels[, paste0(variable, "_standard")] <- scale(pixels[, variable, drop = TRUE])
+    pixels[, paste0(variable, "_standard")] <- scale(pixels[,
+      variable,
+      drop = TRUE
+    ])
   }
 
   habitat_list <- split(pixels, pixels[, habitat_col, drop = TRUE])
