@@ -2,4 +2,5 @@
 
 ### All vignettes
 
-- [example-vignette](https://open-aims.github.io/ReefPartitionUniversal/articles/example-vignette.md):
+- [Partitioning a generic
+  reef](https://open-aims.github.io/ReefPartitionUniversal/articles/workflow.md):
