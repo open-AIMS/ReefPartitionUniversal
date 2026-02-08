@@ -1,0 +1,66 @@
+---
+title: "Partitioning a generic reef"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Partitioning a reef}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+
+```{r setup}
+remotes::install_github("open-aims/ReefPartitionUniversal", ref="pkgdown-site")
+library(ReefPartitionUniversal)
+```
+
+First, we generate an example raster extent using the `terra` package and an
+example reef polygon using the `sf` package.
+
+```{r generating example data extent}
+library(terra)
+library(sf)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Create raster template
+r <- rast(ncol=50, nrow=50, xmin=0, xmax=50, ymin=0, ymax=50)
+reef_polygon <- st_as_sfc(st_bbox(r))
+```
+
+Next, we generate example habitat data using the raster extent. Habitat NA values
+indicate no reef habitat of interest and values of 1 and 2 represent reef habitat
+types 1 and 2 (e.g. inshore/offshore or reef flat/reef slope).
+
+```{r generating example habitat data}
+habitat <- r
+values(habitat) <- sample(c(NA, 1, 2), ncell(habitat), replace = TRUE)
+plot(habitat)
+```
+
+Finally, we generate example bathymetry data. In this example we use the distance
+of each cell from the centre as an "example" of bathymetry, adding random variation.
+```{r generating example bathymetry data}
+# Reef bathymetry layer
+xc <- (xmin(r) + xmax(r)) / 2
+yc <- (ymin(r) + ymax(r)) / 2
+
+# Compute distance to centre of raster for each cell
+coords <- crds(r)  # n x 2 matrix of xy coordinates
+dist_center <- sqrt((coords[,1] - xc)^2 + (coords[,2] - yc)^2)
+
+# Assign to raster
+bathy <- r
+values(bathy) <- dist_center + runif(length(dist_center), -2, 2)
+
+plot(bathy)
+```
+
