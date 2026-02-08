@@ -1,0 +1,9 @@
+pandoc: '3.9'
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  example-vignette: example-vignette.html
+last_built: 2026-02-08T02:41Z
+urls:
+  reference: https://open-aims.github.io/ReefPartitionUniversal/reference
+  article: https://open-aims.github.io/ReefPartitionUniversal/articles
