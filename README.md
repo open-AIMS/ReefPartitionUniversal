@@ -49,3 +49,20 @@ mst_hclust_sites <- clustered_pixels_to_polygons(mst_hclust_pixels)
 
 This repository is licensed under MIT License.
 
+# Development
+
+Any problems and/or suggestions encountered with this package can be logged in
+as GitHub issues.
+
+This R package follows the [tidyverse styleguide](https://style.tidyverse.org/).
+
+## Formatting
+
+Code in this package can be auto-formatted to follow the tidyverse styleguide using
+a formatter such as [Air](https://posit-dev.github.io/air/). Once installed for
+the chosen IDE, using Air commands will reformat R files, modifying the whitespace,
+linespace and punctuation to follow the tidyverse styleguide.
+
+Additionally, Air has been set up to check file formatting when a new Pull Request
+is made.
+
