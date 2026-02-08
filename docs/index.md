@@ -1,4 +1,6 @@
-# Installation
+# ReefPartitionUniversal
+
+[![Documentation](https://img.shields.io/badge/documentation-blue)](https://open-aims.github.io/ReefPartitionUniversal/)
 
 The ReefPartitionAllenAtlas R package provides functions for
 partitioning coral reef spatial areas into smaller sites (such as for
@@ -16,6 +18,8 @@ options, using adespatial::constr.hclust [(Guénard and Legendre,
 2022)](https://www.jstatsoft.org/article/view/v103i07) and spdep::skater
 [(AssunÇão et
 al. 2007)](https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e2053).
+
+# Installation
 
 ``` r
 

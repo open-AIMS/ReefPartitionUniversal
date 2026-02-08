@@ -58,11 +58,17 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><p>The ReefPartitionAllenAtlas R package provides functions for partitioning coral reef spatial areas into smaller sites (such as for logistic and monitoring purposes) based on raster data layers. The package provides functions for extracting pixel points on a reef based on habitat types, extracting values for additional raster layers such as bathymetry. Pixels can then be clustered into sites within habitat types based on their geographic attributes as well as additional variable values such as pixel depth.</p>
-<p>The package uses a flexible framework allowing multiple additional raster layers to be used, along with user defined pixel clustering algorithms. The package itself defines two spatial clustering algorithm options, using adespatial::constr.hclust <a href="https://www.jstatsoft.org/article/view/v103i07" class="external-link">(Guénard and Legendre, 2022)</a> and spdep::skater <a href="https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e2053" class="external-link">(AssunÇão et al. 2007)</a>.</p>
-<div class="section level1">
-<div class="page-header"><h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="reefpartitionuniversal">ReefPartitionUniversal<a class="anchor" aria-label="anchor" href="#reefpartitionuniversal"></a>
 </h1></div>
+<!--pkgdown-ignore-start-->
+<p><a href="https://open-aims.github.io/ReefPartitionUniversal/"><img src="https://img.shields.io/badge/documentation-blue" alt="Documentation"></a> <!--pkgdown-ignore-end--></p>
+<p>The ReefPartitionAllenAtlas R package provides functions for partitioning coral reef spatial areas into smaller sites (such as for logistic and monitoring purposes) based on raster data layers. The package provides functions for extracting pixel points on a reef based on habitat types, extracting values for additional raster layers such as bathymetry. Pixels can then be clustered into sites within habitat types based on their geographic attributes as well as additional variable values such as pixel depth.</p>
+<p>The package uses a flexible framework allowing multiple additional raster layers to be used, along with user defined pixel clustering algorithms. The package itself defines two spatial clustering algorithm options, using adespatial::constr.hclust <a href="https://www.jstatsoft.org/article/view/v103i07" class="external-link">(Guénard and Legendre, 2022)</a> and spdep::skater <a href="https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e2053" class="external-link">(AssunÇão et al. 2007)</a>.</p>
+</div>
+<div class="section level1">
+<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h1>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install package using GitHub repo</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"VHallerBull/ReefPartitionAllenAtlas"</span>, ref<span class="op">=</span><span class="st">"package-template"</span><span class="op">)</span></span></code></pre></div>
