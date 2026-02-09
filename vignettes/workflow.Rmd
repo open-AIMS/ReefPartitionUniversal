@@ -21,6 +21,8 @@ remotes::install_github("open-aims/ReefPartitionUniversal", ref="pkgdown-site")
 library(ReefPartitionUniversal)
 ```
 
+# Generating example raster data
+
 First, we generate an example raster extent using the `terra` package and an
 example reef polygon using the `sf` package.
 
