@@ -27,25 +27,35 @@ site_postprocessing <- function(reef_site_polygons, min_site_area) {
 
   for (i in 1:nrow(reef_site_polygons)) {
     # print(i)
-    if (as.numeric(reef_site_polygons$area[i]) < min_site_area * 307 / 10^6) { # Removes sites that are smaller than a minimum threshold (50 hexagons * 307m²/10⁶) #that 50 is now parameter, use parameter name instead
+    if (as.numeric(reef_site_polygons$area[i]) < min_site_area * 307 / 10^6) {
+      # Removes sites that are smaller than a minimum threshold (50 hexagons * 307m²/10⁶) #that 50 is now parameter, use parameter name instead
       RowsToRemove <- c(RowsToRemove, i)
       print(str_glue("{i} too small"))
     } else {
-      if (class(reef_site_polygons$geometry[i])[1] == "sfc_MULTIPOLYGON") { # Processing Multi-polygons:
+      if (class(reef_site_polygons$geometry[i])[1] == "sfc_MULTIPOLYGON") {
+        # Processing Multi-polygons:
         # When a site consists of multiple polygons (sfc_MULTIPOLYGON)
         # Separates multi-polygons into individual polygons
         # Assigns new IDs using letters (a,b,c,d,e,f)
         # Creates new rows for each separated polygon
-        NewPolygons <- multipolygon_processing(polygon = reef_site_polygons[i, ], min_site_area, site_polygons_crs)
+        NewPolygons <- multipolygon_processing(
+          polygon = reef_site_polygons[i, ],
+          min_site_area,
+          site_polygons_crs
+        )
 
         RowsToRemove <- c(RowsToRemove, i)
 
-        NewRows <- reef_site_polygons[i, ] %>% slice(rep(1:n(), each = nrow(NewPolygons)))
+        NewRows <- reef_site_polygons[i, ] %>%
+          slice(rep(1:n(), each = nrow(NewPolygons)))
         for (m in 1:nrow(NewPolygons)) {
           NewRows$geometry[m] <- NewPolygons$geometry[m]
         }
 
-        NewRows$site_id <- paste0(NewRows$site_id, ExtraSites[1:nrow(NewPolygons)])
+        NewRows$site_id <- paste0(
+          NewRows$site_id,
+          ExtraSites[1:nrow(NewPolygons)]
+        )
 
         NewSites <- rbind(NewSites, NewRows)
       }
@@ -57,7 +67,11 @@ site_postprocessing <- function(reef_site_polygons, min_site_area) {
   reef_site_polygons <- rbind(reef_site_polygons, NewSites)
 }
 
-multipolygon_processing <- function(polygon, min_site_area = 50, site_polygons_crs = 4326) {
+multipolygon_processing <- function(
+  polygon,
+  min_site_area = 50,
+  site_polygons_crs = 4326
+) {
   PolygonSeperate <- data.frame(index = 1:length(polygon$geometry[[1]]))
   NewPolygons <- data.frame(index = 1)
   NumberPolygons <- 1
@@ -70,7 +84,9 @@ multipolygon_processing <- function(polygon, min_site_area = 50, site_polygons_c
   # Separate the polygons that are contained in the target multipolygon feature
   # into individual polygon elements in a data frame.
   for (lists in 1:length(polygon$geometry[[1]])) {
-    PolygonSeperate$geometry[lists] <- st_sfc(st_polygon(polygon$geometry[[1]][[lists]])) %>%
+    PolygonSeperate$geometry[lists] <- st_sfc(st_polygon(polygon$geometry[[1]][[
+      lists
+    ]])) %>%
       sf::st_set_crs(site_polygons_crs)
     PolygonSeperate$area[lists] <- nrow(polygon$geometry[[1]][[lists]][[1]])
   }
@@ -79,7 +95,11 @@ multipolygon_processing <- function(polygon, min_site_area = 50, site_polygons_c
     LargestIndex <- which(PolygonSeperate$area == max(PolygonSeperate$area))[1]
     Dist <- NA
     for (parts in 1:nrow(PolygonSeperate)) {
-      Dist[parts] <- 100000 * st_distance(PolygonSeperate$geometry[[LargestIndex]], PolygonSeperate$geometry[[parts]])
+      Dist[parts] <- 100000 *
+        st_distance(
+          PolygonSeperate$geometry[[LargestIndex]],
+          PolygonSeperate$geometry[[parts]]
+        )
     }
 
     if (any(Dist[-LargestIndex] < 100)) {
@@ -93,7 +113,9 @@ multipolygon_processing <- function(polygon, min_site_area = 50, site_polygons_c
       NumberPolygons <- NumberPolygons + 1
     } else {
       NewPolygons[NumberPolygons, ] <- NumberPolygons
-      NewPolygons$geometry[NumberPolygons] <- PolygonSeperate$geometry[LargestIndex]
+      NewPolygons$geometry[NumberPolygons] <- PolygonSeperate$geometry[
+        LargestIndex
+      ]
       NewPolygons$area[NumberPolygons] <- PolygonSeperate$area[LargestIndex]
       PolygonSeperate <- PolygonSeperate[-LargestIndex, ]
       NumberPolygons <- NumberPolygons + 1

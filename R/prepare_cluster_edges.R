@@ -22,20 +22,37 @@
 #'
 #' @export
 #'
-prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), mst_alpha = 0.5, hex_resolution = 12) {
+prepare_mst <- function(
+  pixels,
+  additional_variable_cols = c("depth_standard"),
+  mst_alpha = 0.5,
+  hex_resolution = 12
+) {
   add_var_weight <- mst_alpha
   geo_weight <- 1 - mst_alpha
   coords <- sf::st_centroid(sf::st_geometry(pixels))
 
   # Triangulate edges between pixel points
   tri <- spdep::tri2nb(coords)
-  Costs_tri <- spdep::nbcosts(tri, data = pixels[, additional_variable_cols, drop = TRUE], method = "manhattan")
+  Costs_tri <- spdep::nbcosts(
+    tri,
+    data = pixels[, additional_variable_cols, drop = TRUE],
+    method = "manhattan"
+  )
   Costs_tri <- unlist(Costs_tri)
 
   Edges_tri <- neighborsDataFrame(tri)
 
-  Edges_tri2 <- data.frame(from = as.numeric(Edges_tri$id), to = as.numeric(Edges_tri$id_neigh), weights = Costs_tri)
-  Network_withEdgesTri <- sfnetworks::sfnetwork(pixels, Edges_tri2[, c(1, 2)], directed = FALSE)
+  Edges_tri2 <- data.frame(
+    from = as.numeric(Edges_tri$id),
+    to = as.numeric(Edges_tri$id_neigh),
+    weights = Costs_tri
+  )
+  Network_withEdgesTri <- sfnetworks::sfnetwork(
+    pixels,
+    Edges_tri2[, c(1, 2)],
+    directed = FALSE
+  )
   igraph::E(Network_withEdgesTri)$weight <- Costs_tri
 
   Network_withEdgesTri <- Network_withEdgesTri %>%
@@ -45,11 +62,16 @@ prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), 
   Length_scaled <- scale(as.numeric(igraph::E(Network_withEdgesTri)$length))
   Weight_scaled <- scale(as.numeric(igraph::E(Network_withEdgesTri)$weight))
 
-  Eucliden_weight_old <- sqrt((Length_scaled^2) * geo_weight + (Weight_scaled^2) * add_var_weight)
+  Eucliden_weight_old <- sqrt(
+    (Length_scaled^2) * geo_weight + (Weight_scaled^2) * add_var_weight
+  )
   igraph::E(Network_withEdgesTri)$weight <- Eucliden_weight_old
 
   # Triangulation
-  mst_tri <- igraph::mst(Network_withEdgesTri, weights = igraph::E(Network_withEdgesTri)$weight) #+Length_scaled)
+  mst_tri <- igraph::mst(
+    Network_withEdgesTri,
+    weights = igraph::E(Network_withEdgesTri)$weight
+  ) #+Length_scaled)
 
   mst_tri
 }
@@ -61,7 +83,15 @@ prepare_mst <- function(pixels, additional_variable_cols = c("depth_standard"), 
 neighborsDataFrame <- function(nb) {
   stopifnot(inherits(nb, "nb"))
 
-  ks <- data.frame(k = unlist(mapply(rep, 1:length(nb), sapply(nb, length), SIMPLIFY = FALSE)), k_nb = unlist(nb))
+  ks <- data.frame(
+    k = unlist(mapply(
+      rep,
+      1:length(nb),
+      sapply(nb, length),
+      SIMPLIFY = FALSE
+    )),
+    k_nb = unlist(nb)
+  )
 
   nams <- data.frame(id = attributes(nb)$region.id, k = 1:length(nb))
 

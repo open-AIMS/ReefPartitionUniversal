@@ -44,20 +44,25 @@
 #' @export
 #'
 constrained_hclust <- function(
-    pixels,
-    edges,
-    x_col = "X_standard",
-    y_col = "Y_standard",
-    additional_variable_cols = c("depth_standard"),
-    id_col = "UNIQUE_ID",
-    habitat_col = "habitat",
-    distance_method = "manhattan",
-    distance_alpha = 0.5,
-    beta = -1,
-    n_pixels = 204,
-    n_clust = (round(nrow(pixels) / n_pixels)),
-    method = "ward.D2") {
-  site_prefix <- paste(unique(pixels[, id_col, drop = TRUE]), unique(pixels[, habitat_col, drop = TRUE]), sep = "_")
+  pixels,
+  edges,
+  x_col = "X_standard",
+  y_col = "Y_standard",
+  additional_variable_cols = c("depth_standard"),
+  id_col = "UNIQUE_ID",
+  habitat_col = "habitat",
+  distance_method = "manhattan",
+  distance_alpha = 0.5,
+  beta = -1,
+  n_pixels = 204,
+  n_clust = (round(nrow(pixels) / n_pixels)),
+  method = "ward.D2"
+) {
+  site_prefix <- paste(
+    unique(pixels[, id_col, drop = TRUE]),
+    unique(pixels[, habitat_col, drop = TRUE]),
+    sep = "_"
+  )
 
   interpolation <- FALSE
   if (nrow(pixels) > 30000) {
@@ -75,11 +80,15 @@ constrained_hclust <- function(
   geo_weight <- 1 - distance_alpha
 
   # Calculate the raw distance matrices for additional variables and geographic distance
-  D_additional_vars <- dist(pixels[, additional_variable_cols, drop = TRUE], method = distance_method)
+  D_additional_vars <- dist(
+    pixels[, additional_variable_cols, drop = TRUE],
+    method = distance_method
+  )
   D_geo <- dist(coordinates)
 
   # Create the combined geographical and additional variable distance matrix for clustering
-  D_combined <- (additional_variable_weight * D_additional_vars) + (geo_weight * D_geo)
+  D_combined <- (additional_variable_weight * D_additional_vars) +
+    (geo_weight * D_geo)
 
   # Apply constr.hclust clustering algorithm from package adespatial.
   res_hclust <- adespatial::constr.hclust(
@@ -143,10 +152,15 @@ constrained_hclust_mst <- function(pixels, distance_alpha = 0.5, ...) {
   mst_edges <- igraph::as_edgelist(mst)
 
   # Extract clust_ prefixed args and strip the prefix
-  constrained_clust_params <- dots[passed_arguments %in% names(formals(constrained_hclust))]
+  constrained_clust_params <- dots[
+    passed_arguments %in% names(formals(constrained_hclust))
+  ]
   clustered_pixels <- do.call(
     constrained_hclust,
-    append(list(pixels = pixels, edges = mst_edges, distance_alpha = distance_alpha), constrained_clust_params)
+    append(
+      list(pixels = pixels, edges = mst_edges, distance_alpha = distance_alpha),
+      constrained_clust_params
+    )
   )
 
   return(clustered_pixels)

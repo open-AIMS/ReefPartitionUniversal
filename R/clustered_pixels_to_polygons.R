@@ -18,15 +18,19 @@
 #' @export
 #'
 clustered_pixels_to_polygons <- function(
-    clustered_pixels,
-    site_id_col = "site_id",
-    reef_cols_to_keep = c("clustering_time", "UNIQUE_ID")) {
+  clustered_pixels,
+  site_id_col = "site_id",
+  reef_cols_to_keep = c("clustering_time", "UNIQUE_ID")
+) {
   if (nrow(clustered_pixels) < 1) {
     warning("Input dataframe contains no rows, returning input dataframe.")
     return(clustered_pixels)
   }
 
-  pixel_cluster_list <- split(clustered_pixels, clustered_pixels[, site_id_col, drop = TRUE])
+  pixel_cluster_list <- split(
+    clustered_pixels,
+    clustered_pixels[, site_id_col, drop = TRUE]
+  )
 
   # use function 'group_hex' to group hexagons into polygon or multipolygon
   sites <- lapply(pixel_cluster_list, hex_to_polygons)
