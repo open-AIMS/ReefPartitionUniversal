@@ -124,7 +124,7 @@ extract_pixel_points <- function(
     ID = FALSE
   ) %>%
     na.omit()
-  pts <- pts[pts$categorical_habitat %in% geozone_list, ] # filter habitats
+  pts <- pts[pts$categorical_habitat %in% habitat_categories, ] # filter habitats
   raster_res <- terra::res(habitat_cropped)[1]
   half_res <- raster_res / 2
 
