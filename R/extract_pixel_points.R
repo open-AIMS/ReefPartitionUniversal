@@ -101,7 +101,11 @@ extract_pixel_points <- function(
   # Crop the input raster layers for faster extraction
   reef_polygon_terra <- terra::vect(reef_polygon)
   habitat_cropped <- terra::crop(habitat_raster, reef_polygon_terra)
-  add_var_cropped <- terra::crop(add_var_raster, reef_polygon_terra)
+  add_var_cropped <- terra::crop(
+    add_var_raster,
+    reef_polygon_terra,
+    mask = TRUE
+  )
 
   if (terra::ncell(habitat_cropped) == 0) {
     stop(
@@ -111,27 +115,46 @@ extract_pixel_points <- function(
 
   names(habitat_cropped)[1] <- "categorical_habitat"
 
-  # Filter just the desired habitat type pixels
-  habitat_cropped <- terra::ifel(
-    habitat_cropped %in% habitat_categories,
-    habitat_cropped,
-    NA
-  )
-  # Filter just pixels that overlap the target reef.
-  # Crop uses a bounding box, so must be followed with mask.
-  habitat_cropped <- terra::mask(habitat_cropped, reef_polygon_terra)
-
-  # Extract habitat pixels
-  hexid <- terra::as.data.frame(
-    # Extracts pixel centroid points from the raster data
-    habitat_cropped,
+  # Extract cell points from the habitat raster object
+  pts <- terra::extract(
+    terra::mask(habitat_cropped, reef_polygon),
+    ROI,
     xy = TRUE,
-    na.rm = TRUE
+    cells = TRUE,
+    ID = FALSE
   ) %>%
-    sf::st_as_sf(., coords = c("x", "y"), crs = reef_crs) %>%
-    rename(class = "categorical_habitat") %>%
-    sf::st_cast("POINT") %>%
-    h3::geo_to_h3(., res = hex_resolution) # Convert pixel centroid points to hexagons ID format.
+    na.omit()
+  pts <- pts[pts$categorical_habitat %in% geozone_list, ] # filter habitats
+  raster_res <- terra::res(habitat_cropped)[1]
+  half_res <- raster_res / 2
+
+  # Convert cell points into cell grid squares using the resolution of the raster
+  # to emulate the result obtained using a stars object
+  squares_list <- lapply(1:nrow(pts), function(i) {
+    x <- pts$x[i]
+    y <- pts$y[i]
+    st_polygon(list(matrix(
+      c(
+        x - half_res,
+        y + half_res, # Top Left
+        x + half_res,
+        y + half_res, # Top Right
+        x + half_res,
+        y - half_res, # Bottom Right
+        x - half_res,
+        y - half_res, # Bottom Left
+        x - half_res,
+        y + half_res # Close the loop (Back to Top Left)
+      ),
+      ncol = 2,
+      byrow = TRUE
+    )))
+  })
+
+  # Collate grid square sf polygons and convert to h3 indices
+  point_cells <- sf::st_sfc(squares_list, crs = reef_crs) %>%
+    sf::st_sf(data = pts[, !names(pts) %in% c("x", "y")])
+  hexid <- geo_to_h3(point_cells, res = 12)
 
   hexid <- unique(hexid) # Remove pixels with the same coordinates
   pixel_points <- h3::h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
@@ -157,12 +180,6 @@ extract_pixel_points <- function(
     additional_variable_name
   ]
 
-  # Remove points that have an invalid value for the additional variable
-  pixel_points <- pixel_points[
-    !is.na(pixel_points[, additional_variable_name]),
-  ]
-  hexid <- hexid[hexid %in% pixel_points$h3_index]
-
   # Clean up pixels and extracted data
   # Transform Pixels to match the datas' CRS (by default h3 points do not have a CRS)
   pixel_points <- sf::st_transform(pixel_points, reef_crs)
@@ -172,7 +189,9 @@ extract_pixel_points <- function(
     sf::st_make_valid()
 
   # Extract habitat data for pixels
-  cells <- sf::st_as_sf(terra::as.polygons(habitat_cropped), as_points = TRUE)
+  cells_stars <- stars::st_as_stars(habitat_cropped) %>%
+    sf::st_transform(., terra::crs(add_var_raster))
+  cells <- sf::st_as_sf(cells_stars, as_points = TRUE)
 
   hab_pts <- pixel_points %>%
     mutate(
@@ -192,4 +211,6 @@ extract_pixel_points <- function(
       }
     ) %>% # Handle NULL geozone_list
     rename(habitat = geomorph)
+
+  return(hab_pts)
 }
