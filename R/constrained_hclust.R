@@ -64,15 +64,6 @@ constrained_hclust <- function(
     sep = "_"
   )
 
-  interpolation <- FALSE
-  if (nrow(pixels) > 30000) {
-    interpolation <- TRUE
-    samplepoints <- sample(c(1:nrow(pixels)), 30000)
-    x_old <- pixels
-    pixels <- pixels[samplepoints, ]
-
-    min_counts <- min_counts * (30000 / nrow(x_old))
-  }
   coordinates <- sf::st_drop_geometry(pixels[, c(x_col, y_col)])
 
   # Calculate weights for combining the distance matrices
@@ -101,15 +92,6 @@ constrained_hclust <- function(
   hclust_sites <- stats::cutree(res_hclust, k = n_clust)
 
   hclust_sites <- as.factor(paste(site_prefix, hclust_sites, sep = "_"))
-
-  if (interpolation == TRUE) {
-    hclust_sites <- class::knn(
-      pixels[, c(x_col, y_col), drop = TRUE],
-      x_old[, c(x_col, y_col), drop = TRUE],
-      hclust_sites
-    )
-    pixels <- x_old
-  }
 
   pixels$site_id <- hclust_sites
   pixels$npixels <- nrow(pixels)
@@ -143,18 +125,38 @@ constrained_hclust <- function(
 #'
 #' @export
 #'
-constrained_hclust_mst <- function(pixels, distance_alpha = 0.5, ...) {
+constrained_hclust_mst <- function(
+  pixels,
+  distance_alpha = 0.5,
+  n_pixels = 204,
+  ...
+) {
   dots <- list(...)
   passed_arguments <- names(dots)
 
   mst_params <- dots[passed_arguments %in% names(formals(prepare_mst))]
+  constrained_clust_params <- dots[
+    passed_arguments %in% names(formals(constrained_hclust))
+  ]
+
+  interpolation <- FALSE
+  if (nrow(pixels) > 30000) {
+    interpolation <- TRUE
+    samplepoints <- sample(c(1:nrow(pixels)), 30000)
+    x_old <- pixels
+    pixels <- pixels[samplepoints, ]
+
+    n_clust <- round(nrow(pixels) / n_pixels)
+    constrained_clust_params["n_clust"] <- n_clust
+
+    # min_counts <- min_counts * (30000 / nrow(x_old))
+  }
+
   mst <- do.call(prepare_mst, append(list(pixels = pixels), mst_params))
   mst_edges <- igraph::as_edgelist(mst)
 
   # Extract clust_ prefixed args and strip the prefix
-  constrained_clust_params <- dots[
-    passed_arguments %in% names(formals(constrained_hclust))
-  ]
+
   clustered_pixels <- do.call(
     constrained_hclust,
     append(
@@ -162,6 +164,18 @@ constrained_hclust_mst <- function(pixels, distance_alpha = 0.5, ...) {
       constrained_clust_params
     )
   )
+
+  if (interpolation == TRUE) {
+    hclust_sites <- class::knn(
+      clustered_pixels[, c(x_col, y_col), drop = TRUE],
+      x_old[, c(x_col, y_col), drop = TRUE],
+      clustered_pixels$site_id
+    )
+    clustered_pixels <- x_old
+
+    clustered_pixels$site_id <- hclust_sites
+    clustered_pixels$npixels <- nrow(clustered_pixels)
+  }
 
   return(clustered_pixels)
 }
