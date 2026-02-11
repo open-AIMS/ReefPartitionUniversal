@@ -35,6 +35,7 @@ habitat_categories <- c(1, 10, 20) # Values for pixels to select from `habitat`
 
 # Extract pixel values from raster layers
 pixels <- extract_pixel_points(target_reef, habitat, bathymetry, habitat_categories)
+pixels <- pixels[!is.na(pixels$depth), ]
 pixels$UNIQUE_ID <- "ReefOne"
 
 # Cluster pixels using adespatial::constr.hclust algorithm
