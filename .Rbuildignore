@@ -3,3 +3,5 @@
 ^[.]?air[.]toml$
 ^LICENSE\.md$
 ^\.github$
+
+^_pkgdown\.yml$
