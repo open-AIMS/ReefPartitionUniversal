@@ -118,7 +118,7 @@ extract_pixel_points <- function(
   # Extract cell points from the habitat raster object
   pts <- terra::extract(
     terra::mask(habitat_cropped, reef_polygon),
-    ROI,
+    reef_polygon,
     xy = TRUE,
     cells = TRUE,
     ID = FALSE
