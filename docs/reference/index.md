@@ -32,18 +32,9 @@
   `id_neigh`. Function copied from `expp` package to avoid expp
   dependency as this package is no longer maintained.
 
-- [`prepare_knn_edges()`](https://open-aims.github.io/ReefPartitionUniversal/reference/prepare_knn_edges.md)
-  : Create k-nearest-neighbour edges for clustering inputs.
-
 - [`prepare_mst()`](https://open-aims.github.io/ReefPartitionUniversal/reference/prepare_mst.md)
   : Create a minimum spanning tree from geographic coordinates of pixels
   and extracted data.
-
-- [`prepare_tri_edges()`](https://open-aims.github.io/ReefPartitionUniversal/reference/prepare_tri_edges.md)
-  : Create triangulated edges from geographic coordinates of pixels.
-
-- [`reef_skater()`](https://open-aims.github.io/ReefPartitionUniversal/reference/reef_skater.md)
-  : Cluster pixels together using the spdep::skater algorithm.
 
 - [`site_postprocessing()`](https://open-aims.github.io/ReefPartitionUniversal/reference/site_postprocessing.md)
   : Perform post-processing steps on site polygons.

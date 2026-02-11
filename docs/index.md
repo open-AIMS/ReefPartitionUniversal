@@ -24,7 +24,7 @@ al. 2007)](https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e20
 ``` r
 
 # Install package using GitHub repo
-remotes::install_github("VHallerBull/ReefPartitionAllenAtlas", ref="package-template")
+remotes::install_github("open-AIMS/ReefPartitionUniversal", ref="package-template")
 ```
 
 The package combines functionality from raster and vector data
@@ -46,19 +46,12 @@ habitat_categories <- c(1, 10, 20) # Values for pixels to select from `habitat`
 
 # Extract pixel values from raster layers
 pixels <- extract_pixel_points(target_reef, habitat, bathymetry, habitat_categories)
+pixels <- pixels[!is.na(pixels$depth), ]
 pixels$UNIQUE_ID <- "ReefOne"
 
 # Cluster pixels using adespatial::constr.hclust algorithm
 # The
-mst_hclust_pixels <- cluster_reef_pixels(
-    pixels,
-    # Define a clustering function using exported options (can be replaced by user defined function)
-    habitat_clust = function(x) {
-        mst <- prepare_mst(x)
-        clusters <- constrained_hclust(x, igraph::as_edgelist(mst))
-        clusters
-    }
-)
+mst_hclust_pixels <- cluster_reef_pixels(pixels)
 
 # Collate pixels from each site/cluster into polygons
 mst_hclust_sites <- clustered_pixels_to_polygons(mst_hclust_pixels)
@@ -67,3 +60,22 @@ mst_hclust_sites <- clustered_pixels_to_polygons(mst_hclust_pixels)
 # License
 
 This repository is licensed under MIT License.
+
+# Development
+
+Any problems and/or suggestions encountered with this package can be
+logged in as GitHub issues.
+
+This R package follows the [tidyverse
+styleguide](https://style.tidyverse.org/).
+
+## Formatting
+
+Code in this package can be auto-formatted to follow the tidyverse
+styleguide using a formatter such as
+[Air](https://posit-dev.github.io/air/). Once installed for the chosen
+IDE, using Air commands will reformat R files, modifying the whitespace,
+linespace and punctuation to follow the tidyverse styleguide.
+
+Additionally, Air has been set up to check file formatting when a new
+Pull Request is made.
