@@ -71,7 +71,7 @@
 </h1>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install package using GitHub repo</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"VHallerBull/ReefPartitionAllenAtlas"</span>, ref<span class="op">=</span><span class="st">"package-template"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"open-AIMS/ReefPartitionUniversal"</span>, ref<span class="op">=</span><span class="st">"package-template"</span><span class="op">)</span></span></code></pre></div>
 <p>The package combines functionality from raster and vector data processing packages. Dependencies include: sf, terra, sfnetworks, h3, igraph, spdep, adespatial, dplyr and magrittr</p>
 </div>
 <div class="section level1">
@@ -89,19 +89,12 @@
 <span></span>
 <span><span class="co"># Extract pixel values from raster layers</span></span>
 <span><span class="va">pixels</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_pixel_points.html">extract_pixel_points</a></span><span class="op">(</span><span class="va">target_reef</span>, <span class="va">habitat</span>, <span class="va">bathymetry</span>, <span class="va">habitat_categories</span><span class="op">)</span></span>
+<span><span class="va">pixels</span> <span class="op">&lt;-</span> <span class="va">pixels</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">pixels</span><span class="op">$</span><span class="va">depth</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="va">pixels</span><span class="op">$</span><span class="va">UNIQUE_ID</span> <span class="op">&lt;-</span> <span class="st">"ReefOne"</span></span>
 <span></span>
 <span><span class="co"># Cluster pixels using adespatial::constr.hclust algorithm</span></span>
 <span><span class="co"># The</span></span>
-<span><span class="va">mst_hclust_pixels</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cluster_reef_pixels.html">cluster_reef_pixels</a></span><span class="op">(</span></span>
-<span>    <span class="va">pixels</span>,</span>
-<span>    <span class="co"># Define a clustering function using exported options (can be replaced by user defined function)</span></span>
-<span>    habitat_clust <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>        <span class="va">mst</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/prepare_mst.html">prepare_mst</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span>        <span class="va">clusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/constrained_hclust.html">constrained_hclust</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu">igraph</span><span class="fu">::</span><span class="fu"><a href="https://r.igraph.org/reference/as_edgelist.html" class="external-link">as_edgelist</a></span><span class="op">(</span><span class="va">mst</span><span class="op">)</span><span class="op">)</span></span>
-<span>        <span class="va">clusters</span></span>
-<span>    <span class="op">}</span></span>
-<span><span class="op">)</span></span>
+<span><span class="va">mst_hclust_pixels</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cluster_reef_pixels.html">cluster_reef_pixels</a></span><span class="op">(</span><span class="va">pixels</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Collate pixels from each site/cluster into polygons</span></span>
 <span><span class="va">mst_hclust_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/clustered_pixels_to_polygons.html">clustered_pixels_to_polygons</a></span><span class="op">(</span><span class="va">mst_hclust_pixels</span><span class="op">)</span></span></code></pre></div>
@@ -110,6 +103,18 @@
 <h1 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h1>
 <p>This repository is licensed under MIT License.</p>
+</div>
+<div class="section level1">
+<h1 id="development">Development<a class="anchor" aria-label="anchor" href="#development"></a>
+</h1>
+<p>Any problems and/or suggestions encountered with this package can be logged in as GitHub issues.</p>
+<p>This R package follows the <a href="https://style.tidyverse.org/" class="external-link">tidyverse styleguide</a>.</p>
+<div class="section level2">
+<h2 id="formatting">Formatting<a class="anchor" aria-label="anchor" href="#formatting"></a>
+</h2>
+<p>Code in this package can be auto-formatted to follow the tidyverse styleguide using a formatter such as <a href="https://posit-dev.github.io/air/" class="external-link">Air</a>. Once installed for the chosen IDE, using Air commands will reformat R files, modifying the whitespace, linespace and punctuation to follow the tidyverse styleguide.</p>
+<p>Additionally, Air has been set up to check file formatting when a new Pull Request is made.</p>
+</div>
 </div>
 
   </main><aside class="col-md-3"><div class="license">
