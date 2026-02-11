@@ -4,7 +4,7 @@
 \alias{constrained_hclust_mst}
 \title{Default habitat clustering function using adespatial::constr.hclust.}
 \usage{
-constrained_hclust_mst(pixels, distance_alpha = 0.5, ...)
+constrained_hclust_mst(pixels, distance_alpha = 0.5, n_pixels = 204, ...)
 }
 \arguments{
 \item{pixels}{data.frame. Contains values for X and Y coordinates, as well as
