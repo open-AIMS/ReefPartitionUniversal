@@ -296,7 +296,7 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
 #'
 #' @export
 #'
-reef_skater <- function(
+reef_skater_fast <- function(
     pixels,
     n_clust = NA,
     site_size = 250 * 250,
@@ -305,7 +305,7 @@ reef_skater <- function(
     habitat_col = "habitat",
     id_col = "UNIQUE_ID",
     additional_variable_cols = c("depth_standard"),
-    hex_resolution = 12,
+    cell_resolution = 100,
     mst_alpha=0.5,
     method = "euclidean"
 ) {
@@ -316,27 +316,28 @@ reef_skater <- function(
   pixels$npixels <- nrow(pixels)
 
   # H3 hexagon average size
-  hex_size <- data.frame(
-    Res = c(7:15),
-    Size = c(5161293, 737327, 105332, 15047, 2149, 307.09, 43.87, 6.267, 0.895)
-  )
-  min_counts <- round(site_size / hex_size$Size[hex_size$Res == hex_resolution])
+  # hex_size <- data.frame(
+  #   Res = c(7:15),
+  #   Size = c(5161293, 737327, 105332, 15047, 2149, 307.09, 43.87, 6.267, 0.895)
+  # )
+  
+  min_counts <- round(site_size / cell_resolution)
 
   if (is.na(n_clust)) {
-    total_area <- nrow(pixels) * hex_size$Size[hex_size$Res == hex_resolution]
+    total_area <- nrow(pixels) * cell_resolution
     n_clust <- ceiling(max(1, round(total_area / site_size)))
   }
 
   # Handle large datasets via interpolation
   interpolation <- FALSE
-  if (nrow(pixels) > 10000) {
+  if (nrow(pixels) > 30000) {
     interpolation <- TRUE
-    samplepoints <- sample(1:nrow(pixels), 10000)
+    samplepoints <- sample(1:nrow(pixels), 30000)
     x_old <- pixels
     pixels <- pixels[samplepoints, ]
 
     # Adjust minimum counts for sampled dataset
-    min_counts <- min_counts * (10000 / nrow(x_old))
+    min_counts <- min_counts * (30000 / nrow(x_old))
   }
 
   # Early return if too few pixels for clustering
@@ -354,7 +355,7 @@ reef_skater <- function(
   mst <- prepare_mst(
     pixels,
     additional_variable_cols = additional_variable_cols,
-    hex_resolution = hex_resolution,
+    hex_resolution = 12,
     mst_alpha = mst_alpha
   )
 
