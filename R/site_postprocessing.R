@@ -15,10 +15,12 @@
 #' @return data.frame containing all site polygons for the target reef after post-
 #'   processing has taken place on undersized or multipolygon sites.
 #'
+#' @importFrom dplyr n
+#'
 #' @export
 #'
 site_postprocessing <- function(reef_site_polygons, min_site_area) {
-  reef_site_polygons$area <- st_area(reef_site_polygons)
+  reef_site_polygons$area <- sf::st_area(reef_site_polygons)
 
   RowsToRemove <- c()
   ExtraSites <- c("a", "b", "c", "d", "e", "f")
@@ -30,7 +32,7 @@ site_postprocessing <- function(reef_site_polygons, min_site_area) {
     if (as.numeric(reef_site_polygons$area[i]) < min_site_area * 307 / 10^6) {
       # Removes sites that are smaller than a minimum threshold (50 hexagons * 307m²/10⁶) #that 50 is now parameter, use parameter name instead
       RowsToRemove <- c(RowsToRemove, i)
-      print(str_glue("{i} too small"))
+      print(glue::glue("{i} too small"))
     } else {
       if (class(reef_site_polygons$geometry[i])[1] == "sfc_MULTIPOLYGON") {
         # Processing Multi-polygons:
@@ -47,7 +49,7 @@ site_postprocessing <- function(reef_site_polygons, min_site_area) {
         RowsToRemove <- c(RowsToRemove, i)
 
         NewRows <- reef_site_polygons[i, ] %>%
-          slice(rep(1:n(), each = nrow(NewPolygons)))
+          dplyr::slice(rep(1:n(), each = nrow(NewPolygons)))
         for (m in 1:nrow(NewPolygons)) {
           NewRows$geometry[m] <- NewPolygons$geometry[m]
         }
@@ -84,7 +86,9 @@ multipolygon_processing <- function(
   # Separate the polygons that are contained in the target multipolygon feature
   # into individual polygon elements in a data frame.
   for (lists in 1:length(polygon$geometry[[1]])) {
-    PolygonSeperate$geometry[lists] <- st_sfc(st_polygon(polygon$geometry[[1]][[
+    PolygonSeperate$geometry[
+      lists
+    ] <- sf::st_sfc(sf::st_polygon(polygon$geometry[[1]][[
       lists
     ]])) %>%
       sf::st_set_crs(site_polygons_crs)
@@ -96,7 +100,7 @@ multipolygon_processing <- function(
     Dist <- NA
     for (parts in 1:nrow(PolygonSeperate)) {
       Dist[parts] <- 100000 *
-        st_distance(
+        sf::st_distance(
           PolygonSeperate$geometry[[LargestIndex]],
           PolygonSeperate$geometry[[parts]]
         )
@@ -105,7 +109,7 @@ multipolygon_processing <- function(
     if (any(Dist[-LargestIndex] < 100)) {
       # combine polygons into multipolygon
       Indices <- which(Dist < 100)
-      Multi <- st_union(st_sfc(PolygonSeperate$geometry[Indices]))
+      Multi <- sf::st_union(sf::st_sfc(PolygonSeperate$geometry[Indices]))
       NewPolygons[NumberPolygons, ] <- NumberPolygons
       NewPolygons$geometry[NumberPolygons] <- Multi
       NewPolygons$area[NumberPolygons] <- sum(PolygonSeperate$area[Indices])

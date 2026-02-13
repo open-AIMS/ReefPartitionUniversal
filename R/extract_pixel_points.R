@@ -154,7 +154,7 @@ extract_pixel_points <- function(
   # Collate grid square sf polygons and convert to h3 indices
   point_cells <- sf::st_sfc(squares_list, crs = reef_crs) %>%
     sf::st_sf(data = pts[, !names(pts) %in% c("x", "y")])
-  hexid <- geo_to_h3(point_cells, res = 12)
+  hexid <- h3::geo_to_h3(point_cells, res = 12)
 
   hexid <- unique(hexid) # Remove pixels with the same coordinates
   pixel_points <- h3::h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
