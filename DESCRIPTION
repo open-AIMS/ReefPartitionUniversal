@@ -3,8 +3,8 @@ Title: Partition reef habitats into sites
 Version: 0.0.0.9000
 Authors@R: c(
     person(given = "Vanessa", family = "Haller-Bull", email = "V.Haller@aims.gov.au", role = c("aut", "cre")),
-    person(given = "Benjamin", family = "Grier", role = c("aut", "cre")),
-    person(given = "Takuya", family = "Iwanaga", role = c("aut", "cre"))
+    person(given = "Benjamin", family = "Grier", role = c("aut")),
+    person(given = "Takuya", family = "Iwanaga", role = c("aut"))
   )
 Description: Package for partitioning coral reef habitats into smaller site areas
   based on raster data layers. The package provides functions for extracting pixel
