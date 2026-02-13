@@ -35,7 +35,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/workflow.html">Partitioning a generic reef</a></li>
+<li><a class="dropdown-item" href="articles/workflow.html">Partitioning workflow using GBRMPA data</a></li>
   </ul>
 </li>
       </ul>
@@ -61,8 +61,12 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="reefpartitionuniversal">ReefPartitionUniversal<a class="anchor" aria-label="anchor" href="#reefpartitionuniversal"></a>
 </h1></div>
-<!--pkgdown-ignore-start-->
-<p><a href="https://open-aims.github.io/ReefPartitionUniversal/"><img src="https://img.shields.io/badge/documentation-blue" alt="Documentation"></a> <!--pkgdown-ignore-end--></p>
+<!-- badges: start -->
+
+</div>
+<div class="section level1">
+<h1 id="package-overview">Package overview<a class="anchor" aria-label="anchor" href="#package-overview"></a>
+</h1>
 <p>The ReefPartitionAllenAtlas R package provides functions for partitioning coral reef spatial areas into smaller sites (such as for logistic and monitoring purposes) based on raster data layers. The package provides functions for extracting pixel points on a reef based on habitat types, extracting values for additional raster layers such as bathymetry. Pixels can then be clustered into sites within habitat types based on their geographic attributes as well as additional variable values such as pixel depth.</p>
 <p>The package uses a flexible framework allowing multiple additional raster layers to be used, along with user defined pixel clustering algorithms. The package itself defines two spatial clustering algorithm options, using adespatial::constr.hclust <a href="https://www.jstatsoft.org/article/view/v103i07" class="external-link">(Guénard and Legendre, 2022)</a> and spdep::skater <a href="https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e2053" class="external-link">(AssunÇão et al. 2007)</a>.</p>
 </div>
@@ -71,21 +75,30 @@
 </h1>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install package using GitHub repo</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"open-AIMS/ReefPartitionUniversal"</span>, ref<span class="op">=</span><span class="st">"package-template"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"open-AIMS/ReefPartitionUniversal"</span><span class="op">)</span></span></code></pre></div>
 <p>The package combines functionality from raster and vector data processing packages. Dependencies include: sf, terra, sfnetworks, h3, igraph, spdep, adespatial, dplyr and magrittr</p>
+<div class="section level2">
+<h2 id="development-installation">Development installation<a class="anchor" aria-label="anchor" href="#development-installation"></a>
+</h2>
+<p>The most convenient way to install the package for local development is to clone the GitHub repository, create a branch and use the following command to install the package from source code.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Install package from local source folder/repo</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"path to package folder"</span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level1">
 <h1 id="basic-demonstration">Basic demonstration<a class="anchor" aria-label="anchor" href="#basic-demonstration"></a>
 </h1>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">ReefPartitionAllenAtlas</span><span class="op">)</span></span>
+<p>The following code demonstrates a basic usage of ReefPartitionUniversal using <code><a href="http://adeverse.github.io/adespatial/reference/constr.hclust.html" class="external-link">adespatial::constr.hclust</a></code> clustering algorithm and Minimum Spanning Tree inputs. For more</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://open-aims.github.io/ReefPartitionUniversal/">ReefPartitionUniversal</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Load input data (ensuring all are use the same CRS)</span></span>
 <span><span class="va">target_reef</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">st_read</a></span><span class="op">(</span><span class="st">"target_reef.gpkg"</span><span class="op">)</span> <span class="co"># Defines the spatial extent of the reef</span></span>
 <span><span class="va">habitat</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="st">"habitat_raster.tif"</span><span class="op">)</span> <span class="co"># Defines the habitat pixels to extract from</span></span>
 <span><span class="va">bathymetry</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="st">"bathymetry_raster.tif"</span><span class="op">)</span> <span class="co"># Contains additional variable values for extraction and clustering</span></span>
 <span></span>
-<span><span class="va">habitat_categories</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span> <span class="co"># Values for pixels to select from `habitat`</span></span>
+<span><span class="va">habitat_categories</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span> <span class="co"># Assess only habitat pixels with these values</span></span>
 <span></span>
 <span><span class="co"># Extract pixel values from raster layers</span></span>
 <span><span class="va">pixels</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_pixel_points.html">extract_pixel_points</a></span><span class="op">(</span><span class="va">target_reef</span>, <span class="va">habitat</span>, <span class="va">bathymetry</span>, <span class="va">habitat_categories</span><span class="op">)</span></span>
@@ -97,7 +110,11 @@
 <span><span class="va">mst_hclust_pixels</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cluster_reef_pixels.html">cluster_reef_pixels</a></span><span class="op">(</span><span class="va">pixels</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Collate pixels from each site/cluster into polygons</span></span>
-<span><span class="va">mst_hclust_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/clustered_pixels_to_polygons.html">clustered_pixels_to_polygons</a></span><span class="op">(</span><span class="va">mst_hclust_pixels</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">mst_hclust_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/clustered_pixels_to_polygons.html">clustered_pixels_to_polygons</a></span><span class="op">(</span><span class="va">mst_hclust_pixels</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Optional: Apply post-processing to pixel clusters to ensure that non-contiguous</span></span>
+<span><span class="co"># clusters adhere to a maximum distance between areas.</span></span>
+<span><span class="va">sites_post_processed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/site_postprocessing.html">site_postprocessing</a></span><span class="op">(</span><span class="va">mst_hclust_sites</span>, <span class="fl">50</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level1">
 <h1 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
@@ -139,7 +156,12 @@
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://open-aims.github.io/ReefPartitionUniversal/"><img src="https://img.shields.io/badge/documentation-blue" alt="Documentation"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>

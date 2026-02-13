@@ -1,189 +1,173 @@
-# Partitioning a generic reef
+# Partitioning workflow using GBRMPA data
+
+## Required packages
 
 ``` r
 
-remotes::install_github("open-aims/ReefPartitionUniversal", ref="pkgdown-site")
-#> Using GitHub PAT from the git credential store.
-#> Downloading GitHub repo open-aims/ReefPartitionUniversal@pkgdown-site
-#> magrittr (2.0.3     -> 2.0.4    ) [CRAN]
-#> jsonlite (1.8.9     -> 2.0.0    ) [CRAN]
-#> purrr    (1.0.2     -> 1.2.1    ) [CRAN]
-#> XML      (3.99-0.20 -> 3.99-0.22) [CRAN]
-#> tibble   (3.2.1     -> 3.3.1    ) [CRAN]
-#> Installing 5 packages: magrittr, jsonlite, purrr, XML, tibble
-#> Installing packages into 'C:/Users/grier/AppData/Local/Temp/Rtmpwb622X/temp_libpath1370c76a45617'
-#> (as 'lib' is unspecified)
-#> 
-#>   There is a binary version available but the source version is later:
-#>        binary    source needs_compilation
-#> XML 3.99-0.20 3.99-0.22              TRUE
-#> 
-#> package 'magrittr' successfully unpacked and MD5 sums checked
-#> package 'jsonlite' successfully unpacked and MD5 sums checked
-#> package 'purrr' successfully unpacked and MD5 sums checked
-#> package 'tibble' successfully unpacked and MD5 sums checked
-#> 
-#> The downloaded binary packages are in
-#>  C:\Users\grier\AppData\Local\Temp\RtmpIF4p2G\downloaded_packages
-#> installing the source package 'XML'
-#> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file 'C:\Users\grier\AppData\Local\Temp\RtmpIF4p2G\remotes142c2c941ef3\open-AIMS-ReefPartitionUniversal-82b055f/DESCRIPTION' ... OK
-#> * preparing 'ReefPartitionUniversal':
-#> * checking DESCRIPTION meta-information ... OK
-#> * checking for LF line-endings in source and make files and shell scripts
-#> * checking for empty or unneeded directories
-#> * building 'ReefPartitionUniversal_0.0.0.9000.tar.gz'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/articles/workflow_files/figure-html/generating example bathymetry data-1.png'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/articles/workflow_files/figure-html/generating example habitat data-1.png'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBGEe.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBGEe.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBGEe.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBGEe.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBGEe.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBGEe.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBGEe.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBGEe.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqW106F15M.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWt06F15M.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWtE6F15M.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWtU6F15M.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWtk6F15M.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWu06F15M.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWuU6F.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWuk6F15M.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWvU6F15M.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWxU6F15M.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS-muw.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS2mu1aB.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSCmu1aB.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSGmu1aB.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSKmu1aB.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSOmu1aB.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSumu1aB.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSymu1aB.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTUGmu1aB.woff2'
-#> Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :
-#>   storing paths of more than 100 bytes is not portable:
-#>   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTVOmu1aB.woff2'
-#> 
-#> Installing package into 'C:/Users/grier/AppData/Local/Temp/Rtmpwb622X/temp_libpath1370c76a45617'
-#> (as 'lib' is unspecified)
 library(ReefPartitionUniversal)
+library(terra)
+library(sf)
+library(ggplot2)
+library(exactextractr)
 ```
 
-## Generating example raster data
+## Loading and formatting required data
 
-First, we generate an example raster extent using the `terra` package
-and an example reef polygon using the `sf` package.
+GBRMPA GBR10 raster data is downloaded in UTM Projected Coordinate
+Reference Systems. ReefPartitionUniversal requires that all input data
+are in the same CRS before starting. To match the CRS we reproject
+`reef_polygons` from GDA2020 as reprojecting raster data is more
+computationally intensive. If all input data is already in the same CRS
+then this step is not required.
 
 ``` r
 
-library(terra)
-#> Warning: package 'terra' was built under R version 4.4.3
-#> terra 1.8.93
-library(sf)
-#> Warning: package 'sf' was built under R version 4.4.3
-#> Linking to GEOS 3.13.0, GDAL 3.10.1, PROJ 9.5.1; sf_use_s2() is TRUE
+# Load reef outline vector data (`canonical-reefs` used here)
+reef_polygons <- st_read("Path to canonical reefs .gpkg")
 
-# Set seed for reproducibility
+# Load bathymetry raster data from GBRMPA GBR10 dataset
+bathymetry_raster <- rast(
+  "Path to Mackay - Capricorn GBR10 bathymetry raster .tif"
+)
+
+# Load geomorphic habitat raster data from GBRMPA GBR10 dataset
+habitat_raster <- rast(
+  "Path to Mackay - Capricorn GBR10 geomorphic habitat raster .tif"
+)
+
+# Must ensure all input data are in the same CRS
+reef_polygons <- st_make_valid(st_transform(
+  reef_polygons,
+  crs = sf::st_crs(habitat_raster)
+))
+```
+
+## Define arguments for workflow
+
+The following code defines arguments for use in our example workflow
+with One Tree Island Reef. This includes defining the target habitat
+types from `habitat_raster`, defining the desired H3 cell resolution for
+pixel extraction, and the desired site size for clustering.
+
+``` r
+
 set.seed(123)
 
-# Create raster template
-r <- rast(ncol=50, nrow=50, xmin=0, xmax=50, ymin=0, ymax=50)
-reef_polygon <- st_as_sfc(st_bbox(r))
+# Define analysis parameters for example:
+# Pixel values that are used to extract target habitats from
+# `habitat_raster`
+habitat_categories <- c(15, 22, 14, 21)
+# 15: reef crest, 22: reef slope, 14: outer reef flat, 21: sheltered reef slope
+
+# Define hexagon resolution and unit for outputting hexagon area
+# (same as function defaults)
+hex_resolution <- 12
+unit <- "m2"
+
+# Dataframe containing the H3 cell sizes for each resolution
+# (from https://h3geo.org/docs/core-library/restable/#average-area-in-m2).
+hex_size <- data.frame(
+  res = c(7:15),
+  size = c(5161293, 737327, 105332, 15047, 2149, 307.09, 43.87, 6.267, 0.895)
+)
+
+# Define the desired site size in terms of spatial area
+# and the number of H3 cells per site
+site_size <- 250 * 250 # set size size for our example to 625,000m~2~
+n_pixels <- site_size / hex_size[hex_size$res == hex_resolution, ]$size
+
+# Select target reef outline. For this example we use
+# One Tree Island Reef from the Mackay - Capricorn region
+OTIR_ID <- "23055101104" # One Tree Island Reef
+target_reef <- reef_polygons[reef_polygons$UNIQUE_ID == OTIR_ID, ]
 ```
 
-Next, we generate example habitat data using the raster extent. Habitat
-NA values indicate no reef habitat of interest and values of 1 and 2
-represent reef habitat types 1 and 2 (e.g. inshore/offshore or reef
-flat/reef slope).
+## Extracting pixel data for the target reef
+
+Once the input data and arguments have been set up, we can extract pixel
+data for One Tree Island Reef using our `target_reef` outline polygon.
+This process involves identifying selected pixels from the habitat
+raster object, converting pixels to H3 hexagon cells and extracting
+bathymetry data.
 
 ``` r
 
-habitat <- r
-values(habitat) <- sample(c(NA, 1, 2), ncell(habitat), replace = TRUE)
-plot(habitat)
+pixel_data <- extract_pixel_points(
+  reef_polygon = target_reef,
+  habitat_raster = habitat_raster,
+  add_var_raster = bathymetry_raster,
+  habitat_categories = habitat_categories
+)
+
+# We must also attach a reef ID to the dataframe and
+# remove any pixels with invalid depth data
+pixel_data$UNIQUE_ID <- OTIR_ID
+pixel_data <- pixel_data[!is.na(pixel_data$depth), ]
+
+head(pixel_data)
 ```
 
-![](workflow_files/figure-html/generating%20example%20habitat%20data-1.png)
+## Clustering habitat pixels based on distance and depth
 
-Finally, we generate example bathymetry data. In this example we use the
-distance of each cell from the centre as an “example” of bathymetry,
-adding random variation.
+Data for each required pixel have been extracted, and we can now cluster
+pixels based on their geographic distance and depth. Using the default
+arguments for
+[`cluster_reef_pixels()`](https://open-aims.github.io/ReefPartitionUniversal/reference/cluster_reef_pixels.md)
+clusters pixels within each habitat type using a Minimum Spanning Tree
+and
+[`adespatial::constr.hclust`](http://adeverse.github.io/adespatial/reference/constr.hclust.md)
+clustering algorithm. The returned dataframe contains a row for each
+pixel and an additional column containing the clustered `site_id`.
 
 ``` r
 
-# Reef bathymetry layer
-xc <- (xmin(r) + xmax(r)) / 2
-yc <- (ymin(r) + ymax(r)) / 2
-
-# Compute distance to centre of raster for each cell
-coords <- crds(r)  # n x 2 matrix of xy coordinates
-dist_center <- sqrt((coords[,1] - xc)^2 + (coords[,2] - yc)^2)
-
-# Assign to raster
-bathy <- r
-values(bathy) <- dist_center + runif(length(dist_center), -2, 2)
-
-plot(bathy)
+mst_hclust_pixels <- cluster_reef_pixels(pixel_data, n_pixels = n_pixels)
 ```
 
-![](workflow_files/figure-html/generating%20example%20bathymetry%20data-1.png)
+## Creating site polygons
+
+Once pixels for the reef have been assigned site IDs we can collate them
+into site polygons and use post-processing to separate site areas that
+contain large distances into smaller site IDs.
+
+``` r
+
+# Collate H3 cells that are assigned site IDs into polygons
+mst_hclust_sites <- clustered_pixels_to_polygons(mst_hclust_pixels)
+
+# Site postprocessing with a minimum number of pixels per site of 50
+processed_sites <- site_postprocessing(mst_hclust_sites, min_site_area = 50)
+```
+
+## Mapping outputs using ggplot2
+
+``` r
+
+# Reorder site ID labels to improve readability
+sampled_ids <- sample(levels(processed_sites$site_id))
+processed_sites$sampled_id <- factor(
+  processed_sites$site_id,
+  levels = sampled_ids
+)
+
+# Plot site polygons coloured by IDs (colours are repeated)
+id_map <- ggplot() +
+  geom_sf(data = processed_sites, aes(fill = sampled_id)) +
+  theme(legend.position = "none") # Remove legend due to too many site ID labels
+
+# Re-extract depth data for site polygons for plotting
+processed_sites$depth <- abs(exact_extract(
+  bathymetry_raster,
+  processed_sites,
+  "mean"
+))
+
+# Plot sites coloured by mean depth
+depth_map <- ggplot() +
+  geom_sf(data = processed_sites, aes(fill = depth)) +
+  scale_fill_fermenter(
+    palette = "greens",
+    direction = 1,
+    breaks = c(2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20)
+  )
+```
