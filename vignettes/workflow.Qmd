@@ -9,6 +9,16 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+This vignette sets out and example reef partitioning workflow using data available
+from GBRMPA for the Great Barrier Reef, Australia. The data intended for use include
+the canonical-reefs geopackage which defines reef vector outlines, GBR10 Geomorphic
+raster which contain benthic habitat data for the GBR, and GBR10 Bathymetry raster
+which contain bathymetry data for the GBR.
+
+While this example vignette is intended and contains context notes and arguments
+for the GBR, this approach is flexible and can be used on any raster and vector data
+beyond habitat, bathymetry and reef examples.
+
 # Required packages
 
 ```{r package loading}
