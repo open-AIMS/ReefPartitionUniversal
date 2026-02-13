@@ -1,11 +1,18 @@
-Package: ReefPartitionAllenAtlas
-Title: What the Package Does (One Line, Title Case)
+Package: ReefPartitionUniversal
+Title: Partition reef habitats into sites.
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Authors@R: c(
+    person(given = "Vanessa", family = "Haller-Bull", email = "V.Haller@aims.gov.au", role = c("aut", "cre")),
+    person(given = "Benjamin", family = "Grier", role = c("aut", "cre")),
+    person(given = "Takuya", family = "Iwanaga", role = c("aut", "cre"))
+  )
+Description: Package for partitioning coral reef habitats into smaller site areas
+  based on raster data layers. The package provides functions for extracting pixel
+  points on a reef based on habitat types and extracting values for eadditional raster
+  layers such as bathymetry. Pixels can then be clustered into sites within habitat
+  types based on their geographic attributes as well as additional variable information
+  such as depth.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
