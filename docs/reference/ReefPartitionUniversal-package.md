@@ -1,4 +1,4 @@
-# ReefPartitionUniversal: Partition reef habitats into sites.
+# ReefPartitionUniversal: Partition reef habitats into sites
 
 Package for partitioning coral reef habitats into smaller site areas
 based on raster data layers. The package provides functions for
@@ -16,3 +16,9 @@ Useful links:
 ## Author
 
 **Maintainer**: Vanessa Haller-Bull <V.Haller@aims.gov.au>
+
+Authors:
+
+- Benjamin Grier
+
+- Takuya Iwanaga
