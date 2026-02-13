@@ -5,12 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Partitioning a generic reef • ReefPartitionUniversal</title>
+<title>Partitioning workflow using GBRMPA data • ReefPartitionUniversal</title>
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Partitioning a generic reef">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="workflow_files/libs/quarto-html/popper.min.js"></script><script src="workflow_files/libs/quarto-html/tippy.umd.min.js"></script><link href="workflow_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="workflow_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Partitioning workflow using GBRMPA data">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,7 +35,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/workflow.html">Partitioning a generic reef</a></li>
+<li><a class="dropdown-item" href="../articles/workflow.html">Partitioning workflow using GBRMPA data</a></li>
   </ul>
 </li>
       </ul>
@@ -54,200 +56,247 @@
 
 
   </div>
-</nav><div class="container template-article">
-
-
-
-
+</nav><div class="container template-quarto">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Partitioning a generic reef</h1>
-            
-      
+      <h1>Partitioning workflow using GBRMPA data</h1>
 
-      <div class="d-none name"><code>workflow.Rmd</code></div>
+
+
+
+
+      <div class="d-none name"><code></code></div>
     </div>
 
-    
-    
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"open-aims/ReefPartitionUniversal"</span>, ref<span class="op">=</span><span class="st">"pkgdown-site"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Using GitHub PAT from the git credential store.</span></span>
-<span><span class="co">#&gt; Downloading GitHub repo open-aims/ReefPartitionUniversal@pkgdown-site</span></span>
-<span><span class="co">#&gt; magrittr (2.0.3     -&gt; 2.0.4    ) [CRAN]</span></span>
-<span><span class="co">#&gt; jsonlite (1.8.9     -&gt; 2.0.0    ) [CRAN]</span></span>
-<span><span class="co">#&gt; purrr    (1.0.2     -&gt; 1.2.1    ) [CRAN]</span></span>
-<span><span class="co">#&gt; XML      (3.99-0.20 -&gt; 3.99-0.22) [CRAN]</span></span>
-<span><span class="co">#&gt; tibble   (3.2.1     -&gt; 3.3.1    ) [CRAN]</span></span>
-<span><span class="co">#&gt; Installing 5 packages: magrittr, jsonlite, purrr, XML, tibble</span></span>
-<span><span class="co">#&gt; Installing packages into 'C:/Users/grier/AppData/Local/Temp/Rtmpwb622X/temp_libpath1370c76a45617'</span></span>
-<span><span class="co">#&gt; (as 'lib' is unspecified)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   There is a binary version available but the source version is later:</span></span>
-<span><span class="co">#&gt;        binary    source needs_compilation</span></span>
-<span><span class="co">#&gt; XML 3.99-0.20 3.99-0.22              TRUE</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; package 'magrittr' successfully unpacked and MD5 sums checked</span></span>
-<span><span class="co">#&gt; package 'jsonlite' successfully unpacked and MD5 sums checked</span></span>
-<span><span class="co">#&gt; package 'purrr' successfully unpacked and MD5 sums checked</span></span>
-<span><span class="co">#&gt; package 'tibble' successfully unpacked and MD5 sums checked</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; The downloaded binary packages are in</span></span>
-<span><span class="co">#&gt;  C:\Users\grier\AppData\Local\Temp\RtmpIF4p2G\downloaded_packages</span></span>
-<span><span class="co">#&gt; installing the source package 'XML'</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="color: #00BBBB;">R CMD build</span> <span style="color: #00BBBB;">─────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt; * checking for file 'C:\Users\grier\AppData\Local\Temp\RtmpIF4p2G\remotes142c2c941ef3\open-AIMS-ReefPartitionUniversal-82b055f/DESCRIPTION' ... OK</span></span>
-<span><span class="co">#&gt; * preparing 'ReefPartitionUniversal':</span></span>
-<span><span class="co">#&gt; * checking DESCRIPTION meta-information ... OK</span></span>
-<span><span class="co">#&gt; * checking for LF line-endings in source and make files and shell scripts</span></span>
-<span><span class="co">#&gt; * checking for empty or unneeded directories</span></span>
-<span><span class="co">#&gt; * building 'ReefPartitionUniversal_0.0.0.9000.tar.gz'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/articles/workflow_files/figure-html/generating example bathymetry data-1.png'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/articles/workflow_files/figure-html/generating example habitat data-1.png'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3-UBGEe.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3CUBGEe.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3GUBGEe.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3KUBGEe.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3OUBGEe.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3iUBGEe.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMawCUBGEe.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMaxKUBGEe.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqW106F15M.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWt06F15M.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWtE6F15M.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWtU6F15M.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWtk6F15M.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWu06F15M.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWuU6F.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWuk6F15M.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWvU6F15M.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memtYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWqWxU6F15M.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS-muw.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTS2mu1aB.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSCmu1aB.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSGmu1aB.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSKmu1aB.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSOmu1aB.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSumu1aB.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTSymu1aB.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTUGmu1aB.woff2'</span></span>
-<span><span class="co">#&gt; Warning in utils::tar(filepath, pkgname, compression = compression, compression_level = 9L,  :</span></span>
-<span><span class="co">#&gt;   storing paths of more than 100 bytes is not portable:</span></span>
-<span><span class="co">#&gt;   'ReefPartitionUniversal/docs/deps/bootstrap-5.3.1/fonts/memvYaGs126MiZpBA-UvWbX2vVnXBbObj2OVTVOmu1aB.woff2'</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Installing package into 'C:/Users/grier/AppData/Local/Temp/Rtmpwb622X/temp_libpath1370c76a45617'</span></span>
-<span><span class="co">#&gt; (as 'lib' is unspecified)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://open-aims.github.io/ReefPartitionUniversal/">ReefPartitionUniversal</a></span><span class="op">)</span></span></code></pre></div>
-<div class="section level2">
-<h2 id="generating-example-raster-data">Generating example raster data<a class="anchor" aria-label="anchor" href="#generating-example-raster-data"></a>
-</h2>
-<p>First, we generate an example raster extent using the
-<code>terra</code> package and an example reef polygon using the
-<code>sf</code> package.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: package 'terra' was built under R version 4.4.3</span></span>
-<span><span class="co">#&gt; terra 1.8.93</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: package 'sf' was built under R version 4.4.3</span></span>
-<span><span class="co">#&gt; Linking to GEOS 3.13.0, GDAL 3.10.1, PROJ 9.5.1; sf_use_s2() is TRUE</span></span>
-<span></span>
-<span><span class="co"># Set seed for reproducibility</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Create raster template</span></span>
-<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span>ncol<span class="op">=</span><span class="fl">50</span>, nrow<span class="op">=</span><span class="fl">50</span>, xmin<span class="op">=</span><span class="fl">0</span>, xmax<span class="op">=</span><span class="fl">50</span>, ymin<span class="op">=</span><span class="fl">0</span>, ymax<span class="op">=</span><span class="fl">50</span><span class="op">)</span></span>
-<span><span class="va">reef_polygon</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sfc.html" class="external-link">st_as_sfc</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Next, we generate example habitat data using the raster extent.
-Habitat NA values indicate no reef habitat of interest and values of 1
-and 2 represent reef habitat types 1 and 2 (e.g. inshore/offshore or
-reef flat/reef slope).</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">habitat</span> <span class="op">&lt;-</span> <span class="va">r</span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">habitat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">ncell</a></span><span class="op">(</span><span class="va">habitat</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat</span><span class="op">)</span></span></code></pre></div>
-<p><img src="workflow_files/figure-html/generating%20example%20habitat%20data-1.png" class="r-plt" width="700"></p>
-<p>Finally, we generate example bathymetry data. In this example we use
-the distance of each cell from the centre as an “example” of bathymetry,
-adding random variation.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Reef bathymetry layer</span></span>
-<span><span class="va">xc</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/xmin.html" class="external-link">xmin</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/xmin.html" class="external-link">xmax</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span></span>
-<span><span class="va">yc</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/xmin.html" class="external-link">ymin</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/xmin.html" class="external-link">ymax</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span></span>
-<span></span>
-<span><span class="co"># Compute distance to centre of raster for each cell</span></span>
-<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/crds.html" class="external-link">crds</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span>  <span class="co"># n x 2 matrix of xy coordinates</span></span>
-<span><span class="va">dist_center</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="op">(</span><span class="va">coords</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">-</span> <span class="va">xc</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="va">coords</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span> <span class="op">-</span> <span class="va">yc</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Assign to raster</span></span>
-<span><span class="va">bathy</span> <span class="op">&lt;-</span> <span class="va">r</span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">bathy</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">dist_center</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dist_center</span><span class="op">)</span>, <span class="op">-</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">bathy</span><span class="op">)</span></span></code></pre></div>
-<p><img src="workflow_files/figure-html/generating%20example%20bathymetry%20data-1.png" class="r-plt" width="700"></p>
-</div>
-  </main>
-</div>
 
+
+
+
+
+    <section class="section level2"><h2 id="required-packages">Required packages<a class="anchor" aria-label="anchor" href="#required-packages"></a>
+</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://open-aims.github.io/ReefPartitionUniversal/">ReefPartitionUniversal</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isciences.gitlab.io/exactextractr/" class="external-link">exactextractr</a></span><span class="op">)</span></span></code></pre></div>
+</div>
+</section><section class="section level2"><h2 id="loading-and-formatting-required-data">Loading and formatting required data<a class="anchor" aria-label="anchor" href="#loading-and-formatting-required-data"></a>
+</h2>
+<p>GBRMPA GBR10 raster data is downloaded in UTM Projected Coordinate Reference Systems. ReefPartitionUniversal requires that all input data are in the same CRS before starting. To match the CRS we reproject <code>reef_polygons</code> from GDA2020 as reprojecting raster data is more computationally intensive. If all input data is already in the same CRS then this step is not required.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Load reef outline vector data (`canonical-reefs` used here)</span></span>
+<span><span class="va">reef_polygons</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">st_read</a></span><span class="op">(</span><span class="st">"Path to canonical reefs .gpkg"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Load bathymetry raster data from GBRMPA GBR10 dataset</span></span>
+<span><span class="va">bathymetry_raster</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Path to Mackay - Capricorn GBR10 bathymetry raster .tif"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Load geomorphic habitat raster data from GBRMPA GBR10 dataset</span></span>
+<span><span class="va">habitat_raster</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Path to Mackay - Capricorn GBR10 geomorphic habitat raster .tif"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Must ensure all input data are in the same CRS</span></span>
+<span><span class="va">reef_polygons</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/valid.html" class="external-link">st_make_valid</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span></span>
+<span>  <span class="va">reef_polygons</span>,</span>
+<span>  crs <span class="op">=</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">habitat_raster</span><span class="op">)</span></span>
+<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+</section><section class="section level2"><h2 id="define-arguments-for-workflow">Define arguments for workflow<a class="anchor" aria-label="anchor" href="#define-arguments-for-workflow"></a>
+</h2>
+<p>The following code defines arguments for use in our example workflow with One Tree Island Reef. This includes defining the target habitat types from <code>habitat_raster</code>, defining the desired H3 cell resolution for pixel extraction, and the desired site size for clustering.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Define analysis parameters for example:</span></span>
+<span><span class="co"># Pixel values that are used to extract target habitats from</span></span>
+<span><span class="co"># `habitat_raster`</span></span>
+<span><span class="va">habitat_categories</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">22</span>, <span class="fl">14</span>, <span class="fl">21</span><span class="op">)</span></span>
+<span><span class="co"># 15: reef crest, 22: reef slope, 14: outer reef flat, 21: sheltered reef slope</span></span>
+<span></span>
+<span><span class="co"># Define hexagon resolution and unit for outputting hexagon area</span></span>
+<span><span class="co"># (same as function defaults)</span></span>
+<span><span class="va">hex_resolution</span> <span class="op">&lt;-</span> <span class="fl">12</span></span>
+<span><span class="va">unit</span> <span class="op">&lt;-</span> <span class="st">"m2"</span></span>
+<span></span>
+<span><span class="co"># Dataframe containing the H3 cell sizes for each resolution</span></span>
+<span><span class="co"># (from https://h3geo.org/docs/core-library/restable/#average-area-in-m2).</span></span>
+<span><span class="va">hex_size</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span><span class="op">:</span><span class="fl">15</span><span class="op">)</span>,</span>
+<span>  size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5161293</span>, <span class="fl">737327</span>, <span class="fl">105332</span>, <span class="fl">15047</span>, <span class="fl">2149</span>, <span class="fl">307.09</span>, <span class="fl">43.87</span>, <span class="fl">6.267</span>, <span class="fl">0.895</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Define the desired site size in terms of spatial area</span></span>
+<span><span class="co"># and the number of H3 cells per site</span></span>
+<span><span class="va">site_size</span> <span class="op">&lt;-</span> <span class="fl">250</span> <span class="op">*</span> <span class="fl">250</span> <span class="co"># set size size for our example to 625,000m~2~</span></span>
+<span><span class="va">n_pixels</span> <span class="op">&lt;-</span> <span class="va">site_size</span> <span class="op">/</span> <span class="va">hex_size</span><span class="op">[</span><span class="va">hex_size</span><span class="op">$</span><span class="va">res</span> <span class="op">==</span> <span class="va">hex_resolution</span>, <span class="op">]</span><span class="op">$</span><span class="va">size</span></span>
+<span></span>
+<span><span class="co"># Select target reef outline. For this example we use</span></span>
+<span><span class="co"># One Tree Island Reef from the Mackay - Capricorn region</span></span>
+<span><span class="va">OTIR_ID</span> <span class="op">&lt;-</span> <span class="st">"23055101104"</span> <span class="co"># One Tree Island Reef</span></span>
+<span><span class="va">target_reef</span> <span class="op">&lt;-</span> <span class="va">reef_polygons</span><span class="op">[</span><span class="va">reef_polygons</span><span class="op">$</span><span class="va">UNIQUE_ID</span> <span class="op">==</span> <span class="va">OTIR_ID</span>, <span class="op">]</span></span></code></pre></div>
+</div>
+</section><section class="section level2"><h2 id="extracting-pixel-data-for-the-target-reef">Extracting pixel data for the target reef<a class="anchor" aria-label="anchor" href="#extracting-pixel-data-for-the-target-reef"></a>
+</h2>
+<p>Once the input data and arguments have been set up, we can extract pixel data for One Tree Island Reef using our <code>target_reef</code> outline polygon. This process involves identifying selected pixels from the habitat raster object, converting pixels to H3 hexagon cells and extracting bathymetry data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pixel_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_pixel_points.html">extract_pixel_points</a></span><span class="op">(</span></span>
+<span>  reef_polygon <span class="op">=</span> <span class="va">target_reef</span>,</span>
+<span>  habitat_raster <span class="op">=</span> <span class="va">habitat_raster</span>,</span>
+<span>  add_var_raster <span class="op">=</span> <span class="va">bathymetry_raster</span>,</span>
+<span>  habitat_categories <span class="op">=</span> <span class="va">habitat_categories</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># We must also attach a reef ID to the dataframe and</span></span>
+<span><span class="co"># remove any pixels with invalid depth data</span></span>
+<span><span class="va">pixel_data</span><span class="op">$</span><span class="va">UNIQUE_ID</span> <span class="op">&lt;-</span> <span class="va">OTIR_ID</span></span>
+<span><span class="va">pixel_data</span> <span class="op">&lt;-</span> <span class="va">pixel_data</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">pixel_data</span><span class="op">$</span><span class="va">depth</span><span class="op">)</span>, <span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pixel_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+</section><section class="section level2"><h2 id="clustering-habitat-pixels-based-on-distance-and-depth">Clustering habitat pixels based on distance and depth<a class="anchor" aria-label="anchor" href="#clustering-habitat-pixels-based-on-distance-and-depth"></a>
+</h2>
+<p>Data for each required pixel have been extracted, and we can now cluster pixels based on their geographic distance and depth. Using the default arguments for <code><a href="../reference/cluster_reef_pixels.html">cluster_reef_pixels()</a></code> clusters pixels within each habitat type using a Minimum Spanning Tree and <code><a href="http://adeverse.github.io/adespatial/reference/constr.hclust.html" class="external-link">adespatial::constr.hclust</a></code> clustering algorithm. The returned dataframe contains a row for each pixel and an additional column containing the clustered <code>site_id</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mst_hclust_pixels</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cluster_reef_pixels.html">cluster_reef_pixels</a></span><span class="op">(</span><span class="va">pixel_data</span>, n_pixels <span class="op">=</span> <span class="va">n_pixels</span><span class="op">)</span></span></code></pre></div>
+</div>
+</section><section class="section level2"><h2 id="creating-site-polygons">Creating site polygons<a class="anchor" aria-label="anchor" href="#creating-site-polygons"></a>
+</h2>
+<p>Once pixels for the reef have been assigned site IDs we can collate them into site polygons and use post-processing to separate site areas that contain large distances into smaller site IDs.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Collate H3 cells that are assigned site IDs into polygons</span></span>
+<span><span class="va">mst_hclust_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clustered_pixels_to_polygons.html">clustered_pixels_to_polygons</a></span><span class="op">(</span><span class="va">mst_hclust_pixels</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Site postprocessing with a minimum number of pixels per site of 50</span></span>
+<span><span class="va">processed_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/site_postprocessing.html">site_postprocessing</a></span><span class="op">(</span><span class="va">mst_hclust_sites</span>, min_site_area <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span></code></pre></div>
+</div>
+</section><section class="section level2"><h2 id="mapping-outputs-using-ggplot2">Mapping outputs using ggplot2<a class="anchor" aria-label="anchor" href="#mapping-outputs-using-ggplot2"></a>
+</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Reorder site ID labels to improve readability</span></span>
+<span><span class="va">sampled_ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/factors.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">processed_sites</span><span class="op">$</span><span class="va">site_id</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">processed_sites</span><span class="op">$</span><span class="va">sampled_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
+<span>  <span class="va">processed_sites</span><span class="op">$</span><span class="va">site_id</span>,</span>
+<span>  levels <span class="op">=</span> <span class="va">sampled_ids</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plot site polygons coloured by IDs (colours are repeated)</span></span>
+<span><span class="va">id_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">processed_sites</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">sampled_id</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="co"># Remove legend due to too many site ID labels</span></span>
+<span></span>
+<span><span class="co"># Re-extract depth data for site polygons for plotting</span></span>
+<span><span class="va">processed_sites</span><span class="op">$</span><span class="va">depth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="fu"><a href="https://isciences.gitlab.io/exactextractr/reference/exact_extract.html" class="external-link">exact_extract</a></span><span class="op">(</span></span>
+<span>  <span class="va">bathymetry_raster</span>,</span>
+<span>  <span class="va">processed_sites</span>,</span>
+<span>  <span class="st">"mean"</span></span>
+<span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plot sites coloured by mean depth</span></span>
+<span><span class="va">depth_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">processed_sites</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">depth</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_fill_fermenter</a></span><span class="op">(</span></span>
+<span>    palette <span class="op">=</span> <span class="st">"greens"</span>,</span>
+<span>    direction <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.5</span>, <span class="fl">5</span>, <span class="fl">7.5</span>, <span class="fl">10</span>, <span class="fl">12.5</span>, <span class="fl">15</span>, <span class="fl">17.5</span>, <span class="fl">20</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+</div>
+</section><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'light-border',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config);
+    }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script></main>
+</div>
 
 
     <footer><div class="pkgdown-footer-left">
