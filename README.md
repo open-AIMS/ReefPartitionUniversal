@@ -1,8 +1,10 @@
 # ReefPartitionUniversal
 
-<!--pkgdown-ignore-start-->
+<!-- badges: start -->
 [![Documentation](https://img.shields.io/badge/documentation-blue)](https://open-aims.github.io/ReefPartitionUniversal/)
-<!--pkgdown-ignore-end-->
+<!-- badges: end -->
+
+# Package overview
 
 The ReefPartitionAllenAtlas R package provides functions for partitioning
 coral reef spatial areas into smaller sites (such as for logistic and monitoring
@@ -20,24 +22,37 @@ defines two spatial clustering algorithm options, using adespatial::constr.hclus
 # Installation
 ```R
 # Install package using GitHub repo
-remotes::install_github("open-AIMS/ReefPartitionUniversal", ref="package-template")
+remotes::install_github("open-AIMS/ReefPartitionUniversal")
 ```
 
 The package combines functionality from raster and vector data processing packages.
 Dependencies include: sf, terra, sfnetworks, h3, igraph, spdep, adespatial, dplyr 
 and magrittr
 
+## Development installation
+The most convenient way to install the package for local development is to clone
+the GitHub repository, create a branch and use the following command to install
+the package from source code.
+```R
+# Install package from local source folder/repo
+devtools::install("path to package folder")
+```
+
 # Basic demonstration
 
+The following code demonstrates a basic usage of ReefPartitionUniversal using
+`adespatial::constr.hclust` clustering algorithm and Minimum Spanning Tree inputs.
+For more
+
 ```R
-library(ReefPartitionAllenAtlas)
+library(ReefPartitionUniversal)
 
 # Load input data (ensuring all are use the same CRS)
 target_reef <- sf::st_read("target_reef.gpkg") # Defines the spatial extent of the reef
 habitat <- terra::rast("habitat_raster.tif") # Defines the habitat pixels to extract from
 bathymetry <- terra::rast("bathymetry_raster.tif") # Contains additional variable values for extraction and clustering
 
-habitat_categories <- c(1, 10, 20) # Values for pixels to select from `habitat`
+habitat_categories <- c(1, 10, 20) # Assess only habitat pixels with these values
 
 # Extract pixel values from raster layers
 pixels <- extract_pixel_points(target_reef, habitat, bathymetry, habitat_categories)
@@ -50,6 +65,10 @@ mst_hclust_pixels <- cluster_reef_pixels(pixels)
 
 # Collate pixels from each site/cluster into polygons
 mst_hclust_sites <- clustered_pixels_to_polygons(mst_hclust_pixels)
+
+# Optional: Apply post-processing to pixel clusters to ensure that non-contiguous
+# clusters adhere to a maximum distance between areas.
+sites_post_processed <- site_postprocessing(mst_hclust_sites, 50)
 ```
 
 # License
