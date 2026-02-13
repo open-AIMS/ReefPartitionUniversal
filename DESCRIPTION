@@ -26,3 +26,5 @@ Imports:
     dplyr,
     exactextractr,
     magrittr
+VignetteBuilder: quarto
+URL: https://open-aims.github.io/ReefPartitionUniversal/
