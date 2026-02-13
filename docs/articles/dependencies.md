@@ -1,0 +1,35 @@
+# Dependencies
+
+## R version
+
+This package was developed using R version 4.5.2 (2025-10-31 ucrt).
+
+## Package dependencies
+
+- `cli` : v3.6.5
+- `glue` : v1.8.0
+- `lifecycle` : 1.0.5
+- `rlang` : 1.1.7
+- `withr` : 3.0.2
+- `sf` : 1.0-24
+- `terra` : 1.8-93
+- `sfnetworks` : 0.6.5
+- `h3*` : 3.7.2
+- `igraph` : 2.2.2
+- `spdep` : 1.4-1
+- `adespatial` : 0.3-28
+- `dplyr` : 1.2.0
+- `magrittr` : 2.0.4
+- `stars` : 0.7-0
+- `quarto` : 1.5.1
+- `class` : 7.3-23
+- `tidygraph` : 1.3.1
+
+\* Note that as of 2026-02-13 `h3` package is not available on CRAN for
+R version 4.5.2. To install `h3` please use
+`remotes::install_github("crazycapivara/h3-r")` or refer to [h3-r
+GitHub](https://github.com/crazycapivara/h3-r/).
+
+## Recommended packages for workflows
+
+`terra`, `sf`, `ggplot2`, `RColorBrewer`, `exactextractr`
