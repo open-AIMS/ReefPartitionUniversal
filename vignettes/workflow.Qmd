@@ -3,7 +3,6 @@ title: "Partitioning workflow using GBRMPA data"
 format:
   html:
     toc: true
-    html-math-method: mathjax
 vignette: >
   %\VignetteIndexEntry{Partitioning workflow using GBRMPA data}
   %\VignetteEngine{quarto::html}
@@ -13,6 +12,8 @@ vignette: >
 # Required packages
 
 ```{r package loading}
+#| eval: false
+
 library(ReefPartitionUniversal)
 library(terra)
 library(sf)
@@ -64,22 +65,30 @@ site size for clustering.
 set.seed(123)
 
 # Define analysis parameters for example:
-# Pixel values that are used to extract target habitats from `habitat_raster`
-habitat_categories <- c(15, 22, 14, 21) # reef crest, reef slope, outer reef flat, sheltered reef slope
+# Pixel values that are used to extract target habitats from
+# `habitat_raster`
+habitat_categories <- c(15, 22, 14, 21)
+# 15: reef crest, 22: reef slope, 14: outer reef flat, 21: sheltered reef slope
 
-# Define hexagon resolution and unit for outputting hexagon area (same as function defaults)
+# Define hexagon resolution and unit for outputting hexagon area
+# (same as function defaults)
 hex_resolution <- 12
 unit <- "m2"
+
+# Dataframe containing the H3 cell sizes for each resolution
+# (from https://h3geo.org/docs/core-library/restable/#average-area-in-m2).
 hex_size <- data.frame(
   res = c(7:15),
   size = c(5161293, 737327, 105332, 15047, 2149, 307.09, 43.87, 6.267, 0.895)
-) # Dataframe containing the H3 cell sizes for each resolution (from https://h3geo.org/docs/core-library/restable/#average-area-in-m2).
+)
 
-# Define the desired site size in terms of spatial area and the number of H3 cells per site
+# Define the desired site size in terms of spatial area
+# and the number of H3 cells per site
 site_size <- 250 * 250 # set size size for our example to 625,000m~2~
 n_pixels <- site_size / hex_size[hex_size$res == hex_resolution, ]$size
 
-# Select target reef outline. For this example we use One Tree Island Reef from the Mackay - Capricorn region
+# Select target reef outline. For this example we use
+# One Tree Island Reef from the Mackay - Capricorn region
 OTIR_ID <- "23055101104" # One Tree Island Reef
 target_reef <- reef_polygons[reef_polygons$UNIQUE_ID == OTIR_ID, ]
 ```
@@ -101,7 +110,8 @@ pixel_data <- extract_pixel_points(
   habitat_categories = habitat_categories
 )
 
-# We must also attach a reef ID to the dataframe and remove any pixels with invalid depth data
+# We must also attach a reef ID to the dataframe and
+# remove any pixels with invalid depth data
 pixel_data$UNIQUE_ID <- OTIR_ID
 pixel_data <- pixel_data[!is.na(pixel_data$depth), ]
 
