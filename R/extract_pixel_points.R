@@ -33,6 +33,8 @@
 #' @importFrom terra %in%
 #' @importFrom dplyr rename
 #' @importFrom dplyr mutate
+#' @importFrom stats dist
+#' @importFrom stats na.omit
 #'
 #' @export
 #'
@@ -133,7 +135,7 @@ extract_pixel_points <- function(
   squares_list <- lapply(1:nrow(pts), function(i) {
     x <- pts$x[i]
     y <- pts$y[i]
-    st_polygon(list(matrix(
+    sf::st_polygon(list(matrix(
       c(
         x - half_res,
         y + half_res, # Top Left

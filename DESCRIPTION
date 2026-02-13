@@ -1,5 +1,5 @@
 Package: ReefPartitionUniversal
-Title: Partition reef habitats into sites.
+Title: Partition reef habitats into sites
 Version: 0.0.0.9000
 Authors@R: c(
     person(given = "Vanessa", family = "Haller-Bull", email = "V.Haller@aims.gov.au", role = c("aut", "cre")),
@@ -31,7 +31,10 @@ Imports:
     spdep,
     adespatial,
     dplyr,
-    exactextractr,
-    magrittr
+    magrittr,
+    stars,
+    quarto,
+    class,
+    tidygraph
 VignetteBuilder: quarto
 URL: https://open-aims.github.io/ReefPartitionUniversal/
