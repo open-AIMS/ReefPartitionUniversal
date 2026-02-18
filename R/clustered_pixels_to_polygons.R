@@ -67,11 +67,46 @@ hex_to_polygons <- function(x, h3_id_col = "id", site_id_col = "site_id") {
   site_polygon
 }
 
-pixel_to_polygons <- function(x, site_id_col = "site_id") {
+#' Convert clustered points into collated site polygons
+#'
+#' @description From a dataframe of pixels, this function collates points into
+#'   polygons depending on their `site_id_col` assignment. This method uses the
+#'   initial resolution of pixels (i.e. resolution of the habitat raster used for
+#'   extraction) to give points 2D space before being converted into polygons.
+#'
+#'
+#' @param points data.frame. Contains a row for each pixel and cluster allocations.
+#' @param site_id_col character or integer. Column containing site allocations for pixels.
+#'   Default = "site_id".
+#' @param pixel_size numeric. Resolution of original habitat raster cells used to
+#'   extract point data. Must be in the same units as `x_col`/`y_col`.
+#' @param x_col character or integer. Column containing x coordinates for points.
+#' @param y_col character or integer. Column containing y coordinates for points.
+#' @param id_col tidyselect. Column containing unique ID for the reef to be attached
+#'   to outputs.
+#' @param habitat_col tidyselect. Column containing habitat categories.
+#' @param additional_variable_cols tidyselect. Column(s) containing additional
+#'   continuous variables to summarise for points within sites. Output will include
+#'   site polygon median and standard deviation values for all columns selected.
+#'
+#' @return sf data.frame containing site polygons created from pixels using allocated
+#'   `site_id_col` values.
+#'
+#' @export
+#'
+pixel_to_polygons <- function(
+  points,
+  id_col,
+  habitat_col,
+  additional_variable_cols,
+  site_id_col = "site_id",
+  pixel_size = 10,
+  x_col = "X",
+  y_col = "Y"
+) {
   # Get the grid extent
-  x_coords <- sort(unique(x$X))
-  y_coords <- sort(unique(x$Y))
-  pixel_size <- 10
+  x_coords <- sort(unique(points$X))
+  y_coords <- sort(unique(points$Y))
 
   # Create raster template
   r <- terra::rast(
@@ -82,15 +117,15 @@ pixel_to_polygons <- function(x, site_id_col = "site_id") {
       max(y_coords) + pixel_size / 2
     ),
     resolution = pixel_size,
-    crs = terra::crs(x)
+    crs = terra::crs(points)
   )
 
   # Create site ID raster
-  pixel_site_ids <- factor(x$site_id)
+  pixel_site_ids <- factor(points$site_id)
   site_id_levels <- levels(pixel_site_ids)
 
-  x$site_id_num <- as.numeric(pixel_site_ids)
-  site_raster <- terra::rasterize(terra::vect(x), r, field = "site_id_num")
+  points$site_id_num <- as.numeric(pixel_site_ids)
+  site_raster <- terra::rasterize(terra::vect(points), r, field = "site_id_num")
 
   # Convert to polygons - THIS AUTOMATICALLY DISSOLVES
   site_polys <- terra::as.polygons(site_raster) %>%
@@ -105,17 +140,20 @@ pixel_to_polygons <- function(x, site_id_col = "site_id") {
   site_polys$site_id <- site_id_levels[site_polys$site_id_num]
 
   # Join back attributes
-  site_attrs <- x %>%
+  site_attrs <- points %>%
     sf::st_drop_geometry() %>%
     dplyr::group_by(site_id) %>%
     dplyr::summarise(
-      habitat = first(habitat),
-      UNIQUE_ID = first(UNIQUE_ID),
-      depth_med = median(depth, na.rm = TRUE),
-      depth_sd = sd(depth, na.rm = TRUE),
-      npixels = first(npixels),
-      clustering_time = first(clustering_time),
-      n_cells = nrow(x)
+      habitat = first({{ habitat_col }}),
+      UNIQUE_ID = first({{ id_col }}),
+      n_cells = nrow(points),
+      dplyr::across(
+        {{ cols }},
+        median,
+        na.rm = TRUE,
+        .names = "{.col}_median"
+      ),
+      dplyr::across({{ cols }}, sd, na.rm = TRUE, .names = "{.col}_sd")
     )
 
   site_polygon <- site_polys %>%
