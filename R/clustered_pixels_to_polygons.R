@@ -104,6 +104,11 @@ pixel_to_polygons <- function(
   x_col = "X",
   y_col = "Y"
 ) {
+  cols <- tidyselect::eval_select(
+    rlang::enquo(additional_variable_cols),
+    points
+  )
+
   # Get the grid extent
   x_coords <- sort(unique(points$X))
   y_coords <- sort(unique(points$Y))
@@ -149,11 +154,9 @@ pixel_to_polygons <- function(
       n_cells = nrow(points),
       dplyr::across(
         {{ cols }},
-        median,
-        na.rm = TRUE,
-        .names = "{.col}_median"
-      ),
-      dplyr::across({{ cols }}, sd, na.rm = TRUE, .names = "{.col}_sd")
+        list(median = median, sd = sd),
+        na.rm = TRUE
+      )
     )
 
   site_polygon <- site_polys %>%
