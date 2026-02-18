@@ -11,7 +11,7 @@ cluster_reef_pixels(
   y_col = "Y",
   additional_variable_cols = c("depth"),
   reef_id_col = "UNIQUE_ID",
-  habitat_clustering_function = constrained_hclust_mst,
+  habitat_clustering_function = reef_skater_fast,
   ...
 )
 }
