@@ -1,56 +1,46 @@
-library(igraph)
-
-# NA handler
-fill_na_nearest <- function(pixel_data, columns) {
-  for (col in columns) {
-    if (any(is.na(pixel_data[[col]]))) {
-      has_value <- which(!is.na(pixel_data[[col]]))
-      has_na <- which(is.na(pixel_data[[col]]))
-
-      if (length(has_value) == 0) next
-
-      coords_with_value <- st_coordinates(st_centroid(pixel_data[has_value, ]))
-      coords_with_na <- st_coordinates(st_centroid(pixel_data[has_na, ]))
-
-      nearest_idx <- apply(coords_with_na, 1, function(na_coord) {
-        # Calculate Euclidean distance without transpose
-        distances <- sqrt(
-          (coords_with_value[, 1] - na_coord[1])^2 +
-            (coords_with_value[, 2] - na_coord[2])^2
-        )
-        has_value[which.min(distances)]
-      })
-
-      pixel_data[[col]][has_na] <- pixel_data[[col]][nearest_idx]
-    }
+#'  Internal helper to compute the sum of square distances within cluster nodes.
+#' Follows spdep function, implementing igraph methods.
+ssw <- function(
+  data,
+  nodes,
+  method = "euclidean",
+  p = 2,
+  cov = NULL,
+  inverted = FALSE
+) {
+  if (length(nodes) <= 1) {
+    return(0)
   }
-
-  return(pixel_data)
-}
-
-# Helper: Sum of Squares Within
-ssw <- function(data, nodes, method = "euclidean", p = 2, cov = NULL, inverted = FALSE) {
-  if (length(nodes) <= 1) return(0)
 
   cluster_data <- data[nodes, , drop = FALSE]
 
   if (method == "euclidean") {
-    no_geom <- st_drop_geometry(cluster_data)
+    no_geom <- sf::st_drop_geometry(cluster_data)
     center <- colMeans(no_geom)
+
     return(sum(colSums((t(no_geom) - center)^2)))
   } else if (method == "manhattan") {
-      no_geom <- st_drop_geometry(cluster_data)
-      center <- colMeans(no_geom)
-      # Sum of absolute deviations from centroid
-      return(sum(abs(sweep(no_geom, 2, center))))
+    no_geom <- sf::st_drop_geometry(cluster_data)
+    center <- colMeans(no_geom)
+
+    # Sum of absolute deviations from centroid
+    return(sum(abs(sweep(no_geom, 2, center))))
   } else if (method == "mahalanobis") {
-    if (is.null(cov)) cov <- var(cluster_data)
-    if (!inverted) cov <- solve(cov)
+    if (is.null(cov)) {
+      cov <- var(cluster_data)
+    }
+
+    if (!inverted) {
+      cov <- solve(cov)
+    }
+
     center <- colMeans(cluster_data)
     diffs <- t(cluster_data) - center
+
     return(sum(diag(t(diffs) %*% cov %*% diffs)))
   } else {
     dists <- dist(cluster_data, method = method, p = p)
+
     return(sum(dists^2) / (2 * length(nodes)))
   }
 }
@@ -61,10 +51,17 @@ ssw <- function(data, nodes, method = "euclidean", p = 2, cov = NULL, inverted =
 #' The approach collects all edges from all clusters, sorts by global cost, and
 #' iterates until a valid split is found.
 #'
-skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
-                          method = "euclidean", p = 2, cov = NULL,
-                          inverted = FALSE) {
-
+skater_igraph <- function(
+  edges,
+  data,
+  ncuts,
+  crit,
+  vec.crit,
+  method = "euclidean",
+  p = 2,
+  cov = NULL,
+  inverted = FALSE
+) {
   n <- nrow(edges) + 1
 
   # Initialize by pre-computing all edge costs
@@ -84,9 +81,9 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
   }
 
   # Build initial graph with all nodes in one cluster
-  g <- graph_from_edgelist(edges[, 1:2], directed = FALSE)
+  g <- igraph::graph_from_edgelist(edges[, 1:2], directed = FALSE)
   E(g)$cost <- edge_costs
-  E(g)$edge_id <- 1:nrow(edges)  # Track original edge IDs
+  E(g)$edge_id <- 1:nrow(edges) # Track original edge IDs
 
   # Sort edges by cost (highest cost first)
   sorted_order <- order(edge_costs, decreasing = TRUE)
@@ -100,9 +97,15 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
   ))
 
   # Handle parameters
-  if (missing(crit)) crit <- c(1, Inf)
-  if (missing(vec.crit)) vec.crit <- rep(1, n)
-  if (missing(ncuts)) ncuts <- n - 1
+  if (missing(crit)) {
+    crit <- c(1, Inf)
+  }
+  if (missing(vec.crit)) {
+    vec.crit <- rep(1, n)
+  }
+  if (missing(ncuts)) {
+    ncuts <- n - 1
+  }
 
   # Track which clusters can't be split further
   cannot_prune <- logical(1)
@@ -111,11 +114,15 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
   cuts <- 0
 
   repeat {
-    if (cuts >= ncuts) break
+    if (cuts >= ncuts) {
+      break
+    }
 
     # Get candidate clusters (those that can still be pruned)
     candidates <- which(!cannot_prune)
-    if (length(candidates) == 0) break
+    if (length(candidates) == 0) {
+      break
+    }
 
     # BUILD GLOBAL CANDIDATE LIST (original algorithm approach)
     # Collect all edges from all candidate clusters
@@ -123,11 +130,13 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
 
     for (cl_idx in candidates) {
       cl <- clusters[[cl_idx]]
-      if (ecount(cl$graph) == 0) next
+      if (igraph::ecount(cl$graph) == 0) {
+        next
+      }
 
       # Get edges and their costs from this cluster
-      edge_costs_cl <- E(cl$graph)$cost
-      edge_ids_cl <- E(cl$graph)$edge_id
+      edge_costs_cl <- igraph::E(cl$graph)$cost
+      edge_ids_cl <- igraph::E(cl$graph)$edge_id
 
       if (length(edge_costs_cl) > 0) {
         # Store: cluster_id, edge_index_in_cluster, cost, original_edge_id
@@ -142,7 +151,9 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
       }
     }
 
-    if (length(candidate_list) == 0) break
+    if (length(candidate_list) == 0) {
+      break
+    }
 
     # Sort all candidates globally by cost (ORIGINAL ALGORITHM)
     candidate_costs <- sapply(candidate_list, function(x) x$cost)
@@ -157,17 +168,23 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
       e_idx <- cand$edge_idx
 
       # Skip if this cluster was already pruned in this iteration
-      if (cl_idx > length(clusters)) next
-      if (cannot_prune[cl_idx]) next
+      if (cl_idx > length(clusters)) {
+        next
+      }
+      if (cannot_prune[cl_idx]) {
+        next
+      }
 
       cl <- clusters[[cl_idx]]
 
       # Test removing this edge
-      test_graph <- delete_edges(cl$graph, e_idx)
-      comp <- components(test_graph)
+      test_graph <- igraph::delete_edges(cl$graph, e_idx)
+      comp <- igraph::components(test_graph)
 
       # Check if it actually split (should be 2 components)
-      if (comp$no != 2) next
+      if (comp$no != 2) {
+        next
+      }
 
       # Check size constraints
       comp_sizes <- sapply(1:comp$no, function(i) {
@@ -185,7 +202,10 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
       # Split if a valid split is found
       new_clusters <- lapply(1:comp$no, function(i) {
         nodes_in_comp <- cl$nodes[comp$membership == i]
-        subgraph <- induced_subgraph(test_graph, which(comp$membership == i))
+        subgraph <- igraph::induced_subgraph(
+          test_graph,
+          which(comp$membership == i)
+        )
 
         list(
           nodes = nodes_in_comp,
@@ -199,12 +219,12 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
       clusters[[length(clusters) + 1]] <- new_clusters[[2]]
 
       # Update cannot_prune vector
-      cannot_prune[cl_idx] <- FALSE  # New cluster, can try again
-      cannot_prune <- c(cannot_prune, FALSE)  # New cluster can be pruned
+      cannot_prune[cl_idx] <- FALSE # New cluster, can try again
+      cannot_prune <- c(cannot_prune, FALSE) # New cluster can be pruned
 
       cuts <- cuts + 1
       split_successful <- TRUE
-      break  # Found valid split, restart evaluation
+      break # Found valid split, restart evaluation
     }
 
     # If no splits were successful, mark remaining candidates as unprunable
@@ -221,10 +241,10 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
 
   # Build edges.groups structure (for compatibility with original)
   edges_groups <- lapply(clusters, function(cl) {
-    edge_matrix <- as_edgelist(cl$graph)
+    edge_matrix <- igraph::as_edgelist(cl$graph)
     if (nrow(edge_matrix) > 0) {
       # Add costs as third column
-      costs <- E(cl$graph)$cost
+      costs <- igraph::E(cl$graph)$cost
       edge_matrix <- cbind(edge_matrix, costs)
     } else {
       edge_matrix <- matrix(0, 0, 3)
@@ -297,30 +317,25 @@ skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
 #' @export
 #'
 reef_skater_fast <- function(
-    pixels,
-    n_clust = NA,
-    site_size = 250 * 250,
-    x_col = "X_standard",
-    y_col = "Y_standard",
-    habitat_col = "habitat",
-    id_col = "UNIQUE_ID",
-    additional_variable_cols = c("depth_standard"),
-    cell_resolution = 100,
-    mst_alpha=0.5,
-    method = "euclidean"
+  pixels,
+  n_clust = NA,
+  site_size = 250 * 250,
+  x_col = "X_standard",
+  y_col = "Y_standard",
+  habitat_col = "habitat",
+  id_col = "UNIQUE_ID",
+  additional_variable_cols = c("depth_standard"),
+  cell_resolution = 100,
+  mst_alpha = 0.5,
+  method = "euclidean"
 ) {
-
-  site_prefix <- paste(unique(pixels[, id_col, drop = TRUE]),
-                       unique(pixels[, habitat_col, drop = TRUE]),
-                       sep = "_")
+  site_prefix <- paste(
+    unique(pixels[, id_col, drop = TRUE]),
+    unique(pixels[, habitat_col, drop = TRUE]),
+    sep = "_"
+  )
   pixels$npixels <- nrow(pixels)
 
-  # H3 hexagon average size
-  # hex_size <- data.frame(
-  #   Res = c(7:15),
-  #   Size = c(5161293, 737327, 105332, 15047, 2149, 307.09, 43.87, 6.267, 0.895)
-  # )
-  
   min_counts <- round(site_size / cell_resolution)
 
   if (is.na(n_clust)) {
@@ -363,12 +378,16 @@ reef_skater_fast <- function(
   edges <- igraph::as_edgelist(mst)
 
   # Run hybrid SKATER clustering
-  message(sprintf("Clustering %d pixels into %d groups...", nrow(pixels), n_clust))
+  message(sprintf(
+    "Clustering %d pixels into %d groups...",
+    nrow(pixels),
+    n_clust
+  ))
 
   clusters <- skater_igraph(
     edges = edges,
     data = pixels[, additional_variable_cols, drop = FALSE],
-    ncuts = n_clust - 1,  # ncuts is number of cuts, not final clusters
+    ncuts = n_clust - 1, # ncuts is number of cuts, not final clusters
     crit = c(min_counts, Inf),
     method = method
   )
