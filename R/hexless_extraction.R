@@ -45,7 +45,8 @@ hexless_extraction <- function(
   unit = "km2",
   additional_variable_name = "depth",
   output_epsg = 3112,
-  resample_method = "bilinear"
+  resample_method = "bilinear",
+  interpolation = TRUE
 ) {
   # Perform input data checks before proceeding with computations
 
@@ -126,51 +127,6 @@ hexless_extraction <- function(
     na.omit()
   pts <- pts[pts$categorical_habitat %in% habitat_categories, ] # filter habitats
   pixel_points <- st_as_sf(pts, coords = c("x", "y"), crs = reef_crs)
-  #   raster_res <- terra::res(habitat_cropped)[1]
-  #   half_res <- raster_res / 2
-
-  #   # Convert cell points into cell grid squares using the resolution of the raster
-  #   # to emulate the result obtained using a stars object
-  #   squares_list <- lapply(1:nrow(pts), function(i) {
-  #     x <- pts$x[i]
-  #     y <- pts$y[i]
-  #     st_polygon(list(matrix(
-  #       c(
-  #         x - half_res,
-  #         y + half_res, # Top Left
-  #         x + half_res,
-  #         y + half_res, # Top Right
-  #         x + half_res,
-  #         y - half_res, # Bottom Right
-  #         x - half_res,
-  #         y - half_res, # Bottom Left
-  #         x - half_res,
-  #         y + half_res # Close the loop (Back to Top Left)
-  #       ),
-  #       ncol = 2,
-  #       byrow = TRUE
-  #     )))
-  #   })
-
-  #   # Collate grid square sf polygons and convert to h3 indices
-  #   point_cells <- sf::st_sfc(squares_list, crs = reef_crs) %>%
-  #     sf::st_sf(data = pts[, !names(pts) %in% c("x", "y")])
-  # pixel_points <- point_cells
-  #   hexid <- geo_to_h3(point_cells, res = 12)
-
-  #   hexid <- unique(hexid) # Remove pixels with the same coordinates
-  # #   pixel_points <- h3::h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
-
-  #   if (length(hexid) < 2) {
-  #     stop("Less than 2 pixels identified from inputs.")
-  #   }
-
-  # Extract values from the additional variable raster layer and attach them to points
-  #   add_var_resampled <- terra::disagg(
-  #     add_var_cropped,
-  #     fact = 5,
-  #     method = resample_method
-  #   )
 
   additional_var_values <- terra::extract(
     add_var_cropped,
@@ -190,17 +146,7 @@ hexless_extraction <- function(
     dplyr::filter(!is.na(sf::st_dimension(.))) %>% # Remove NA dimensions
     sf::st_make_valid()
 
-  # Extract habitat data for pixels
-  #   cells_stars <- stars::st_as_stars(habitat_cropped) %>%
-  #     sf::st_transform(., terra::crs(add_var_raster))
-  #   cells <- sf::st_as_sf(cells_stars, as_points = TRUE)
-
   hab_pts <- pixel_points %>%
-    # mutate(
-    #   id = hexid,
-    #   area = h3::hex_area(res = hex_resolution, unit = unit)
-    # ) %>% # is this km2 ok?? #Anna - not sure this is actually working
-    # sf::st_join(., cells, join = sf::st_nearest_feature) %>%
     rename(geomorph = "categorical_habitat") %>%
     sf::st_transform(output_epsg) %>% # project to GDA94 / Geosicence Australia Lambert https://epsg.io/3112
     dplyr::bind_cols(., as.data.frame(sf::st_coordinates(.))) %>%
@@ -214,5 +160,40 @@ hexless_extraction <- function(
     ) %>% # Handle NULL geozone_list
     rename(habitat = geomorph)
 
+  if (interpolation) {
+    hab_pts <- fill_na_nearest(hab_pts, additional_variable_name)
+  }
+
   return(hab_pts)
+}
+
+#' Internal helper function that fills NA values from columns with values from
+#' the nearest neighbouring points.
+fill_na_nearest <- function(pixel_data, columns) {
+  for (col in columns) {
+    if (any(is.na(pixel_data[[col]]))) {
+      has_value <- which(!is.na(pixel_data[[col]]))
+      has_na <- which(is.na(pixel_data[[col]]))
+
+      if (length(has_value) == 0) {
+        next
+      }
+
+      coords_with_value <- st_coordinates(st_centroid(pixel_data[has_value, ]))
+      coords_with_na <- st_coordinates(st_centroid(pixel_data[has_na, ]))
+
+      nearest_idx <- apply(coords_with_na, 1, function(na_coord) {
+        # Calculate Euclidean distance without transpose
+        distances <- sqrt(
+          (coords_with_value[, 1] - na_coord[1])^2 +
+            (coords_with_value[, 2] - na_coord[2])^2
+        )
+        has_value[which.min(distances)]
+      })
+
+      pixel_data[[col]][has_na] <- pixel_data[[col]][nearest_idx]
+    }
+  }
+
+  return(pixel_data)
 }
