@@ -35,7 +35,6 @@ clustered_pixels_to_polygons <- function(
   # use function 'group_hex' to group hexagons into polygon or multipolygon
   #sites <- lapply(pixel_cluster_list, hex_to_polygons)
   sites <- lapply(pixel_cluster_list, pixel_to_polygons)
-  
 
   sites <- do.call(rbind, sites)
 
@@ -68,63 +67,65 @@ hex_to_polygons <- function(x, h3_id_col = "id", site_id_col = "site_id") {
   site_polygon
 }
 
-pixel_to_polygons <- function(x,site_id_col = "site_id"){
-
+pixel_to_polygons <- function(x, site_id_col = "site_id") {
   library(terra)
   library(sf)
   library(dplyr)
-  
+
   # Get the grid extent
   x_coords <- sort(unique(x$X))
   y_coords <- sort(unique(x$Y))
   pixel_size <- 10
-  
+
   # Create raster template
   r <- rast(
-    extent = ext(min(x_coords) - pixel_size/2, 
-                 max(x_coords) + pixel_size/2,
-                 min(y_coords) - pixel_size/2, 
-                 max(y_coords) + pixel_size/2),
+    extent = ext(
+      min(x_coords) - pixel_size / 2,
+      max(x_coords) + pixel_size / 2,
+      min(y_coords) - pixel_size / 2,
+      max(y_coords) + pixel_size / 2
+    ),
     resolution = pixel_size,
     crs = crs(x)
   )
-  
+
   # Create site ID raster
-  x$site_id_num <- as.numeric(factor(x$site_id))
+  pixel_site_ids <- factor(x$site_id)
+  site_id_levels <- levels(pixel_site_ids)
+
+  x$site_id_num <- as.numeric(pixel_site_ids)
   site_raster <- rasterize(vect(x), r, field = "site_id_num")
-  
+
   # Convert to polygons - THIS AUTOMATICALLY DISSOLVES
   site_polys <- as.polygons(site_raster) %>%
-    st_as_sf() 
-  
+    st_as_sf()
+
   # Find the column name that contains the raster values
-  raster_col_name <- names(site_polys)[1]  # First column is usually the raster value
-  
+  raster_col_name <- names(site_polys)[1] # First column is usually the raster value
+
   # Rename it to site_id_num
   site_polys <- site_polys %>%
     rename(site_id_num = !!raster_col_name)
-  
+  site_polys$site_id <- site_id_levels[site_polys$site_id_num]
+
   # Join back attributes
   site_attrs <- x %>%
+    st_drop_geometry() %>%
     group_by(site_id) %>%
     summarise(
-      site_id_num = first(as.numeric(factor(site_id))),
       habitat = first(habitat),
       UNIQUE_ID = first(UNIQUE_ID),
       depth_med = median(depth, na.rm = TRUE),
-      depth_sd = sd(depth, na.rm=TRUE),
+      depth_sd = sd(depth, na.rm = TRUE),
       npixels = first(npixels),
       clustering_time = first(clustering_time),
-      n_cells=nrow(x)
+      n_cells = nrow(x)
     )
-  
-  site_polygon <- site_polys %>%
-    st_join(site_attrs, by = "site_id") %>%
-    st_make_valid() 
-  
-  
 
-  
+  site_polygon <- site_polys %>%
+    left_join(site_attrs, by = "site_id") %>%
+    st_make_valid()
+
   # # Create pixel polygons with all attributes
   # site_polygon <- x %>%
   #   # First create individual pixel polygons
@@ -153,9 +154,8 @@ pixel_to_polygons <- function(x,site_id_col = "site_id"){
   #   st_make_valid() %>%
   #   # Optionally cast to MULTIPOLYGON
   #   st_cast("MultiPOLYGON")
-  
-  site_polygon[, site_id_col] <- unique(x[, site_id_col, drop = TRUE])
-  
+
+  #   site_polygon[, site_id_col] <- unique(x[, site_id_col, drop = TRUE])
+
   site_polygon
-  
 }
