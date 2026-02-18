@@ -18,5 +18,11 @@ Useful links:
 \author{
 \strong{Maintainer}: Vanessa Haller-Bull \email{V.Haller@aims.gov.au}
 
+Authors:
+\itemize{
+  \item Benjamin Grier
+  \item Takuya Iwanaga
+}
+
 }
 \keyword{internal}
