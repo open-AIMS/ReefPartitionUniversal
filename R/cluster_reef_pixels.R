@@ -39,7 +39,7 @@ cluster_reef_pixels <- function(
   y_col = "Y",
   additional_variable_cols = c("depth"),
   reef_id_col = "UNIQUE_ID",
-  habitat_clustering_function = constrained_hclust_mst,
+  habitat_clustering_function = reef_skater_fast,
   clustering_function_args = list()
 ) {
   if (nrow(pixels) < 1) {
