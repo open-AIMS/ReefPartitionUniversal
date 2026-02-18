@@ -71,6 +71,67 @@ mst_hclust_sites <- clustered_pixels_to_polygons(mst_hclust_pixels)
 sites_post_processed <- site_postprocessing(mst_hclust_sites, 50)
 ```
 
+## Using multiple additional variable sources
+
+To use multiple additional data sources for clustering, each data source must be
+extracted separately and then joined together. Two pixel datasets are created
+containing the same habitat pixels, but different additional data columns.
+Once joined these additional data columns can be passed onto clustering.
+
+Using the above basic demonstration example while adding wave exposure as a
+second additional variable.
+
+```R
+library(ReefPartitionUniversal)
+library(tidyverse)
+
+# Load input data (ensuring all are use the same CRS)
+target_reef <- sf::st_read("target_reef.gpkg") # Defines the spatial extent of the reef
+habitat <- terra::rast("habitat_raster.tif") # Defines the habitat pixels to extract from
+bathymetry <- terra::rast("bathymetry_raster.tif") # Contains additional variable values for extraction and clustering
+wave_exposure <- terra::rast("wave_exposure_raster.tif")
+
+habitat_categories <- c(1, 10, 20) # Assess only habitat pixels with these values
+
+# Extract pixel values from raster layers
+pixel_depth_data <- extract_pixel_points(
+    target_reef, 
+    habitat, 
+    bathymetry, 
+    habitat_categories,
+    additional_variable_name = "depth"
+)
+pixel_wave_data <- extract_pixel_points(
+    target_reef, 
+    habitat, 
+    wave_exposure, 
+    habitat_categories,
+    additional_variable_name = "wave_exposure"
+)
+
+# pixel_depth_data and pixel_wave_data contain the same habitat pixels, but
+# different extracted continuous variables. These can be combined using `left_join`.
+pixels <- left_join(
+    pixel_depth_data, 
+    pixel_wave_data[, c("X", "Y", "wave_exposure"), drop = TRUE],
+    by = c("X", "Y")
+)
+
+pixels <- pixels[!is.na(pixels$depth), ]
+pixels <- pixels[!is.na(pixels$wave_exposure), ]
+pixels$UNIQUE_ID <- "ReefOne"
+
+# Cluster pixels using adespatial::constr.hclust algorithm
+# The default column arguments must be altered to include wave exposure
+mst_hclust_pixels <- cluster_reef_pixels(
+    pixels,
+    additional_variable_cols = c("depth", "wave_exposure"),
+    clustering_function_args = list(
+        additional_variable_cols = c("depth_standard", "wave_exposure_standard")
+    )
+)
+```
+
 # License
 
 This repository is licensed under MIT License.
