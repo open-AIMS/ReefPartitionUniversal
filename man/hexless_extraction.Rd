@@ -13,7 +13,8 @@ hexless_extraction(
   unit = "km2",
   additional_variable_name = "depth",
   output_epsg = 3112,
-  resample_method = "bilinear"
+  resample_method = "bilinear",
+  interpolation = TRUE
 )
 }
 \arguments{
