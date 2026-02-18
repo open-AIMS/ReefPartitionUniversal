@@ -82,8 +82,8 @@ skater_igraph <- function(
 
   # Build initial graph with all nodes in one cluster
   g <- igraph::graph_from_edgelist(edges[, 1:2], directed = FALSE)
-  E(g)$cost <- edge_costs
-  E(g)$edge_id <- 1:nrow(edges) # Track original edge IDs
+  igraph::E(g)$cost <- edge_costs
+  igraph::E(g)$edge_id <- 1:nrow(edges) # Track original edge IDs
 
   # Sort edges by cost (highest cost first)
   sorted_order <- order(edge_costs, decreasing = TRUE)

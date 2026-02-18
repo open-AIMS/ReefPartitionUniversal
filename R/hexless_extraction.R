@@ -179,8 +179,12 @@ fill_na_nearest <- function(pixel_data, columns) {
         next
       }
 
-      coords_with_value <- st_coordinates(st_centroid(pixel_data[has_value, ]))
-      coords_with_na <- st_coordinates(st_centroid(pixel_data[has_na, ]))
+      coords_with_value <- sf::st_coordinates(sf::st_centroid(pixel_data[
+        has_value,
+      ]))
+      coords_with_na <- sf::st_coordinates(sf::st_centroid(pixel_data[
+        has_na,
+      ]))
 
       nearest_idx <- apply(coords_with_na, 1, function(na_coord) {
         # Calculate Euclidean distance without transpose
