@@ -160,8 +160,14 @@ pixels_to_polygons <- function(
       n_cells = nrow(points),
       dplyr::across(
         {{ cols }},
-        list(median = median, sd = sd),
-        na.rm = TRUE
+        list(
+          median = function(x) {
+            median(x, na.rm = TRUE)
+          },
+          sd = function(x) {
+            sd(x, na.rm = TRUE)
+          }
+        )
       )
     )
 
