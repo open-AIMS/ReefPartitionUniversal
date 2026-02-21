@@ -1,12 +1,12 @@
-#' Create a minimum spanning tree from geographic coordinates of pixels and extracted
+#' Create a minimum spanning tree from geographic coordinates of points and extracted
 #' data.
 #'
-#' @description Take a dataframe of pixels `pixels` and create a minimum spanning tree
+#' @description Take a dataframe of points `points` and create a minimum spanning tree
 #'   between pixel coordinates, using edge costs that are a combination of geographic
-#'   distances and distances between pixels by `additional_variable_cols` values.
+#'   distances and distances between points by `additional_variable_cols` values.
 #'   For additional details on minimum spanning tree creation see igraph::mst().
 #'
-#' @param pixels sf data.frame. Holds values for pixel geometries and
+#' @param points sf data.frame. Holds values for pixel geometries and
 #'   `additional_variable_cols`
 #' @param additional_variable_cols character vector. Names of the columns to extract
 #'   additional (non-geometric) data from for cost weighting.
@@ -23,20 +23,20 @@
 #' @export
 #'
 prepare_mst <- function(
-  pixels,
+  points,
   additional_variable_cols = c("depth_standard"),
   mst_alpha = 0.5,
   hex_resolution = 12
 ) {
   add_var_weight <- mst_alpha
   geo_weight <- 1 - mst_alpha
-  coords <- sf::st_centroid(sf::st_geometry(pixels))
+  coords <- sf::st_centroid(sf::st_geometry(points))
 
   # Triangulate edges between pixel points
   tri <- spdep::tri2nb(coords)
   Costs_tri <- spdep::nbcosts(
     tri,
-    data = pixels[, additional_variable_cols, drop = TRUE],
+    data = points[, additional_variable_cols, drop = TRUE],
     method = "manhattan"
   )
   Costs_tri <- unlist(Costs_tri)
@@ -49,7 +49,7 @@ prepare_mst <- function(
     weights = Costs_tri
   )
   Network_withEdgesTri <- sfnetworks::sfnetwork(
-    pixels,
+    points,
     Edges_tri2[, c(1, 2)],
     directed = FALSE
   )
