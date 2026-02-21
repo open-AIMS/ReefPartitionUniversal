@@ -111,7 +111,13 @@ extract_pixel_points <- function(
 
   if (terra::ncell(habitat_cropped) == 0) {
     stop(
-      "Cropping resulted in empty raster - check if reef_polygon overlaps with valid raster data."
+      "Cropping resulted in empty habitat raster - check if reef_polygon overlaps with valid habitat raster data."
+    )
+  }
+
+  if (all(is.na(values(add_var_cropped)))) {
+    stop(
+      "Cropping resulted in empty additional variable raster - check if reef_polygon overlaps with valid additional variable raster data."
     )
   }
 
