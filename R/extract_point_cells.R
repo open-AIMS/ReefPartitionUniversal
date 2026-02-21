@@ -3,7 +3,8 @@
 #' @description Extract data from the centroids of pixels that overlap the target `reef_polyon`.
 #'   Extraction is performed for two raster layers, one `habitat_raster` must contain habitat
 #'   categories that form the basis of the pixel centroids, the other `add_var_raster` is
-#'   additional desired data for clustering at later points in the workflow.
+#'   additional desired data for clustering at later points in the workflow. Output is
+#'   in the format of `H3` cells with a diameter of `hex_resolution`.
 #'
 #' @param reef_polygon sf_object. sf object containing the target reef polygons for data
 #'   coverage.
@@ -26,17 +27,22 @@
 #' @param resample_method Method used to resample `add_var_raster` before extracting pixel
 #'   data. Default = "bilinear", method should be changed for categorical data.
 #'   See [terra::disagg()] for more details.
+#' @param interpolation bool. Option to interpolate missing values after extracting
+#'   data from `add_var_raster` using nearest neighbour interpolation. Default = TRUE.
 #'
-#' @return data.frame containing `habitat_raster` pixels covering `reef_polygon`
-#'   for selected habitats in `habitat_categories`, alongside extracted data from `add_var_raster`.
+#' @return data.frame containing points from `habitat_raster` covering `reef_polygon`
+#'   for selected habitats in `habitat_categories`, converted to H3 cell resolution,
+#'   alongside extracted data from `add_var_raster`.
 #'
 #' @importFrom terra %in%
 #' @importFrom dplyr rename
 #' @importFrom dplyr mutate
+#' @importFrom stats dist
+#' @importFrom stats na.omit
 #'
 #' @export
 #'
-hexless_extraction <- function(
+extract_point_cells <- function(
   reef_polygon,
   habitat_raster,
   add_var_raster,
@@ -126,27 +132,80 @@ hexless_extraction <- function(
   ) %>%
     na.omit()
   pts <- pts[pts$categorical_habitat %in% habitat_categories, ] # filter habitats
-  pixel_points <- st_as_sf(pts, coords = c("x", "y"), crs = reef_crs)
+  raster_res <- terra::res(habitat_cropped)[1]
+  half_res <- raster_res / 2
+
+  # Convert cell points into cell grid squares using the resolution of the raster
+  # to emulate the result obtained using a stars object
+  squares_list <- lapply(1:nrow(pts), function(i) {
+    x <- pts$x[i]
+    y <- pts$y[i]
+    sf::st_polygon(list(matrix(
+      c(
+        x - half_res,
+        y + half_res, # Top Left
+        x + half_res,
+        y + half_res, # Top Right
+        x + half_res,
+        y - half_res, # Bottom Right
+        x - half_res,
+        y - half_res, # Bottom Left
+        x - half_res,
+        y + half_res # Close the loop (Back to Top Left)
+      ),
+      ncol = 2,
+      byrow = TRUE
+    )))
+  })
+
+  # Collate grid square sf polygons and convert to h3 indices
+  point_cells <- sf::st_sfc(squares_list, crs = reef_crs) %>%
+    sf::st_sf(data = pts[, !names(pts) %in% c("x", "y")])
+  hexid <- h3::geo_to_h3(point_cells, res = 12)
+
+  hexid <- unique(hexid) # Remove pixels with the same coordinates
+  point_cells <- h3::h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
+
+  if (length(hexid) < 2) {
+    stop("Less than 2 pixels identified from inputs.")
+  }
+
+  # Extract values from the additional variable raster layer and attach them to points
+  add_var_resampled <- terra::disagg(
+    add_var_cropped,
+    fact = 5,
+    method = resample_method
+  )
 
   additional_var_values <- terra::extract(
-    add_var_cropped,
-    pixel_points,
+    add_var_resampled,
+    point_cells,
     df = TRUE
   )
   colnames(additional_var_values)[2] <- additional_variable_name
-  pixel_points[, additional_variable_name] <- additional_var_values[,
+  point_cells[, additional_variable_name] <- additional_var_values[,
     additional_variable_name
   ]
 
   # Clean up pixels and extracted data
-  # Transform Pixels to match the datas' CRS (by default h3 points do not have a CRS)
-  pixel_points <- sf::st_transform(pixel_points, reef_crs)
+  # Transform Points to match the datas' CRS (by default h3 points do not have a CRS)
+  point_cells <- sf::st_transform(point_cells, reef_crs)
 
-  pixel_points <- pixel_points %>%
+  point_cells <- point_cells %>%
     dplyr::filter(!is.na(sf::st_dimension(.))) %>% # Remove NA dimensions
     sf::st_make_valid()
 
-  hab_pts <- pixel_points %>%
+  # Extract habitat data for pixels
+  cells_stars <- stars::st_as_stars(habitat_cropped) %>%
+    sf::st_transform(., terra::crs(add_var_raster))
+  habitat_cells <- sf::st_as_sf(cells_stars, as_points = TRUE)
+
+  hab_pts <- point_cells %>%
+    mutate(
+      id = hexid,
+      area = h3::hex_area(res = hex_resolution, unit = unit)
+    ) %>% # is this km2 ok?? #Anna - not sure this is actually working
+    sf::st_join(., habitat_cells, join = sf::st_nearest_feature) %>%
     rename(geomorph = "categorical_habitat") %>%
     sf::st_transform(output_epsg) %>% # project to GDA94 / Geosicence Australia Lambert https://epsg.io/3112
     dplyr::bind_cols(., as.data.frame(sf::st_coordinates(.))) %>%
@@ -165,39 +224,4 @@ hexless_extraction <- function(
   }
 
   return(hab_pts)
-}
-
-#' Internal helper function that fills NA values from columns with values from
-#' the nearest neighbouring points.
-fill_na_nearest <- function(pixel_data, columns) {
-  for (col in columns) {
-    if (any(is.na(pixel_data[[col]]))) {
-      has_value <- which(!is.na(pixel_data[[col]]))
-      has_na <- which(is.na(pixel_data[[col]]))
-
-      if (length(has_value) == 0) {
-        next
-      }
-
-      coords_with_value <- sf::st_coordinates(sf::st_centroid(pixel_data[
-        has_value,
-      ]))
-      coords_with_na <- sf::st_coordinates(sf::st_centroid(pixel_data[
-        has_na,
-      ]))
-
-      nearest_idx <- apply(coords_with_na, 1, function(na_coord) {
-        # Calculate Euclidean distance without transpose
-        distances <- sqrt(
-          (coords_with_value[, 1] - na_coord[1])^2 +
-            (coords_with_value[, 2] - na_coord[2])^2
-        )
-        has_value[which.min(distances)]
-      })
-
-      pixel_data[[col]][has_na] <- pixel_data[[col]][nearest_idx]
-    }
-  }
-
-  return(pixel_data)
 }

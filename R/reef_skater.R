@@ -1,16 +1,16 @@
-#' Cluster pixels together using the spdep::skater algorithm.
+#' Cluster points together using the spdep::skater algorithm.
 #'
-#' @description Take a dataframe of pixels containing geometries of pixels and
+#' @description Take a dataframe of points containing geometries of points and
 #'   `additional_variable_cols` values and cluster using the skater algorithm.
 #'   This clustering is performed top-down the costs of pruning each minimum
-#'   spanning tree edge. Only pixels connected by `edges` are able to cluster
+#'   spanning tree edge. Only points connected by `edges` are able to cluster
 #'   together. For additional information see **insert citation/link**.
 #'
-#' @param pixels data.frame. Contains values for X and Y coordinates, as well as
+#' @param points data.frame. Contains values for X and Y coordinates, as well as
 #'   `additional_variable_cols`.
 #' @param n_clust integer numeric. Number of clusters in result output. (Point to
-#'   cut hierarchical clustering tree). Default = (round(nrow(pixels) / 200))
-#'   (dividing habitat into clusters containing an average of 200 pixels).
+#'   cut hierarchical clustering tree). Default = (round(nrow(points) / 200))
+#'   (dividing habitat into clusters containing an average of 200 points).
 #' @param site_size numeric. Desired site size (area in m^2). Default = 625,000
 #'   (250m x 250m).
 #' @param x_col character. Name of the column holding X coordinates. Default = "X_standard".
@@ -25,18 +25,18 @@
 #'   option sets up a parallel::Cluster using detectCores() - 2 cores. This parallelises
 #'   prunecost calculations within spdep::skater(). If `parallelisation` is not
 #'   set to "Windows", no parallelisation will occur. Default = "Windows".
-#' @param hex_resolution integer numeric. H3 hexagon resolution used in pixel
+#' @param hex_resolution integer numeric. H3 hexagon resolution used in point
 #'   creation.
 #'
-#' @return data.frame of pixels with allocated site_ids based on cluster outputs.
+#' @return data.frame of points with allocated site_ids based on cluster outputs.
 #'   `site_id` values are a combination of the `id_col` value, `habitat_col` value
 #'   and the cluster allocation.
 #'
 #' @export
 #'
 reef_skater <- function(
-  pixels,
-  n_clust = round(min(10000, nrow(pixels)) / 200),
+  points,
+  n_clust = round(min(10000, nrow(points)) / 200),
   site_size = 250 * 250,
   x_col = "X_standard",
   y_col = "Y_standard",
@@ -47,11 +47,11 @@ reef_skater <- function(
   hex_resolution = 12
 ) {
   site_prefix <- paste(
-    unique(pixels[, id_col, drop = TRUE]),
-    unique(pixels[, habitat_col, drop = TRUE]),
+    unique(points[, id_col, drop = TRUE]),
+    unique(points[, habitat_col, drop = TRUE]),
     sep = "_"
   )
-  pixels$npixels <- nrow(pixels)
+  points$npoints <- nrow(points)
 
   # H3 hexagon average size
   hex_size <- data.frame(
@@ -60,26 +60,26 @@ reef_skater <- function(
   )
   min_counts <- round(site_size / hex_size$Size[hex_size$Res == hex_resolution])
 
-  # If pixels contains > 10,000 pixels interpolation should be used. This clusters only 10,000
-  # randomly sampled pixels from pixels and uses nearest neighbour interpolation to assign
-  # the remaining pixel clusters
+  # If points contains > 10,000 points interpolation should be used. This clusters only 10,000
+  # randomly sampled points from points and uses nearest neighbour interpolation to assign
+  # the remaining point clusters
   interpolation <- FALSE
-  if (nrow(pixels) > 10000) {
+  if (nrow(points) > 10000) {
     interpolation <- TRUE
-    samplepoints <- sample(c(1:nrow(pixels)), 10000)
-    x_old <- pixels
-    pixels <- pixels[samplepoints, ]
+    samplepoints <- sample(c(1:nrow(points)), 10000)
+    x_old <- points
+    points <- points[samplepoints, ]
 
     min_counts <- min_counts * (10000 / nrow(x_old))
   }
 
-  if (nrow(pixels) < 1.5 * min_counts) {
-    pixels$site_id <- as.factor(paste(site_prefix, 1, sep = "_"))
-    return(pixels)
+  if (nrow(points) < 1.5 * min_counts) {
+    points$site_id <- as.factor(paste(site_prefix, 1, sep = "_"))
+    return(points)
   }
 
   mst <- prepare_mst(
-    pixels,
+    points,
     additional_variable_cols = additional_variable_cols
   )
 
@@ -96,7 +96,7 @@ reef_skater <- function(
   # Clustering minimum spanning tree
   clusters <- spdep::skater(
     edges = igraph::as_edgelist(mst),
-    data = pixels[, additional_variable_cols, drop = TRUE],
+    data = points[, additional_variable_cols, drop = TRUE],
     ncuts = n_clust,
     crit = c(min_counts, Inf)
   ) # this seems quite intensive in terms of time
@@ -110,14 +110,14 @@ reef_skater <- function(
 
   if (interpolation == TRUE) {
     skater_sites <- class::knn(
-      pixels[, c(x_col, y_col), drop = TRUE],
+      points[, c(x_col, y_col), drop = TRUE],
       x_old[, c(x_col, y_col), drop = TRUE],
       skater_sites
     )
-    pixels <- x_old
+    points <- x_old
   }
 
-  pixels$site_id <- skater_sites
+  points$site_id <- skater_sites
 
-  pixels
+  points
 }
