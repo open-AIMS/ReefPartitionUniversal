@@ -3,7 +3,8 @@
 #' @description Extract data from the centroids of pixels that overlap the target `reef_polyon`.
 #'   Extraction is performed for two raster layers, one `habitat_raster` must contain habitat
 #'   categories that form the basis of the pixel centroids, the other `add_var_raster` is
-#'   additional desired data for clustering at later points in the workflow.
+#'   additional desired data for clustering at later points in the workflow. Output is
+#'   in the format of `H3` cells with a diameter of `hex_resolution`.
 #'
 #' @param reef_polygon sf_object. sf object containing the target reef polygons for data
 #'   coverage.
@@ -26,9 +27,12 @@
 #' @param resample_method Method used to resample `add_var_raster` before extracting pixel
 #'   data. Default = "bilinear", method should be changed for categorical data.
 #'   See [terra::disagg()] for more details.
+#' @param interpolation bool. Option to interpolate missing values after extracting
+#'   data from `add_var_raster` using nearest neighbour interpolation. Default = TRUE.
 #'
-#' @return data.frame containing `habitat_raster` pixels covering `reef_polygon`
-#'   for selected habitats in `habitat_categories`, alongside extracted data from `add_var_raster`.
+#' @return data.frame containing points from `habitat_raster` covering `reef_polygon`
+#'   for selected habitats in `habitat_categories`, converted to H3 cell resolution,
+#'   alongside extracted data from `add_var_raster`.
 #'
 #' @importFrom dplyr rename
 #' @importFrom dplyr mutate
@@ -37,7 +41,7 @@
 #'
 #' @export
 #'
-extract_pixel_points <- function(
+extract_point_cells <- function(
   reef_polygon,
   habitat_raster,
   add_var_raster,
@@ -46,7 +50,8 @@ extract_pixel_points <- function(
   unit = "km2",
   additional_variable_name = "depth",
   output_epsg = 3112,
-  resample_method = "bilinear"
+  resample_method = "bilinear",
+  interpolation = TRUE
 ) {
   # Perform input data checks before proceeding with computations
   input_check(reef_polygon, habitat_raster, add_var_raster, habitat_categories)
@@ -104,7 +109,7 @@ extract_pixel_points <- function(
   hexid <- h3::geo_to_h3(point_cells, res = 12)
 
   hexid <- unique(hexid) # Remove pixels with the same coordinates
-  pixel_points <- h3::h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
+  point_cells <- h3::h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
 
   if (length(hexid) < 2) {
     stop("Less than 2 pixels identified from inputs.")
@@ -119,33 +124,33 @@ extract_pixel_points <- function(
 
   additional_var_values <- terra::extract(
     add_var_resampled,
-    pixel_points,
+    point_cells,
     df = TRUE
   )
   colnames(additional_var_values)[2] <- additional_variable_name
-  pixel_points[, additional_variable_name] <- additional_var_values[,
+  point_cells[, additional_variable_name] <- additional_var_values[,
     additional_variable_name
   ]
 
   # Clean up pixels and extracted data
-  # Transform Pixels to match the datas' CRS (by default h3 points do not have a CRS)
-  pixel_points <- sf::st_transform(pixel_points, reef_crs)
+  # Transform Points to match the datas' CRS (by default h3 points do not have a CRS)
+  point_cells <- sf::st_transform(point_cells, reef_crs)
 
-  pixel_points <- pixel_points %>%
+  point_cells <- point_cells %>%
     dplyr::filter(!is.na(sf::st_dimension(.))) %>% # Remove NA dimensions
     sf::st_make_valid()
 
   # Extract habitat data for pixels
   cells_stars <- stars::st_as_stars(habitat_cropped) %>%
     sf::st_transform(., terra::crs(add_var_raster))
-  cells <- sf::st_as_sf(cells_stars, as_points = TRUE)
+  habitat_cells <- sf::st_as_sf(cells_stars, as_points = TRUE)
 
-  hab_pts <- pixel_points %>%
+  hab_pts <- point_cells %>%
     mutate(
       id = hexid,
       area = h3::hex_area(res = hex_resolution, unit = unit)
     ) %>% # is this km2 ok?? #Anna - not sure this is actually working
-    sf::st_join(., cells, join = sf::st_nearest_feature) %>%
+    sf::st_join(., habitat_cells, join = sf::st_nearest_feature) %>%
     rename(geomorph = "categorical_habitat") %>%
     sf::st_transform(output_epsg) %>% # project to GDA94 / Geosicence Australia Lambert https://epsg.io/3112
     dplyr::bind_cols(., as.data.frame(sf::st_coordinates(.))) %>%
@@ -158,6 +163,10 @@ extract_pixel_points <- function(
       }
     ) %>% # Handle NULL geozone_list
     rename(habitat = geomorph)
+
+  if (interpolation) {
+    hab_pts <- fill_na_nearest(hab_pts, additional_variable_name)
+  }
 
   return(hab_pts)
 }

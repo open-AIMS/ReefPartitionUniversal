@@ -272,24 +272,24 @@ skater_igraph <- function(
   return(result)
 }
 
-#' Cluster pixels together using an optimized SKATER algorithm.
+#' Cluster points together using an optimized SKATER algorithm.
 #'
-#' @description Take a dataframe of pixels containing geometries of pixels and
+#' @description Take a dataframe of points containing geometries of points and
 #'   `additional_variable_cols` values and cluster using the SKATER (Spatial
 #'   'K'luster Analysis by Tree Edge Removal) algorithm. This clustering is
 #'   performed by iteratively pruning edges from a minimum spanning tree based
-#'   on the costs of edge removal. Only pixels connected by edges in the MST
+#'   on the costs of edge removal. Only points connected by edges in the MST
 #'   are able to cluster together. This implementation uses a hybrid approach
 #'   combining igraph graph operations with the original SKATER algorithm logic
-#'   for improved performance. For datasets exceeding 10,000 pixels, clustering
-#'   is performed on a random sample with results interpolated to remaining pixels
+#'   for improved performance. For datasets exceeding 10,000 points, clustering
+#'   is performed on a random sample with results interpolated to remaining points
 #'   via nearest neighbor assignment.
 #'
-#' @param pixels data.frame. Contains values for X and Y coordinates, as well as
+#' @param points data.frame. Contains values for X and Y coordinates, as well as
 #'   `additional_variable_cols`.
 #' @param n_clust integer numeric. Number of clusters in result output. Default =
-#'   (round(nrow(pixels) / 200)) (dividing habitat into clusters containing an
-#'   average of 200 pixels).
+#'   (round(nrow(points) / 200)) (dividing habitat into clusters containing an
+#'   average of 200 points).
 #' @param site_size numeric. Desired site size (area in m^2). Used to calculate
 #'   minimum cluster size constraint based on H3 hexagon resolution. Default =
 #'   250 * 250 (62,500 m^2).
@@ -303,21 +303,21 @@ skater_igraph <- function(
 #'   (attached to the site_id values on output). Default = "UNIQUE_ID".
 #' @param additional_variable_cols character vector. Names of additional columns
 #'   to contribute to the distance matrix for clustering. Default = c("depth_standard").
-#' @param hex_resolution integer numeric. H3 hexagon resolution used in pixel
+#' @param hex_resolution integer numeric. H3 hexagon resolution used in point
 #'   creation. Used to calculate minimum cluster size based on hexagon area at
 #'   this resolution. Default = 12.
 #' @param method character. Distance metric for calculating dissimilarity between
-#'   pixels. Options include "euclidean", "manhattan", "maximum", "canberra",
+#'   points. Options include "euclidean", "manhattan", "maximum", "canberra",
 #'   "binary", "minkowski", "mahalanobis". Default = "euclidean".
 #'
-#' @return data.frame of pixels with allocated site_ids based on cluster outputs.
+#' @return data.frame of points with allocated site_ids based on cluster outputs.
 #'   `site_id` values are a combination of the `id_col` value, `habitat_col` value
 #'   and the cluster allocation.
 #'
 #' @export
 #'
 reef_skater_fast <- function(
-  pixels,
+  points,
   n_clust = NA,
   site_size = 250 * 250,
   x_col = "X_standard",
@@ -330,45 +330,45 @@ reef_skater_fast <- function(
   method = "euclidean"
 ) {
   site_prefix <- paste(
-    unique(pixels[, id_col, drop = TRUE]),
-    unique(pixels[, habitat_col, drop = TRUE]),
+    unique(points[, id_col, drop = TRUE]),
+    unique(points[, habitat_col, drop = TRUE]),
     sep = "_"
   )
-  pixels$npixels <- nrow(pixels)
+  points$npoints <- nrow(points)
 
   min_counts <- round(site_size / cell_resolution)
 
   if (is.na(n_clust)) {
-    total_area <- nrow(pixels) * cell_resolution
+    total_area <- nrow(points) * cell_resolution
     n_clust <- ceiling(max(1, round(total_area / site_size)))
   }
 
   # Handle large datasets via interpolation
   interpolation <- FALSE
-  if (nrow(pixels) > 30000) {
+  if (nrow(points) > 30000) {
     interpolation <- TRUE
-    samplepoints <- sample(1:nrow(pixels), 30000)
-    x_old <- pixels
-    pixels <- pixels[samplepoints, ]
+    samplepoints <- sample(1:nrow(points), 30000)
+    x_old <- points
+    points <- points[samplepoints, ]
 
     # Adjust minimum counts for sampled dataset
     min_counts <- min_counts * (30000 / nrow(x_old))
   }
 
-  # Early return if too few pixels for clustering
-  if (nrow(pixels) < 1.5 * min_counts) {
-    pixels$site_id <- as.factor(paste(site_prefix, 1, sep = "_"))
+  # Early return if too few points for clustering
+  if (nrow(points) < 1.5 * min_counts) {
+    points$site_id <- as.factor(paste(site_prefix, 1, sep = "_"))
     if (interpolation) {
-      x_old$site_id <- pixels$site_id[1]
+      x_old$site_id <- points$site_id[1]
       return(x_old)
     }
-    return(pixels)
+    return(points)
   }
 
   # Build minimum spanning tree
   message("Building minimum spanning tree...")
   mst <- prepare_mst(
-    pixels,
+    points,
     additional_variable_cols = additional_variable_cols,
     hex_resolution = 12,
     mst_alpha = mst_alpha
@@ -379,14 +379,14 @@ reef_skater_fast <- function(
 
   # Run hybrid SKATER clustering
   message(sprintf(
-    "Clustering %d pixels into %d groups...",
-    nrow(pixels),
+    "Clustering %d points into %d groups...",
+    nrow(points),
     n_clust
   ))
 
   clusters <- skater_igraph(
     edges = edges,
-    data = pixels[, additional_variable_cols, drop = FALSE],
+    data = points[, additional_variable_cols, drop = FALSE],
     ncuts = n_clust - 1, # ncuts is number of cuts, not final clusters
     crit = c(min_counts, Inf),
     method = method
@@ -400,10 +400,10 @@ reef_skater_fast <- function(
     message("Interpolating clusters to full dataset...")
 
     # Drop geometry if `sf` object for knn training
-    if (inherits(pixels, "sf")) {
-      pixels_no_geom <- sf::st_drop_geometry(pixels)
+    if (inherits(points, "sf")) {
+      points_no_geom <- sf::st_drop_geometry(points)
     } else {
-      pixels_no_geom <- pixels
+      points_no_geom <- points
     }
 
     # Drop geometry from full dataset for knn testing
@@ -415,7 +415,7 @@ reef_skater_fast <- function(
 
     # Perform knn interpolation on non-geometry data
     skater_sites <- class::knn(
-      train = as.matrix(pixels_no_geom[, c(x_col, y_col)]),
+      train = as.matrix(points_no_geom[, c(x_col, y_col)]),
       test = as.matrix(x_old_no_geom[, c(x_col, y_col)]),
       cl = skater_sites,
       k = 1
@@ -423,10 +423,10 @@ reef_skater_fast <- function(
 
     # Add site_id to original x_old (preserves geometry if present)
     x_old$site_id <- skater_sites
-    pixels <- x_old
+    points <- x_old
   }
 
-  pixels$site_id <- skater_sites
+  points$site_id <- skater_sites
 
-  return(pixels)
+  return(points)
 }
