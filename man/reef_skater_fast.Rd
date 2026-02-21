@@ -2,10 +2,10 @@
 % Please edit documentation in R/fast_skater.R
 \name{reef_skater_fast}
 \alias{reef_skater_fast}
-\title{Cluster pixels together using an optimized SKATER algorithm.}
+\title{Cluster points together using an optimized SKATER algorithm.}
 \usage{
 reef_skater_fast(
-  pixels,
+  points,
   n_clust = NA,
   site_size = 250 * 250,
   x_col = "X_standard",
@@ -19,12 +19,12 @@ reef_skater_fast(
 )
 }
 \arguments{
-\item{pixels}{data.frame. Contains values for X and Y coordinates, as well as
+\item{points}{data.frame. Contains values for X and Y coordinates, as well as
 \code{additional_variable_cols}.}
 
 \item{n_clust}{integer numeric. Number of clusters in result output. Default =
-(round(nrow(pixels) / 200)) (dividing habitat into clusters containing an
-average of 200 pixels).}
+(round(nrow(points) / 200)) (dividing habitat into clusters containing an
+average of 200 points).}
 
 \item{site_size}{numeric. Desired site size (area in m^2). Used to calculate
 minimum cluster size constraint based on H3 hexagon resolution. Default =
@@ -46,27 +46,27 @@ minimum cluster size constraint based on H3 hexagon resolution. Default =
 to contribute to the distance matrix for clustering. Default = c("depth_standard").}
 
 \item{method}{character. Distance metric for calculating dissimilarity between
-pixels. Options include "euclidean", "manhattan", "maximum", "canberra",
+points. Options include "euclidean", "manhattan", "maximum", "canberra",
 "binary", "minkowski", "mahalanobis". Default = "euclidean".}
 
-\item{hex_resolution}{integer numeric. H3 hexagon resolution used in pixel
+\item{hex_resolution}{integer numeric. H3 hexagon resolution used in point
 creation. Used to calculate minimum cluster size based on hexagon area at
 this resolution. Default = 12.}
 }
 \value{
-data.frame of pixels with allocated site_ids based on cluster outputs.
+data.frame of points with allocated site_ids based on cluster outputs.
 \code{site_id} values are a combination of the \code{id_col} value, \code{habitat_col} value
 and the cluster allocation.
 }
 \description{
-Take a dataframe of pixels containing geometries of pixels and
+Take a dataframe of points containing geometries of points and
 \code{additional_variable_cols} values and cluster using the SKATER (Spatial
 'K'luster Analysis by Tree Edge Removal) algorithm. This clustering is
 performed by iteratively pruning edges from a minimum spanning tree based
-on the costs of edge removal. Only pixels connected by edges in the MST
+on the costs of edge removal. Only points connected by edges in the MST
 are able to cluster together. This implementation uses a hybrid approach
 combining igraph graph operations with the original SKATER algorithm logic
-for improved performance. For datasets exceeding 10,000 pixels, clustering
-is performed on a random sample with results interpolated to remaining pixels
+for improved performance. For datasets exceeding 10,000 points, clustering
+is performed on a random sample with results interpolated to remaining points
 via nearest neighbor assignment.
 }
