@@ -2,11 +2,11 @@
 % Please edit documentation in R/reef_skater.R
 \name{reef_skater}
 \alias{reef_skater}
-\title{Cluster pixels together using the spdep::skater algorithm.}
+\title{Cluster points together using the spdep::skater algorithm.}
 \usage{
 reef_skater(
-  pixels,
-  n_clust = round(min(10000, nrow(pixels))/200),
+  points,
+  n_clust = round(min(10000, nrow(points))/200),
   site_size = 250 * 250,
   x_col = "X_standard",
   y_col = "Y_standard",
@@ -18,12 +18,12 @@ reef_skater(
 )
 }
 \arguments{
-\item{pixels}{data.frame. Contains values for X and Y coordinates, as well as
+\item{points}{data.frame. Contains values for X and Y coordinates, as well as
 \code{additional_variable_cols}.}
 
 \item{n_clust}{integer numeric. Number of clusters in result output. (Point to
-cut hierarchical clustering tree). Default = (round(nrow(pixels) / 200))
-(dividing habitat into clusters containing an average of 200 pixels).}
+cut hierarchical clustering tree). Default = (round(nrow(points) / 200))
+(dividing habitat into clusters containing an average of 200 points).}
 
 \item{site_size}{numeric. Desired site size (area in m^2). Default = 625,000
 (250m x 250m).}
@@ -46,18 +46,18 @@ option sets up a parallel::Cluster using detectCores() - 2 cores. This paralleli
 prunecost calculations within spdep::skater(). If \code{parallelisation} is not
 set to "Windows", no parallelisation will occur. Default = "Windows".}
 
-\item{hex_resolution}{integer numeric. H3 hexagon resolution used in pixel
+\item{hex_resolution}{integer numeric. H3 hexagon resolution used in point
 creation.}
 }
 \value{
-data.frame of pixels with allocated site_ids based on cluster outputs.
+data.frame of points with allocated site_ids based on cluster outputs.
 \code{site_id} values are a combination of the \code{id_col} value, \code{habitat_col} value
 and the cluster allocation.
 }
 \description{
-Take a dataframe of pixels containing geometries of pixels and
+Take a dataframe of points containing geometries of points and
 \code{additional_variable_cols} values and cluster using the skater algorithm.
 This clustering is performed top-down the costs of pruning each minimum
-spanning tree edge. Only pixels connected by \code{edges} are able to cluster
+spanning tree edge. Only points connected by \code{edges} are able to cluster
 together. For additional information see \strong{insert citation/link}.
 }

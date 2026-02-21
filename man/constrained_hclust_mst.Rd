@@ -5,16 +5,16 @@
 \title{Default habitat clustering function using adespatial::constr.hclust.}
 \usage{
 constrained_hclust_mst(
-  pixels,
+  points,
   distance_alpha = 0.5,
-  n_pixels = 204,
+  n_points = 204,
   x_col = "X_standard",
   y_col = "Y_standard",
   ...
 )
 }
 \arguments{
-\item{pixels}{data.frame. Contains values for X and Y coordinates, as well as
+\item{points}{data.frame. Contains values for X and Y coordinates, as well as
 \code{additional_variable_cols}.}
 
 \item{distance_alpha}{float numeric. Weighting applied to the additional variable
@@ -29,15 +29,15 @@ functions and default values when arguments are not used, see \code{prepare_mst_
 and \code{constrained_hclust()}.}
 }
 \value{
-data.frame of pixels with allocated site_ids based on cluster outputs
+data.frame of points with allocated site_ids based on cluster outputs
 from \code{constrained_hclust()} using \code{prepare_mst_edges} to create a minimum
 spanning tree for input. \code{site_id} values are a combination of the \code{id_col}
 value, \code{habitat_col} value and the cluster allocation.
 }
 \description{
-Take a dataframe of pixels containing \code{additional_variable_cols}
+Take a dataframe of points containing \code{additional_variable_cols}
 values, create a minimum spanning tree using \code{prepare_mst_edges()} and then
-cluster pixels using pixel data and edges with \code{constrained_hclust()}.
+cluster points using point data and edges with \code{constrained_hclust()}.
 Any additional arguments for \code{prepare_mst_edges()} or \code{constrained_hclust()}
 (excluding \code{distance_alpha}) can be included.
 }
