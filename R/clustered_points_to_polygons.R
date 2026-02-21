@@ -81,18 +81,19 @@ hex_to_polygons <- function(x, h3_id_col = "id", site_id_col = "site_id") {
 #'
 #'
 #' @param points data.frame. Contains a row for each point and cluster allocations.
-#' @param site_id_col character or integer. Column containing site allocations for points.
-#'   Default = "site_id".
-#' @param pixel_size numeric. Resolution of original habitat raster cells used to
-#'   extract point data. Must be in the same units as `x_col`/`y_col`.
-#' @param x_col character or integer. Column containing x coordinates for points.
-#' @param y_col character or integer. Column containing y coordinates for points.
 #' @param id_col tidyselect. Column containing unique ID for the reef to be attached
 #'   to outputs.
 #' @param habitat_col tidyselect. Column containing habitat categories.
 #' @param additional_variable_cols tidyselect. Column(s) containing additional
 #'   continuous variables to summarise for points within sites. Output will include
 #'   site polygon median and standard deviation values for all columns selected.
+#' @param site_id_col character or integer. Column containing site allocations for points.
+#'   Default = "site_id".
+#' @param pixel_size numeric. Resolution of original habitat raster cells used to
+#'   extract point data. Must be in the same units as `x_col`/`y_col`.
+#' @param x_col character or integer. Column containing x coordinates for points.
+#' @param y_col character or integer. Column containing y coordinates for points.
+
 #'
 #' @return sf data.frame containing site polygons created from points using allocated
 #'   `site_id_col` values.
