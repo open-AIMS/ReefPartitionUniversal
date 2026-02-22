@@ -31,4 +31,4 @@ terra::values(add_var_raster) <- runif(
 )
 
 # Create reef polygon as a bounding box with the same extent as the rasters
-reef_polygon <- sf::st_as_sfc(sf::st_bbox(add_var_raster))
+reef_polygon <- sf::st_as_sf(sf::st_as_sfc(sf::st_bbox(add_var_raster)))
