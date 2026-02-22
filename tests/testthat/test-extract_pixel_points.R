@@ -1,7 +1,7 @@
 # testing pixel extraction
 
 # Define shared testing data that is valid
-source(test_path("setup_test_data.R"))
+source(test_path("setup_test_inputs.R"))
 
 # 1. Test the outputs of extract_pixel_points()
 extracted_points <- extract_pixel_points(
