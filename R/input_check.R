@@ -17,6 +17,9 @@
 #'   to extract for all selected habitat pixels covering the target reef area. Can be continuous
 #'   or categorical, however the raster will be resampled and the method should be changed for
 #'   categorical data.
+#' @param habitat_categories vector. Vector containing target habitat categories.
+#'   This is used to check that `habitat_raster` contains pixels within `reef_polygon`
+#'   that have valid target category values.
 #'
 #' @return Function errors and provides message if checks are not met. If all checks
 #'   are met, the function will not error, but return NULL.
@@ -26,7 +29,8 @@
 input_check <- function(
   reef_polygon,
   habitat_raster,
-  add_var_raster
+  add_var_raster,
+  habitat_categories
 ) {
   # Perform input data checks before proceeding with computations
 
@@ -88,7 +92,7 @@ input_check <- function(
     mask = TRUE
   )
 
-  if (terra::ncell(habitat_cropped) == 0) {
+  if (!any((values(habitat_cropped) %in% habitat_categories))) {
     stop(
       "Cropping resulted in empty habitat raster - check if reef_polygon overlaps with valid habitat raster data."
     )
