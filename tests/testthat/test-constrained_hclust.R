@@ -1,4 +1,4 @@
-# testing MST calculations on pregenerated random data
+# testing constrained hclust functioning using pregenerated random data
 
 # Define shared testing data that is valid
 source(test_path("setup_test_inputs.R"))
@@ -19,22 +19,31 @@ extracted_points$Y_standard <- scale(extracted_points$Y)
 extracted_points$depth_standard <- scale(extracted_points$depth)
 
 habitat_points <- extracted_points[extracted_points$habitat == 1, ]
+habitat_points$UNIQUE_ID <- "test_reef"
 
-# Test the outputs of prepare_mst function
 mst <- prepare_mst(sf::st_transform(habitat_points, crs = 3857))
 
-test_that("all points accounted", {
-  expect_equal(length(mst), nrow(habitat_points))
-})
+# Test outputs of constrained_hclust function when used with pregenerated data
+clustered_points <- constrained_hclust(
+  habitat_points,
+  igraph::as_edgelist(mst),
+  n_pixels = 100 # Set desired number of points per cluster to 100
+)
 
-test_that("mean weights are the same as precalculated", {
-  expect_equal(mean(igraph::E(mst)$weight), 0.27, tolerance = 0.01)
-})
-
-test_that("mean edge lengths are the same as precalculated", {
+# Test number of clusters is roughly equal
+test_that("number of clusters", {
   expect_equal(
-    as.numeric(mean(igraph::E(mst)$length)),
-    44508.31,
-    tolerance = 0.01
+    length(unique(clustered_points$site_id)),
+    nrow(clustered_points) / 100,
+    tolerance = 1
+  )
+})
+
+# Test mean number of points per cluster is around requested (100)
+test_that("points per cluster", {
+  expect_equal(
+    as.numeric(mean(table(clustered_points$site_id))),
+    100,
+    tolerance = 10
   )
 })
