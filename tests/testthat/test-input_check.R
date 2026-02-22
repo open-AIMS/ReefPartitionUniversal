@@ -1,7 +1,7 @@
 # Test input check function
 
 # Define shared testing data that is valid
-source(test_path("setup_test_data.R"))
+source(test_path("setup_test_inputs.R"))
 
 #### 1. Test input check functions for correct output with valid data
 test_that("input_check for valid data - no error", {
