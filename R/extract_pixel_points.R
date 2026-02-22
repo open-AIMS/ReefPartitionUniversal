@@ -49,7 +49,7 @@ extract_pixel_points <- function(
   resample_method = "bilinear"
 ) {
   # Perform input data checks before proceeding with computations
-  input_check(reef_polygon, habitat_raster, add_var_raster)
+  input_check(reef_polygon, habitat_raster, add_var_raster, habitat_categories)
 
   # Crop the input raster layers for faster extraction
   reef_polygon_terra <- terra::vect(reef_polygon)
