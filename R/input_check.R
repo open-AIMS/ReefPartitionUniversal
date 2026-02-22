@@ -37,15 +37,17 @@ input_check <- function(
   # Ensure that the reef_polygon and categorical habitat raster have the same CRS
   reef_crs <- sf::st_crs(reef_polygon)
   if (sf::st_crs(habitat_raster) != reef_crs) {
-    stop(
-      "Ensure st_crs(habitat_raster) == st_crs(reef_polygon) before proceeding."
+    rlang::abort(
+      "Ensure st_crs(habitat_raster) == st_crs(reef_polygon) before proceeding.",
+      class = "crs_mismatch"
     )
   }
 
   # Ensure that the habitat raster and additional variable raster have the same CRS
   if (sf::st_crs(habitat_raster) != sf::st_crs(add_var_raster)) {
-    stop(
-      "Ensure st_crs(habitat_raster) == st_crs(add_var_raster) before proceeding."
+    rlang::abort(
+      "Ensure st_crs(habitat_raster) == st_crs(add_var_raster) before proceeding.",
+      class = "crs_mismatch"
     )
   }
 
@@ -58,11 +60,12 @@ input_check <- function(
   )
 
   if (!any(habitat_intersects)) {
-    stop(
+    rlang::abort(
       "
             Ensure that reef_polygon intersects with habitat_raster.
             `st_intersects(st_as_sfc(st_bbox(habitat_raster))), reef_polygon, sparse = FALSE)`
-        "
+        ",
+      class = "no_intersection"
     )
   }
 
@@ -75,11 +78,12 @@ input_check <- function(
   )
 
   if (!any(add_var_intersects)) {
-    stop(
+    rlang::abort(
       "
             Ensure that reef_polygon intersects with add_var_raster.
             `st_intersects(st_as_sfc(st_bbox(add_var_raster))), reef_polygon, sparse = FALSE)`
-        "
+        ",
+      class = "no_intersection"
     )
   }
 
@@ -93,14 +97,16 @@ input_check <- function(
   )
 
   if (!any((terra::values(habitat_cropped) %in% habitat_categories))) {
-    stop(
-      "Cropping resulted in empty habitat raster - check if reef_polygon overlaps with valid habitat raster data."
+    rlang::abort(
+      "Cropping resulted in empty habitat raster - check if reef_polygon overlaps with valid habitat raster data.",
+      class = "invalid_data"
     )
   }
 
   if (all(is.na(terra::values(add_var_cropped)))) {
-    stop(
-      "Cropping resulted in empty additional variable raster - check if reef_polygon overlaps with valid additional variable raster data."
+    rlang::abort(
+      "Cropping resulted in empty additional variable raster - check if reef_polygon overlaps with valid additional variable raster data.",
+      class = "invalid_data"
     )
   }
 
