@@ -35,8 +35,7 @@ cells_to_polygons <- function(
   )
 
   # use function 'group_hex' to group hexagons into polygon or multipolygon
-  #sites <- lapply(point_cluster_list, hex_to_polygons)
-  sites <- lapply(point_cluster_list, point_to_polygons)
+  sites <- lapply(point_cluster_list, hex_to_polygons)
 
   sites <- do.call(rbind, sites)
 
