@@ -12,7 +12,7 @@ cluster_reef_pixels(
   additional_variable_cols = c("depth"),
   reef_id_col = "UNIQUE_ID",
   habitat_clustering_function = constrained_hclust_mst,
-  ...
+  clustering_function_args = list()
 )
 }
 \arguments{
