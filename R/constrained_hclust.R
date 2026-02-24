@@ -1,18 +1,18 @@
-#' Cluster pixels together using the adespatial::constr.hclust algorithm.
+#' Cluster points together using the adespatial::constr.hclust algorithm.
 #'
-#' @description Take a dataframe of pixels containing `additional_variable_cols`
-#'   values and edges between pixels in the dataframe and cluster using the
+#' @description Take a dataframe of points containing `additional_variable_cols`
+#'   values and edges between points in the dataframe and cluster using the
 #'   constr.hclust algorithm. This clustering is performed bottom-up based on a
 #'   combined distance matrix of geographic and `additional_variable_cols` distances
-#'   Only pixels connected by `edges` are able to cluster together. For additional
-#'   information see **insert citation/link**. If pixels contains over 30,000
+#'   Only points connected by `edges` are able to cluster together. For additional
+#'   information see **insert citation/link**. If points contains over 30,000
 #'   observations then interpolation will be used to reduce RAM usage. This process
 #'   randomly samples 30,000 for clustering and assigns clusters to the remaining
-#'   pixels using nearest neighbour interpolation.
+#'   points using nearest neighbour interpolation.
 #'
-#' @param pixels data.frame. Contains values for X and Y coordinates, as well as
+#' @param points data.frame. Contains values for X and Y coordinates, as well as
 #'   `additional_variable_cols`.
-#' @param edges matrix. Matrix containing edges between pixels in `pixels`.
+#' @param edges matrix. Matrix containing edges between points in `points`.
 #' @param x_col character. Name of the column holding X coordinates. Default = "X_standard".
 #' @param y_col character. Name of the column holding Y coordinates. Default = "Y_standard".
 #' @param additional_variable_cols character vector. Names of additional columns
@@ -28,23 +28,23 @@
 #'   is applied to the geographic distance matrix. Default = 0.5 (symmetric weighting).
 #' @param beta float numeric. Beta parameter used by adespatial::constr.hclust.
 #'   Parameter value is only used if `method` == "flexible". Default = -1.
-#' @param n_pixels integer numeric. Desired number of pixels in resulting clusters.
+#' @param n_points integer numeric. Desired number of points in resulting clusters.
 #'   Used to calculate n_clust (number of output clusters). Value only used in
 #'   n_clust specification. Default = 204.
 #' @param n_clust integer numeric. Number of clusters in result output. (Point to
-#'   cut hierarchical clustering tree). Default = (round(nrow(pixels) / n_pixels))
-#'   (dividing habitat into clusters containing an average of 200 pixels).
+#'   cut hierarchical clustering tree). Default = (round(nrow(points) / n_points))
+#'   (dividing habitat into clusters containing an average of 200 points).
 #' @param method character. Clustering method to be applied. See adespatial::constr.hclust()
 #'   for more details. Default = "ward.D2".
 #'
-#' @return data.frame of pixels with allocated site_ids based on cluster outputs.
+#' @return data.frame of points with allocated site_ids based on cluster outputs.
 #'   `site_id` values are a combination of the `id_col` value, `habitat_col` value
 #'   and the cluster allocation.
 #'
 #' @export
 #'
 constrained_hclust <- function(
-  pixels,
+  points,
   edges,
   x_col = "X_standard",
   y_col = "Y_standard",
@@ -54,26 +54,17 @@ constrained_hclust <- function(
   distance_method = "manhattan",
   distance_alpha = 0.5,
   beta = -1,
-  n_pixels = 204,
-  n_clust = (round(nrow(pixels) / n_pixels)),
+  n_points = 204,
+  n_clust = (round(nrow(points) / n_points)),
   method = "ward.D2"
 ) {
   site_prefix <- paste(
-    unique(pixels[, id_col, drop = TRUE]),
-    unique(pixels[, habitat_col, drop = TRUE]),
+    unique(points[, id_col, drop = TRUE]),
+    unique(points[, habitat_col, drop = TRUE]),
     sep = "_"
   )
 
-  interpolation <- FALSE
-  if (nrow(pixels) > 30000) {
-    interpolation <- TRUE
-    samplepoints <- sample(c(1:nrow(pixels)), 30000)
-    x_old <- pixels
-    pixels <- pixels[samplepoints, ]
-
-    min_counts <- min_counts * (30000 / nrow(x_old))
-  }
-  coordinates <- sf::st_drop_geometry(pixels[, c(x_col, y_col)])
+  coordinates <- sf::st_drop_geometry(points[, c(x_col, y_col)])
 
   # Calculate weights for combining the distance matrices
   additional_variable_weight <- distance_alpha
@@ -81,7 +72,7 @@ constrained_hclust <- function(
 
   # Calculate the raw distance matrices for additional variables and geographic distance
   D_additional_vars <- dist(
-    pixels[, additional_variable_cols, drop = TRUE],
+    points[, additional_variable_cols, drop = TRUE],
     method = distance_method
   )
   D_geo <- dist(coordinates)
@@ -102,29 +93,20 @@ constrained_hclust <- function(
 
   hclust_sites <- as.factor(paste(site_prefix, hclust_sites, sep = "_"))
 
-  if (interpolation == TRUE) {
-    hclust_sites <- class::knn(
-      pixels[, c(x_col, y_col), drop = TRUE],
-      x_old[, c(x_col, y_col), drop = TRUE],
-      hclust_sites
-    )
-    pixels <- x_old
-  }
-
-  pixels$site_id <- hclust_sites
-  pixels$npixels <- nrow(pixels)
-  pixels
+  points$site_id <- hclust_sites
+  points$npoints <- nrow(points)
+  points
 }
 
 #' Default habitat clustering function using adespatial::constr.hclust.
 #'
-#' @description Take a dataframe of pixels containing `additional_variable_cols`
+#' @description Take a dataframe of points containing `additional_variable_cols`
 #'   values, create a minimum spanning tree using `prepare_mst_edges()` and then
-#'   cluster pixels using pixel data and edges with `constrained_hclust()`.
+#'   cluster points using point data and edges with `constrained_hclust()`.
 #'   Any additional arguments for `prepare_mst_edges()` or `constrained_hclust()`
 #'   (excluding `distance_alpha`) can be included.
 #'
-#' @param pixels data.frame. Contains values for X and Y coordinates, as well as
+#' @param points data.frame. Contains values for X and Y coordinates, as well as
 #'   `additional_variable_cols`.
 #' @param distance_alpha float numeric. Weighting applied to the additional variable
 #'   distance values when creating the distance matrix for clustering. This argument
@@ -136,32 +118,66 @@ constrained_hclust <- function(
 #'   functions and default values when arguments are not used, see `prepare_mst_edges()`
 #'   and `constrained_hclust()`.
 #'
-#' @return data.frame of pixels with allocated site_ids based on cluster outputs
+#' @return data.frame of points with allocated site_ids based on cluster outputs
 #'   from `constrained_hclust()` using `prepare_mst_edges` to create a minimum
 #'   spanning tree for input. `site_id` values are a combination of the `id_col`
 #'   value, `habitat_col` value and the cluster allocation.
 #'
 #' @export
 #'
-constrained_hclust_mst <- function(pixels, distance_alpha = 0.5, ...) {
+constrained_hclust_mst <- function(
+  points,
+  distance_alpha = 0.5,
+  n_points = 204,
+  x_col = "X_standard",
+  y_col = "Y_standard",
+  ...
+) {
   dots <- list(...)
   passed_arguments <- names(dots)
 
   mst_params <- dots[passed_arguments %in% names(formals(prepare_mst))]
-  mst <- do.call(prepare_mst, append(list(pixels = pixels), mst_params))
-  mst_edges <- igraph::as_edgelist(mst)
-
-  # Extract clust_ prefixed args and strip the prefix
   constrained_clust_params <- dots[
     passed_arguments %in% names(formals(constrained_hclust))
   ]
-  clustered_pixels <- do.call(
+
+  interpolation <- FALSE
+  if (nrow(points) > 30000) {
+    interpolation <- TRUE
+    samplepoints <- sample(c(1:nrow(points)), 30000)
+    x_old <- points
+    points <- points[samplepoints, ]
+
+    n_clust <- round(nrow(points) / n_points)
+    constrained_clust_params["n_clust"] <- n_clust
+
+    # min_counts <- min_counts * (30000 / nrow(x_old))
+  }
+
+  mst <- do.call(prepare_mst, append(list(points = points), mst_params))
+  mst_edges <- igraph::as_edgelist(mst)
+
+  # Extract clust_ prefixed args and strip the prefix
+
+  clustered_points <- do.call(
     constrained_hclust,
     append(
-      list(pixels = pixels, edges = mst_edges, distance_alpha = distance_alpha),
+      list(points = points, edges = mst_edges, distance_alpha = distance_alpha),
       constrained_clust_params
     )
   )
 
-  return(clustered_pixels)
+  if (interpolation == TRUE) {
+    hclust_sites <- class::knn(
+      clustered_points[, c(x_col, y_col), drop = TRUE],
+      x_old[, c(x_col, y_col), drop = TRUE],
+      clustered_points$site_id
+    )
+    clustered_points <- x_old
+
+    clustered_points$site_id <- hclust_sites
+    clustered_points$npoints <- nrow(clustered_points)
+  }
+
+  return(clustered_points)
 }
