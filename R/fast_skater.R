@@ -1,0 +1,426 @@
+library(igraph)
+
+# NA handler
+fill_na_nearest <- function(pixel_data, columns) {
+  for (col in columns) {
+    if (any(is.na(pixel_data[[col]]))) {
+      has_value <- which(!is.na(pixel_data[[col]]))
+      has_na <- which(is.na(pixel_data[[col]]))
+
+      if (length(has_value) == 0) next
+
+      coords_with_value <- st_coordinates(st_centroid(pixel_data[has_value, ]))
+      coords_with_na <- st_coordinates(st_centroid(pixel_data[has_na, ]))
+
+      nearest_idx <- apply(coords_with_na, 1, function(na_coord) {
+        # Calculate Euclidean distance without transpose
+        distances <- sqrt(
+          (coords_with_value[, 1] - na_coord[1])^2 +
+            (coords_with_value[, 2] - na_coord[2])^2
+        )
+        has_value[which.min(distances)]
+      })
+
+      pixel_data[[col]][has_na] <- pixel_data[[col]][nearest_idx]
+    }
+  }
+
+  return(pixel_data)
+}
+
+# Helper: Sum of Squares Within
+ssw <- function(data, nodes, method = "euclidean", p = 2, cov = NULL, inverted = FALSE) {
+  if (length(nodes) <= 1) return(0)
+
+  cluster_data <- data[nodes, , drop = FALSE]
+
+  if (method == "euclidean") {
+    no_geom <- st_drop_geometry(cluster_data)
+    center <- colMeans(no_geom)
+    return(sum(colSums((t(no_geom) - center)^2)))
+  } else if (method == "manhattan") {
+      no_geom <- st_drop_geometry(cluster_data)
+      center <- colMeans(no_geom)
+      # Sum of absolute deviations from centroid
+      return(sum(abs(sweep(no_geom, 2, center))))
+  } else if (method == "mahalanobis") {
+    if (is.null(cov)) cov <- var(cluster_data)
+    if (!inverted) cov <- solve(cov)
+    center <- colMeans(cluster_data)
+    diffs <- t(cluster_data) - center
+    return(sum(diag(t(diffs) %*% cov %*% diffs)))
+  } else {
+    dists <- dist(cluster_data, method = method, p = p)
+    return(sum(dists^2) / (2 * length(nodes)))
+  }
+}
+
+#' An approximate Skater algorithm implemented using igraph methods.
+#'
+#' @description Leverages C implementations in igraph package.
+#' The approach collects all edges from all clusters, sorts by global cost, and
+#' iterates until a valid split is found.
+#'
+skater_igraph <- function(edges, data, ncuts, crit, vec.crit,
+                          method = "euclidean", p = 2, cov = NULL,
+                          inverted = FALSE) {
+
+  n <- nrow(edges) + 1
+
+  # Initialize by pre-computing all edge costs
+  message("Pre-computing edge costs...")
+  edge_costs <- numeric(nrow(edges))
+
+  for (i in 1:nrow(edges)) {
+    node1 <- edges[i, 1]
+    node2 <- edges[i, 2]
+    nodes_combined <- c(node1, node2)
+
+    # Cost = increase in SSW when edge is removed
+    ssw_combined <- ssw(data, nodes_combined, method, p, cov, inverted)
+    ssw_separate <- ssw(data, node1, method, p, cov, inverted) +
+      ssw(data, node2, method, p, cov, inverted)
+    edge_costs[i] <- ssw_combined - ssw_separate
+  }
+
+  # Build initial graph with all nodes in one cluster
+  g <- graph_from_edgelist(edges[, 1:2], directed = FALSE)
+  E(g)$cost <- edge_costs
+  E(g)$edge_id <- 1:nrow(edges)  # Track original edge IDs
+
+  # Sort edges by cost (highest cost first)
+  sorted_order <- order(edge_costs, decreasing = TRUE)
+
+  # Initialize cluster list
+  ssto <- ssw(data, 1:n, method, p, cov, inverted)
+  clusters <- list(list(
+    nodes = 1:n,
+    graph = g,
+    ssw = ssto
+  ))
+
+  # Handle parameters
+  if (missing(crit)) crit <- c(1, Inf)
+  if (missing(vec.crit)) vec.crit <- rep(1, n)
+  if (missing(ncuts)) ncuts <- n - 1
+
+  # Track which clusters can't be split further
+  cannot_prune <- logical(1)
+
+  # Apply SKATER algorithm
+  cuts <- 0
+
+  repeat {
+    if (cuts >= ncuts) break
+
+    # Get candidate clusters (those that can still be pruned)
+    candidates <- which(!cannot_prune)
+    if (length(candidates) == 0) break
+
+    # BUILD GLOBAL CANDIDATE LIST (original algorithm approach)
+    # Collect all edges from all candidate clusters
+    candidate_list <- list()
+
+    for (cl_idx in candidates) {
+      cl <- clusters[[cl_idx]]
+      if (ecount(cl$graph) == 0) next
+
+      # Get edges and their costs from this cluster
+      edge_costs_cl <- E(cl$graph)$cost
+      edge_ids_cl <- E(cl$graph)$edge_id
+
+      if (length(edge_costs_cl) > 0) {
+        # Store: cluster_id, edge_index_in_cluster, cost, original_edge_id
+        for (e_idx in 1:length(edge_costs_cl)) {
+          candidate_list[[length(candidate_list) + 1]] <- list(
+            cluster_id = cl_idx,
+            edge_idx = e_idx,
+            cost = edge_costs_cl[e_idx],
+            orig_edge_id = edge_ids_cl[e_idx]
+          )
+        }
+      }
+    }
+
+    if (length(candidate_list) == 0) break
+
+    # Sort all candidates globally by cost (ORIGINAL ALGORITHM)
+    candidate_costs <- sapply(candidate_list, function(x) x$cost)
+    global_order <- order(candidate_costs, decreasing = TRUE)
+    candidate_list <- candidate_list[global_order]
+
+    # Try edges in global order
+    split_successful <- FALSE
+
+    for (cand in candidate_list) {
+      cl_idx <- cand$cluster_id
+      e_idx <- cand$edge_idx
+
+      # Skip if this cluster was already pruned in this iteration
+      if (cl_idx > length(clusters)) next
+      if (cannot_prune[cl_idx]) next
+
+      cl <- clusters[[cl_idx]]
+
+      # Test removing this edge
+      test_graph <- delete_edges(cl$graph, e_idx)
+      comp <- components(test_graph)
+
+      # Check if it actually split (should be 2 components)
+      if (comp$no != 2) next
+
+      # Check size constraints
+      comp_sizes <- sapply(1:comp$no, function(i) {
+        nodes_in_comp <- cl$nodes[comp$membership == i]
+        sum(vec.crit[nodes_in_comp])
+      })
+
+      # Check if constraints are satisfied
+      if (any(comp_sizes < crit[1] | comp_sizes > crit[2])) {
+        # Mark cluster as unprunable if ALL its edges violate constraints
+        # (This is conservative - original SKATER does more bookkeeping)
+        next
+      }
+
+      # Split if a valid split is found
+      new_clusters <- lapply(1:comp$no, function(i) {
+        nodes_in_comp <- cl$nodes[comp$membership == i]
+        subgraph <- induced_subgraph(test_graph, which(comp$membership == i))
+
+        list(
+          nodes = nodes_in_comp,
+          graph = subgraph,
+          ssw = ssw(data, nodes_in_comp, method, p, cov, inverted)
+        )
+      })
+
+      # Replace old cluster with new ones
+      clusters[[cl_idx]] <- new_clusters[[1]]
+      clusters[[length(clusters) + 1]] <- new_clusters[[2]]
+
+      # Update cannot_prune vector
+      cannot_prune[cl_idx] <- FALSE  # New cluster, can try again
+      cannot_prune <- c(cannot_prune, FALSE)  # New cluster can be pruned
+
+      cuts <- cuts + 1
+      split_successful <- TRUE
+      break  # Found valid split, restart evaluation
+    }
+
+    # If no splits were successful, mark remaining candidates as unprunable
+    if (!split_successful) {
+      cannot_prune[candidates] <- TRUE
+    }
+  }
+
+  # Build result
+  groups <- integer(n)
+  for (i in 1:length(clusters)) {
+    groups[clusters[[i]]$nodes] <- i
+  }
+
+  # Build edges.groups structure (for compatibility with original)
+  edges_groups <- lapply(clusters, function(cl) {
+    edge_matrix <- as_edgelist(cl$graph)
+    if (nrow(edge_matrix) > 0) {
+      # Add costs as third column
+      costs <- E(cl$graph)$cost
+      edge_matrix <- cbind(edge_matrix, costs)
+    } else {
+      edge_matrix <- matrix(0, 0, 3)
+    }
+
+    list(
+      node = cl$nodes,
+      edge = edge_matrix,
+      ssw = cl$ssw
+    )
+  })
+
+  result <- list(
+    groups = groups,
+    edges.groups = edges_groups,
+    not.prune = which(cannot_prune),
+    candidates = which(!cannot_prune),
+    ssto = ssto,
+    ssw = cumsum(sapply(clusters, function(x) x$ssw)),
+    crit = crit,
+    vec.crit = vec.crit
+  )
+
+  attr(result, "class") <- "skater"
+  return(result)
+}
+
+#' Cluster pixels together using an optimized SKATER algorithm.
+#'
+#' @description Take a dataframe of pixels containing geometries of pixels and
+#'   `additional_variable_cols` values and cluster using the SKATER (Spatial
+#'   'K'luster Analysis by Tree Edge Removal) algorithm. This clustering is
+#'   performed by iteratively pruning edges from a minimum spanning tree based
+#'   on the costs of edge removal. Only pixels connected by edges in the MST
+#'   are able to cluster together. This implementation uses a hybrid approach
+#'   combining igraph graph operations with the original SKATER algorithm logic
+#'   for improved performance. For datasets exceeding 10,000 pixels, clustering
+#'   is performed on a random sample with results interpolated to remaining pixels
+#'   via nearest neighbor assignment.
+#'
+#' @param pixels data.frame. Contains values for X and Y coordinates, as well as
+#'   `additional_variable_cols`.
+#' @param n_clust integer numeric. Number of clusters in result output. Default =
+#'   (round(nrow(pixels) / 200)) (dividing habitat into clusters containing an
+#'   average of 200 pixels).
+#' @param site_size numeric. Desired site size (area in m^2). Used to calculate
+#'   minimum cluster size constraint based on H3 hexagon resolution. Default =
+#'   250 * 250 (62,500 m^2).
+#' @param x_col character. Name of the column holding X coordinates. Default =
+#'   "X_standard".
+#' @param y_col character. Name of the column holding Y coordinates. Default =
+#'   "Y_standard".
+#' @param habitat_col character. Column holding unique habitat values
+#'   (attached to `id_col` value and site_id values on output). Default = "habitat".
+#' @param id_col character. Column holding ID value for the target reef
+#'   (attached to the site_id values on output). Default = "UNIQUE_ID".
+#' @param additional_variable_cols character vector. Names of additional columns
+#'   to contribute to the distance matrix for clustering. Default = c("depth_standard").
+#' @param hex_resolution integer numeric. H3 hexagon resolution used in pixel
+#'   creation. Used to calculate minimum cluster size based on hexagon area at
+#'   this resolution. Default = 12.
+#' @param method character. Distance metric for calculating dissimilarity between
+#'   pixels. Options include "euclidean", "manhattan", "maximum", "canberra",
+#'   "binary", "minkowski", "mahalanobis". Default = "euclidean".
+#'
+#' @return data.frame of pixels with allocated site_ids based on cluster outputs.
+#'   `site_id` values are a combination of the `id_col` value, `habitat_col` value
+#'   and the cluster allocation.
+#'
+#' @export
+#'
+reef_skater_fast <- function(
+    pixels,
+    n_clust = NA,
+    site_size = 250 * 250,
+    x_col = "X_standard",
+    y_col = "Y_standard",
+    habitat_col = "habitat",
+    id_col = "UNIQUE_ID",
+    additional_variable_cols = c("depth_standard"),
+    hex_resolution = 12,
+    cell_resolution = NA,
+    mst_alpha=0.5,
+    method = "euclidean"
+) {
+
+  site_prefix <- paste(unique(pixels[, id_col, drop = TRUE]),
+                       unique(pixels[, habitat_col, drop = TRUE]),
+                       sep = "_")
+  pixels$npixels <- nrow(pixels)
+
+  if (is.na(hex_resolution)==FALSE){
+      #H3 hexagon average size
+  hex_size <- data.frame(
+    Res = c(7:15),
+    Size = c(5161293, 737327, 105332, 15047, 2149, 307.09, 43.87, 6.267, 0.895)
+  )
+  min_counts <- round(site_size / hex_size$Size[hex_size$Res == hex_resolution])
+  
+  if (is.na(n_clust)) {
+    total_area <- nrow(pixels) * hex_size$Size[hex_size$Res == hex_resolution]
+    n_clust <- ceiling(max(1, round(total_area / site_size)))
+  }
+  
+  
+  } else {
+    min_counts <- round(site_size / cell_resolution)
+    
+    if (is.na(n_clust)) {
+      total_area <- nrow(pixels) * cell_resolution
+      n_clust <- ceiling(max(1, round(total_area / site_size)))
+    }
+  }
+
+  
+
+  # Handle large datasets via interpolation
+  interpolation <- FALSE
+  if (nrow(pixels) > 30000) {
+    interpolation <- TRUE
+    samplepoints <- sample(1:nrow(pixels), 30000)
+    x_old <- pixels
+    pixels <- pixels[samplepoints, ]
+
+    # Adjust minimum counts for sampled dataset
+    min_counts <- min_counts * (30000 / nrow(x_old))
+  }
+
+  # Early return if too few pixels for clustering
+  if (nrow(pixels) < 1.5 * min_counts) {
+    pixels$site_id <- as.factor(paste(site_prefix, 1, sep = "_"))
+    if (interpolation) {
+      x_old$site_id <- pixels$site_id[1]
+      return(x_old)
+    }
+    return(pixels)
+  }
+
+  # Build minimum spanning tree
+  message("Building minimum spanning tree...")
+  mst <- prepare_mst(
+    pixels,
+    additional_variable_cols = additional_variable_cols,
+    hex_resolution = 12,
+    mst_alpha = mst_alpha
+  )
+
+  # Convert MST to edge list for skater_igraph
+  edges <- igraph::as_edgelist(mst)
+
+  # Run hybrid SKATER clustering
+  message(sprintf("Clustering %d pixels into %d groups...", nrow(pixels), n_clust))
+
+  clusters <- skater_igraph(
+    edges = edges,
+    data = pixels[, additional_variable_cols, drop = FALSE],
+    ncuts = n_clust - 1,  # ncuts is number of cuts, not final clusters
+    crit = c(min_counts, Inf),
+    method = method
+  )
+
+  # Assign cluster labels with site prefix
+  skater_sites <- as.factor(paste(site_prefix, clusters$groups, sep = "_"))
+
+  # Interpolate back to full dataset if needed
+  if (interpolation) {
+    message("Interpolating clusters to full dataset...")
+
+    # Drop geometry if `sf` object for knn training
+    if (inherits(pixels, "sf")) {
+      pixels_no_geom <- sf::st_drop_geometry(pixels)
+    } else {
+      pixels_no_geom <- pixels
+    }
+
+    # Drop geometry from full dataset for knn testing
+    if (inherits(x_old, "sf")) {
+      x_old_no_geom <- sf::st_drop_geometry(x_old)
+    } else {
+      x_old_no_geom <- x_old
+    }
+
+    # Perform knn interpolation on non-geometry data
+    skater_sites <- class::knn(
+      train = as.matrix(pixels_no_geom[, c(x_col, y_col)]),
+      test = as.matrix(x_old_no_geom[, c(x_col, y_col)]),
+      cl = skater_sites,
+      k = 1
+    )
+
+    # Add site_id to original x_old (preserves geometry if present)
+    x_old$site_id <- skater_sites
+    pixels <- x_old
+  }
+
+  pixels$site_id <- skater_sites
+
+  return(pixels)
+}
