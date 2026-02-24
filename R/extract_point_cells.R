@@ -56,6 +56,8 @@ extract_point_cells <- function(
   # Perform input data checks before proceeding with computations
   input_check(reef_polygon, habitat_raster, add_var_raster, habitat_categories)
 
+  reef_crs <- st_crs(reef_polygon)
+
   # Crop the input raster layers for faster extraction
   reef_polygon_terra <- terra::vect(reef_polygon)
   habitat_cropped <- terra::crop(habitat_raster, reef_polygon_terra)
