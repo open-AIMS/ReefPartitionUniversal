@@ -19,18 +19,18 @@
 #'
 #' @export
 #'
-site_postprocessing <- function(reef_site_polygons, min_site_area) {
+site_postprocessing <- function(reef_site_polygons, min_site_area = 50 * 307) {
   reef_site_polygons$area <- sf::st_area(reef_site_polygons)
 
   RowsToRemove <- c()
   ExtraSites <- c("a", "b", "c", "d", "e", "f")
-  NewSites <- reef_site_polygons[1, ] # data.frame("site_id","habitat","area","UNIQUE_ID","Reef","geometry")
+  NewSites <- reef_site_polygons[1, ]
   site_polygons_crs <- sf::st_crs(reef_site_polygons)
 
   for (i in 1:nrow(reef_site_polygons)) {
     # print(i)
-    if (as.numeric(reef_site_polygons$area[i]) < min_site_area * 307 / 10^6) {
-      # Removes sites that are smaller than a minimum threshold (50 hexagons * 307m²/10⁶) #that 50 is now parameter, use parameter name instead
+    if (as.numeric(reef_site_polygons$area[i]) < min_site_area) {
+      # Removes sites that are smaller than a minimum threshold
       RowsToRemove <- c(RowsToRemove, i)
       print(glue::glue("{i} too small"))
     } else {
@@ -71,7 +71,7 @@ site_postprocessing <- function(reef_site_polygons, min_site_area) {
 
 multipolygon_processing <- function(
   polygon,
-  min_site_area = 50,
+  min_site_area = 50 * 307,
   site_polygons_crs = 4326
 ) {
   PolygonSeperate <- data.frame(index = 1:length(polygon$geometry[[1]]))
@@ -88,11 +88,14 @@ multipolygon_processing <- function(
   for (lists in 1:length(polygon$geometry[[1]])) {
     PolygonSeperate$geometry[
       lists
-    ] <- sf::st_sfc(sf::st_polygon(polygon$geometry[[1]][[
-      lists
-    ]])) %>%
+    ] <- sf::st_sfc(
+      sf::st_polygon(polygon$geometry[[1]][[
+        lists
+      ]]),
+      crs = site_polygons_crs
+    ) %>%
       sf::st_set_crs(site_polygons_crs)
-    PolygonSeperate$area[lists] <- nrow(polygon$geometry[[1]][[lists]][[1]])
+    PolygonSeperate$area[lists] <- st_area(PolygonSeperate$geometry[lists][[1]])
   }
 
   while (nrow(PolygonSeperate) > 0) {
