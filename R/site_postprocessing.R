@@ -10,7 +10,11 @@
 #' @param reef_site_polygons data.frame. Contains a row for each unique site, for
 #'   a target reef of interest.
 #' @param min_site_area numeric. Minimum threshold for removing sites that are too
-#'   small in their total site area. Must be in the same units returned by `sf::st_area()`.
+#'   small in their total site area. This value should be smaller than the site_area
+#'   used in other parts of the workflow as it is intended as an absolute minimum
+#'   threshold. Must be in the same units returned by `sf::st_area()`.
+#'   Default value = 50 * 307, where 307 is the area (in m^2) of a H3 cell with
+#'   resolution of 12 and 50 is the minimum number of hexagons per site.
 #'
 #' @return data.frame containing all site polygons for the target reef after post-
 #'   processing has taken place on undersized or multipolygon sites.
