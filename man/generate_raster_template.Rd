@@ -12,7 +12,8 @@ generate_raster_template(vector_data, pixel_resolution = NA)
 \item{pixel_resolution}{numeric. Resolution of raster cells to use in template
 creation. Default is NA. If pixel_resolution is NA then a default resolution
 of 0.001 degrees or 100m will be used depending on the unit of \code{vector_data}
-coordinate reference system.}
+coordinate reference system. This default resolution is used to prevent
+long execution times and over-use of RAM.}
 }
 \value{
 template raster object based on vector_data extent.
