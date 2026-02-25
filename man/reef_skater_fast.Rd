@@ -13,9 +13,10 @@ reef_skater_fast(
   habitat_col = "habitat",
   id_col = "UNIQUE_ID",
   additional_variable_cols = c("depth_standard"),
-  cell_resolution = 100,
+  point_area = 100,
   mst_alpha = 0.5,
-  method = "euclidean"
+  method = "euclidean",
+  interpolation_threshold = 30000
 )
 }
 \arguments{
@@ -45,13 +46,23 @@ minimum cluster size constraint based on H3 hexagon resolution. Default =
 \item{additional_variable_cols}{character vector. Names of additional columns
 to contribute to the distance matrix for clustering. Default = c("depth_standard").}
 
+\item{point_area}{integer numeric. Area implicitly occupied by each point.
+Should be in the same units as \code{site_size}.
+If using pixels extracted from raster data then this value is res(raster)
+\itemize{
+\item res(raster), if using H3 cells then this value is the H3 cell area determined
+by the hexagon resolution (e.g. resolution 12 = cell area 307.2 m^2). Default
+point_area = 100 m^2.
+}}
+
 \item{method}{character. Distance metric for calculating dissimilarity between
 points. Options include "euclidean", "manhattan", "maximum", "canberra",
 "binary", "minkowski", "mahalanobis". Default = "euclidean".}
 
-\item{hex_resolution}{integer numeric. H3 hexagon resolution used in point
-creation. Used to calculate minimum cluster size based on hexagon area at
-this resolution. Default = 12.}
+\item{interpolation_threshold}{numeric. Threshold from where to sample random
+points and interpolate clusters for remaining points. This value should be
+scaled with reef area for larger reefs. Default value is 30,000, setting a higher
+threshold may result in long computation times and high RAM usage.}
 }
 \value{
 data.frame of points with allocated site_ids based on cluster outputs.
