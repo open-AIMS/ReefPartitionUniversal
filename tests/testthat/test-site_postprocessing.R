@@ -77,7 +77,7 @@ test_that("
 
     distances <- sf::st_distance(sf::st_as_sfc(
       seperate_polygons$geometry,
-      crs = site_polygon_crs
+      crs = site_polygons_crs
     ))
     dist_to_largest <- distances[
       which(seperate_polygons$area == max(seperate_polygons$area)),
