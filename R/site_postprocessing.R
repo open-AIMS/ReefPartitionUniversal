@@ -99,7 +99,9 @@ multipolygon_processing <- function(
       crs = site_polygons_crs
     ) %>%
       sf::st_set_crs(site_polygons_crs)
-    PolygonSeperate$area[lists] <- st_area(PolygonSeperate$geometry[lists][[1]])
+    PolygonSeperate$area[lists] <- sf::st_area(PolygonSeperate$geometry[lists][[
+      1
+    ]])
   }
 
   while (nrow(PolygonSeperate) > 0) {
