@@ -20,7 +20,7 @@ clustered_points <- cluster_reef_points(
   extracted_points,
   clustering_function_args = list(
     site_size = 50 * (res * res),
-    cell_resolution = res * res
+    point_area = res * res
   )
 )
 
