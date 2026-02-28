@@ -27,7 +27,7 @@ mst <- prepare_mst(sf::st_transform(habitat_points, crs = 3857))
 clustered_points <- constrained_hclust(
   habitat_points,
   igraph::as_edgelist(mst),
-  n_pixels = 100 # Set desired number of points per cluster to 100
+  n_points = 100 # Set desired number of points per cluster to 100
 )
 
 # Test number of clusters is roughly equal

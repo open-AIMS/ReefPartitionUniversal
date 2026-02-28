@@ -115,7 +115,7 @@ multipolygon_processing <- function(
     PolygonSeperate$area[lists] <- sf::st_area(individual_poly)
   }
 
-  PolygonSeperate <- sf::st_as_sf(PolygonSeperate, crs = site_polygon_crs)
+  PolygonSeperate <- sf::st_as_sf(PolygonSeperate, crs = site_polygons_crs)
 
   while (nrow(PolygonSeperate) > 0) {
     LargestIndex <- which(PolygonSeperate$area == max(PolygonSeperate$area))[1]
