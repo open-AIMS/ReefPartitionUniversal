@@ -303,12 +303,19 @@ skater_igraph <- function(
 #'   (attached to the site_id values on output). Default = "UNIQUE_ID".
 #' @param additional_variable_cols character vector. Names of additional columns
 #'   to contribute to the distance matrix for clustering. Default = c("depth_standard").
-#' @param hex_resolution integer numeric. H3 hexagon resolution used in point
-#'   creation. Used to calculate minimum cluster size based on hexagon area at
-#'   this resolution. Default = 12.
+#' @param point_area integer numeric. Area implicitly occupied by each point.
+#'   Should be in the same units as `site_size`.
+#'   If using pixels extracted from raster data then this value is res(raster)
+#'   * res(raster), if using H3 cells then this value is the H3 cell area determined
+#'   by the hexagon resolution (e.g. resolution 12 = cell area 307.2 m^2). Default
+#'   point_area = 100 m^2.
 #' @param method character. Distance metric for calculating dissimilarity between
 #'   points. Options include "euclidean", "manhattan", "maximum", "canberra",
 #'   "binary", "minkowski", "mahalanobis". Default = "euclidean".
+#' @param interpolation_threshold numeric. Threshold from where to sample random
+#'   points and interpolate clusters for remaining points. This value should be
+#'   scaled with reef area for larger reefs. Default value is 30,000, setting a higher
+#'   threshold may result in long computation times and high RAM usage.
 #'
 #' @return data.frame of points with allocated site_ids based on cluster outputs.
 #'   `site_id` values are a combination of the `id_col` value, `habitat_col` value
@@ -325,9 +332,10 @@ reef_skater_fast <- function(
   habitat_col = "habitat",
   id_col = "UNIQUE_ID",
   additional_variable_cols = c("depth_standard"),
-  cell_resolution = 100,
+  point_area = 100,
   mst_alpha = 0.5,
-  method = "euclidean"
+  method = "euclidean",
+  interpolation_threshold = 30000
 ) {
   site_prefix <- paste(
     unique(points[, id_col, drop = TRUE]),
@@ -336,23 +344,23 @@ reef_skater_fast <- function(
   )
   points$npoints <- nrow(points)
 
-  min_counts <- round(site_size / cell_resolution)
+  min_counts <- round(site_size / point_area)
 
   if (is.na(n_clust)) {
-    total_area <- nrow(points) * cell_resolution
+    total_area <- nrow(points) * point_area
     n_clust <- ceiling(max(1, round(total_area / site_size)))
   }
 
   # Handle large datasets via interpolation
   interpolation <- FALSE
-  if (nrow(points) > 30000) {
+  if (nrow(points) > interpolation_threshold) {
     interpolation <- TRUE
-    samplepoints <- sample(1:nrow(points), 30000)
+    samplepoints <- sample(1:nrow(points), interpolation_threshold)
     x_old <- points
     points <- points[samplepoints, ]
 
     # Adjust minimum counts for sampled dataset
-    min_counts <- min_counts * (30000 / nrow(x_old))
+    min_counts <- min_counts * (interpolation_threshold / nrow(x_old))
   }
 
   # Early return if too few points for clustering

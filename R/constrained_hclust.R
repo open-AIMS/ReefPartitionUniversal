@@ -111,6 +111,15 @@ constrained_hclust <- function(
 #' @param distance_alpha float numeric. Weighting applied to the additional variable
 #'   distance values when creating the distance matrix for clustering. This argument
 #'   is not included in `...` for discoverability.
+#' @param n_points numeric. Desired number of points per cluster. Default = 204 (
+#'   which equates to site sizes of 62,500m^2 when using H3 cells of resolution 12).
+#' @param x_col character. Name of column holding X coordinate values. Default =
+#'   "X_standard".
+#' @param y_col character. Name of column holding Y coordinates. Default = "Y_standard".
+#' @param interpolation_threshold numeric. Threshold from where to sample random
+#'   points and interpolate clusters for remaining points. This value should be
+#'   scaled with reef area for larger reefs. Default value is 30,000, setting a higher
+#'   threshold may result in long computation times and high RAM usage.
 #' @param ... additional arguments. Additional arguments can be used here and will
 #'   be passed onto `prepare_mst_edges()` and `constrained_hclust()` functions.
 #'   These arguments must be named. `distance_alpha` argument is not included in
@@ -131,6 +140,7 @@ constrained_hclust_mst <- function(
   n_points = 204,
   x_col = "X_standard",
   y_col = "Y_standard",
+  interpolation_threshold = 30000,
   ...
 ) {
   dots <- list(...)
@@ -142,16 +152,14 @@ constrained_hclust_mst <- function(
   ]
 
   interpolation <- FALSE
-  if (nrow(points) > 30000) {
+  if (nrow(points) > interpolation_threshold) {
     interpolation <- TRUE
-    samplepoints <- sample(c(1:nrow(points)), 30000)
+    samplepoints <- sample(c(1:nrow(points)), interpolation_threshold)
     x_old <- points
     points <- points[samplepoints, ]
 
     n_clust <- round(nrow(points) / n_points)
     constrained_clust_params["n_clust"] <- n_clust
-
-    # min_counts <- min_counts * (30000 / nrow(x_old))
   }
 
   mst <- do.call(prepare_mst, append(list(points = points), mst_params))
