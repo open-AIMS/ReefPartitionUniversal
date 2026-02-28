@@ -11,8 +11,8 @@ cluster_reef_points(
   y_col = "Y",
   additional_variable_cols = c("depth"),
   reef_id_col = "UNIQUE_ID",
-  clustering_function_args = list()
   habitat_clustering_function = reef_skater_fast,
+  clustering_function_args = list()
 )
 }
 \arguments{
