@@ -92,13 +92,13 @@ input_check <- function(
     mask = TRUE
   )
 
-  if (!any((values(habitat_cropped) %in% habitat_categories))) {
+  if (!any((terra::values(habitat_cropped) %in% habitat_categories))) {
     stop(
       "Cropping resulted in empty habitat raster - check if reef_polygon overlaps with valid habitat raster data."
     )
   }
 
-  if (all(is.na(values(add_var_cropped)))) {
+  if (all(is.na(terra::values(add_var_cropped)))) {
     stop(
       "Cropping resulted in empty additional variable raster - check if reef_polygon overlaps with valid additional variable raster data."
     )
