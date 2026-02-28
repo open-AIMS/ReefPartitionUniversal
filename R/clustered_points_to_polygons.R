@@ -154,8 +154,8 @@ pixels_to_polygons <- function(
     sf::st_drop_geometry() %>%
     dplyr::group_by(site_id) %>%
     dplyr::summarise(
-      habitat = first({{ habitat_col }}),
-      UNIQUE_ID = first({{ id_col }}),
+      habitat = dplyr::first({{ habitat_col }}),
+      UNIQUE_ID = dplyr::first({{ id_col }}),
       n_cells = nrow(points),
       dplyr::across(
         {{ cols }},
