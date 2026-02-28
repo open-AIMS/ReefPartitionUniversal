@@ -10,7 +10,11 @@
 #' @param reef_site_polygons data.frame. Contains a row for each unique site, for
 #'   a target reef of interest.
 #' @param min_site_area numeric. Minimum threshold for removing sites that are too
-#'   small in their total site area. Must be in the same units returned by `sf::st_area()`.
+#'   small in their total site area. This value should be smaller than the site_area
+#'   used in other parts of the workflow as it is intended as an absolute minimum
+#'   threshold. Must be in the same units returned by `sf::st_area()`.
+#'   Default value = 50 * 307, where 307 is the area (in m^2) of a H3 cell with
+#'   resolution of 12 and 50 is the minimum number of hexagons per site.
 #'
 #' @return data.frame containing all site polygons for the target reef after post-
 #'   processing has taken place on undersized or multipolygon sites.
@@ -19,18 +23,18 @@
 #'
 #' @export
 #'
-site_postprocessing <- function(reef_site_polygons, min_site_area) {
+site_postprocessing <- function(reef_site_polygons, min_site_area = 50 * 307) {
   reef_site_polygons$area <- sf::st_area(reef_site_polygons)
 
   RowsToRemove <- c()
   ExtraSites <- c("a", "b", "c", "d", "e", "f")
-  NewSites <- reef_site_polygons[1, ] # data.frame("site_id","habitat","area","UNIQUE_ID","Reef","geometry")
+  NewSites <- reef_site_polygons[1, ]
   site_polygons_crs <- sf::st_crs(reef_site_polygons)
 
   for (i in 1:nrow(reef_site_polygons)) {
     # print(i)
-    if (as.numeric(reef_site_polygons$area[i]) < min_site_area * 307 / 10^6) {
-      # Removes sites that are smaller than a minimum threshold (50 hexagons * 307m²/10⁶) #that 50 is now parameter, use parameter name instead
+    if (as.numeric(reef_site_polygons$area[i]) < min_site_area) {
+      # Removes sites that are smaller than a minimum threshold
       RowsToRemove <- c(RowsToRemove, i)
       print(glue::glue("{i} too small"))
     } else {
@@ -71,7 +75,7 @@ site_postprocessing <- function(reef_site_polygons, min_site_area) {
 
 multipolygon_processing <- function(
   polygon,
-  min_site_area = 50,
+  min_site_area = 50 * 307,
   site_polygons_crs = 4326
 ) {
   PolygonSeperate <- data.frame(index = 1:length(polygon$geometry[[1]]))
@@ -88,11 +92,16 @@ multipolygon_processing <- function(
   for (lists in 1:length(polygon$geometry[[1]])) {
     PolygonSeperate$geometry[
       lists
-    ] <- sf::st_sfc(sf::st_polygon(polygon$geometry[[1]][[
-      lists
-    ]])) %>%
+    ] <- sf::st_sfc(
+      sf::st_polygon(polygon$geometry[[1]][[
+        lists
+      ]]),
+      crs = site_polygons_crs
+    ) %>%
       sf::st_set_crs(site_polygons_crs)
-    PolygonSeperate$area[lists] <- nrow(polygon$geometry[[1]][[lists]][[1]])
+    PolygonSeperate$area[lists] <- sf::st_area(PolygonSeperate$geometry[lists][[
+      1
+    ]])
   }
 
   while (nrow(PolygonSeperate) > 0) {
