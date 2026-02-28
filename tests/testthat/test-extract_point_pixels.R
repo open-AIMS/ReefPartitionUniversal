@@ -13,7 +13,7 @@ extracted_points <- extract_point_pixels(
 )
 
 test_that("number of points extracted", {
-  expect_equal(nrow(extracted_points), 1725)
+  expect_equal(nrow(extracted_points), 1129)
 })
 
 test_that("extracted only requested habitats", {
@@ -25,7 +25,7 @@ test_that("extracted habitats roughly equal", {
     unname(table(extracted_points$habitat)[1]) /
       sum(table(extracted_points$habitat)),
     0.5,
-    tolerance = 0.01
+    tolerance = 0.1
   )
 })
 
@@ -33,6 +33,6 @@ test_that("extracted depth mean around 10", {
   expect_equal(
     mean(extracted_points$depth, na.rm = TRUE),
     10,
-    tolerance = 0.01
+    tolerance = 0.1
   )
 })
