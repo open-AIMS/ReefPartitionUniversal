@@ -28,7 +28,7 @@ res <- 0.25 * 111320
 clustered_points <- reef_skater_fast(
   habitat_points,
   site_size = 50 * (res * res),
-  cell_resolution = res * res # Set desired number of points per cluster to 100
+  point_area = res * res # Set desired number of points per cluster to 100
 )
 
 # Test number of clusters is roughly equal
