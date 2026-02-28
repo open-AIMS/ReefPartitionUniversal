@@ -20,16 +20,16 @@ generate_raster_template <- function(vector_data, pixel_resolution = NA) {
     }
   }
 
-  bbox <- sf::st_bbox(aca_vector)
+  bbox <- sf::st_bbox(vector_data)
   template <- terra::rast(
     extent = terra::ext(
-      bbox["xmin"] - pixel_resolution / 2,
-      bbox["xmax"] + pixel_resolution / 2,
-      bbox["ymin"] - pixel_resolution / 2,
-      bbox["ymax"] + pixel_resolution / 2
+      bbox["xmin"],
+      bbox["xmax"],
+      bbox["ymin"],
+      bbox["ymax"]
     ),
     resolution = pixel_resolution,
-    crs = terra::crs(aca_vector)
+    crs = terra::crs(vector_data)
   )
 
   return(template)
