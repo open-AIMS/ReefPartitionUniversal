@@ -21,7 +21,7 @@ test_that("input_check for valid data - no error", {
 # 2.1. Test CRS error when habitat_raster is non-matching
 test_that("habitat raster crs check", {
   new_habitat_raster <- habitat_raster
-  crs(new_habitat_raster) <- "epsg:3112"
+  terra::crs(new_habitat_raster) <- "epsg:3112"
   expect_error(
     input_check(
       reef_polygon,
@@ -36,7 +36,7 @@ test_that("habitat raster crs check", {
 # 2.2. Test CRS error when add_var_raster is non-matching
 test_that("additional variable raster crs check", {
   new_add_var_raster <- add_var_raster
-  crs(new_add_var_raster) <- "epsg:3112"
+  terra::crs(new_add_var_raster) <- "epsg:3112"
   expect_error(
     input_check(
       reef_polygon,
@@ -115,7 +115,7 @@ test_that("additional variable raster reef intersection", {
 # 4.1. Test when habitat_raster does not contain valid data for the target reef
 test_that("invalid habitat raster values", {
   invalid_habitat_raster <- habitat_raster
-  values(invalid_habitat_raster) <- NA
+  terra::values(invalid_habitat_raster) <- NA
 
   expect_error(
     input_check(
@@ -131,7 +131,7 @@ test_that("invalid habitat raster values", {
 # 4.1. Test when add_var_raster does not contain valid data for the target reef
 test_that("invalid additional variable raster values", {
   invalid_add_var_raster <- add_var_raster
-  values(invalid_add_var_raster) <- NA
+  terra::values(invalid_add_var_raster) <- NA
 
   expect_error(
     input_check(

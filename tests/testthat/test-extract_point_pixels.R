@@ -4,7 +4,7 @@
 source(test_path("setup_test_inputs.R"))
 
 # 1. Test the outputs of extract_pixel_points()
-extracted_points <- extract_pixel_points(
+extracted_points <- extract_point_pixels(
   reef_polygon,
   habitat_raster,
   add_var_raster,
