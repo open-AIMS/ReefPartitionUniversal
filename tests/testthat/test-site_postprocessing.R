@@ -44,6 +44,8 @@ post_process <- site_postprocessing(
   max_distance = max_distance
 )
 
+site_polygon_crs <- sf::st_crs(post_process)
+
 test_that("
     Ensure post processing didn't result in any multipolygon subcomponents with
     distances > max_distance from their largest subcomponent.

@@ -3,7 +3,7 @@
 # Define shared testing data that is valid
 source(test_path("setup_test_inputs.R"))
 
-extracted_points <- extract_pixel_points(
+extracted_points <- extract_point_pixels(
   reef_polygon,
   habitat_raster,
   add_var_raster,
