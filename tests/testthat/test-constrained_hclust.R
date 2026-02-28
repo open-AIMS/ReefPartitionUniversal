@@ -35,7 +35,7 @@ test_that("number of clusters", {
   expect_equal(
     length(unique(clustered_points$site_id)),
     nrow(clustered_points) / 100,
-    tolerance = 1
+    tolerance = 0.25
   )
 })
 
@@ -44,6 +44,6 @@ test_that("points per cluster", {
   expect_equal(
     as.numeric(mean(table(clustered_points$site_id))),
     100,
-    tolerance = 10
+    tolerance = 0.25
   )
 })
