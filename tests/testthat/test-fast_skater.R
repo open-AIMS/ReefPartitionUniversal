@@ -21,21 +21,21 @@ extracted_points$depth_standard <- scale(extracted_points$depth)
 habitat_points <- extracted_points[extracted_points$habitat == 1, ]
 habitat_points$UNIQUE_ID <- "test_reef"
 
-# With 250 * 250 desired site size and 553 points and rough cell resolution of 2500m, the desired number of clusters is:
-desired_clusters <- (15000 * 15000 * nrow(habitat_points)) / (100000 * 100000)
+desired_points <- 50
+res <- 0.25 * 111320
 
 # Test outputs of reef_skater_fast function when used with pregenerated data
 clustered_points <- reef_skater_fast(
   habitat_points,
-  site_size = 100000 * 100000,
-  cell_resolution = 15000 * 15000 # Set desired number of points per cluster to 100
+  site_size = 50 * (res * res),
+  cell_resolution = res * res # Set desired number of points per cluster to 100
 )
 
 # Test number of clusters is roughly equal
 test_that("number of clusters", {
   expect_equal(
     length(unique(clustered_points$site_id)),
-    desired_clusters,
+    nrow(clustered_points) / 50,
     tolerance = 0.3
   )
 })
