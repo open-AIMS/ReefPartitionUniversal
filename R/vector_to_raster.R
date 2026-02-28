@@ -65,14 +65,16 @@ generate_raster_template <- function(vector_data, pixel_resolution = NA) {
 #'
 #' @export
 #'
-aca_vector_to_raster <- function(
+vector_to_raster <- function(
   vector_data,
   data_column,
-  output_file,
+  output_file = NA,
   raster_template = generate_raster_template(vector_data)
 ) {
-  if (file.exists(output_file)) {
-    rlang::abort("Output raster already exists.", class = "file_exists")
+  if (!is.na(output_file)) {
+    if (file.exists(output_file)) {
+      rlang::abort("Output raster already exists.", class = "file_exists")
+    }
   }
 
   column_name <- data_column
@@ -90,21 +92,33 @@ aca_vector_to_raster <- function(
       drop = TRUE
     ]))
 
-    write.csv(
-      value_levels,
-      gsub(x = output_file, pattern = ".tif", replacement = "_levels.csv"),
-      row.names = FALSE
-    )
+    if (!is.na(output_file)) {
+      write.csv(
+        value_levels,
+        gsub(x = output_file, pattern = ".tif", replacement = "_levels.csv"),
+        row.names = FALSE
+      )
+    }
   }
 
-  raster_output <- terra::rasterize(
-    x = terra::vect(vector_data[, column_name]),
-    y = raster_template,
-    field = column_name,
-    background = NA,
-    touches = TRUE,
-    filename = output_file
-  )
+  if (!is.na(output_file)) {
+    raster_output <- terra::rasterize(
+      x = terra::vect(vector_data[, column_name]),
+      y = raster_template,
+      field = column_name,
+      background = NA,
+      touches = TRUE,
+      filename = output_file
+    )
+  } else {
+    raster_output <- terra::rasterize(
+      x = terra::vect(vector_data[, column_name]),
+      y = raster_template,
+      field = column_name,
+      background = NA,
+      touches = TRUE
+    )
+  }
 
   return(raster_output)
 }
