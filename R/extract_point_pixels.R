@@ -67,7 +67,7 @@ extract_point_pixels <- function(
   ) %>%
     na.omit()
   pts <- pts[pts$categorical_habitat %in% habitat_categories, ] # filter habitats
-  pixel_points <- st_as_sf(pts, coords = c("x", "y"), crs = reef_crs)
+  pixel_points <- sf::st_as_sf(pts, coords = c("x", "y"), crs = reef_crs)
 
   additional_var_values <- terra::extract(
     add_var_cropped,
