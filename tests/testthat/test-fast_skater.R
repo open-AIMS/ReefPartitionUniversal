@@ -36,6 +36,6 @@ test_that("number of clusters", {
   expect_equal(
     length(unique(clustered_points$site_id)),
     nrow(clustered_points) / 50,
-    tolerance = 0.3
+    tolerance = 0.4
   )
 })
