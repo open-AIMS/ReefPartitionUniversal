@@ -36,6 +36,7 @@ Imports:
     quarto,
     class,
     tidygraph
+Remotes: github::crazycapivara/h3-r
 VignetteBuilder: quarto
 URL: https://open-aims.github.io/ReefPartitionUniversal/
 Suggests: 
