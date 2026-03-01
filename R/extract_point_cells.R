@@ -114,7 +114,10 @@ extract_point_cells <- function(
   point_cells <- h3::h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
 
   if (length(hexid) < 2) {
-    stop("Less than 2 pixels identified from inputs.")
+    rlang::abort(
+      "Less than 2 pixels identified from inputs.",
+      class = "low_sample_size"
+    )
   }
 
   # Extract values from the additional variable raster layer and attach them to points
