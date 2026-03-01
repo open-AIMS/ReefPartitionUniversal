@@ -26,7 +26,6 @@ Imports:
     sf,
     terra,
     sfnetworks,
-    h3,
     igraph,
     spdep,
     adespatial,
