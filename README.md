@@ -2,7 +2,6 @@
 
 <!-- badges: start -->
 [![Documentation](https://img.shields.io/badge/documentation-blue)](https://open-aims.github.io/ReefPartitionUniversal/)
-[![R-unit-testing](https://github.com/open-AIMS/ReefPartitionUniversal/actions/workflows/R-unit-testing.yaml/badge.svg)](https://github.com/open-AIMS/ReefPartitionUniversal/actions/workflows/R-unit-testing.yaml)
 [![R-CMD-check](https://github.com/open-AIMS/ReefPartitionUniversal/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/open-AIMS/ReefPartitionUniversal/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
