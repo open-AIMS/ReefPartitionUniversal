@@ -1,6 +1,6 @@
-# Helper function to convert pixels in a single site into an sf poylgon.
+# Helper function to convert points in a single site into an sf poylgon.
 
-Helper function to convert pixels in a single site into an sf poylgon.
+Helper function to convert points in a single site into an sf poylgon.
 
 ## Usage
 
@@ -12,12 +12,12 @@ hex_to_polygons(x, h3_id_col = "id", site_id_col = "site_id")
 
 - x:
 
-  data.frame. Contains pixel values for the target site.
+  data.frame. Contains point values for the target site.
 
 - h3_id_col:
 
   character or integer. Column containing the H3 ID values for each
-  pixel to be collated into the polygon. Default = "id".
+  point to be collated into the polygon. Default = "id".
 
 - site_id_col:
 
@@ -26,5 +26,5 @@ hex_to_polygons(x, h3_id_col = "id", site_id_col = "site_id")
 
 ## Value
 
-sf data.frame containing site polygons created from pixels using
+sf data.frame containing site polygons created from points using
 allocated `site_id_col` values.

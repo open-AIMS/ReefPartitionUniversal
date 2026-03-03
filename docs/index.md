@@ -5,14 +5,14 @@
 The ReefPartitionAllenAtlas R package provides functions for
 partitioning coral reef spatial areas into smaller sites (such as for
 logistic and monitoring purposes) based on raster data layers. The
-package provides functions for extracting pixel points on a reef based
-on habitat types, extracting values for additional raster layers such as
-bathymetry. Pixels can then be clustered into sites within habitat types
+package provides functions for extracting points on a reef based on
+habitat types, extracting values for additional raster layers such as
+bathymetry. Points can then be clustered into sites within habitat types
 based on their geographic attributes as well as additional variable
-values such as pixel depth.
+values such as point depth.
 
 The package uses a flexible framework allowing multiple additional
-raster layers to be used, along with user defined pixel clustering
+raster layers to be used, along with user defined point clustering
 algorithms. The package itself defines two spatial clustering algorithm
 options, using adespatial::constr.hclust [(Guénard and Legendre,
 2022)](https://www.jstatsoft.org/article/view/v103i07) and spdep::skater
@@ -56,26 +56,89 @@ library(ReefPartitionUniversal)
 
 # Load input data (ensuring all are use the same CRS)
 target_reef <- sf::st_read("target_reef.gpkg") # Defines the spatial extent of the reef
-habitat <- terra::rast("habitat_raster.tif") # Defines the habitat pixels to extract from
+habitat <- terra::rast("habitat_raster.tif") # Defines the habitat points to extract from
 bathymetry <- terra::rast("bathymetry_raster.tif") # Contains additional variable values for extraction and clustering
 
-habitat_categories <- c(1, 10, 20) # Assess only habitat pixels with these values
+habitat_categories <- c(1, 10, 20) # Assess only habitat points with these values
 
-# Extract pixel values from raster layers
-pixels <- extract_pixel_points(target_reef, habitat, bathymetry, habitat_categories)
-pixels <- pixels[!is.na(pixels$depth), ]
-pixels$UNIQUE_ID <- "ReefOne"
+# Extract point values from raster layers
+points <- extract_point_pixels(target_reef, habitat, bathymetry, habitat_categories)
+points <- points[!is.na(points$depth), ]
+points$UNIQUE_ID <- "ReefOne"
 
-# Cluster pixels using adespatial::constr.hclust algorithm
+# Cluster points using adespatial::constr.hclust algorithm
 # The
-mst_hclust_pixels <- cluster_reef_pixels(pixels)
+mst_hclust_points <- cluster_reef_points(points)
 
-# Collate pixels from each site/cluster into polygons
-mst_hclust_sites <- clustered_pixels_to_polygons(mst_hclust_pixels)
+# Collate points from each site/cluster into polygons
+mst_hclust_sites <- pixels_to_polygons(mst_hclust_points)
 
-# Optional: Apply post-processing to pixel clusters to ensure that non-contiguous
+# Optional: Apply post-processing to point clusters to ensure that non-contiguous
 # clusters adhere to a maximum distance between areas.
 sites_post_processed <- site_postprocessing(mst_hclust_sites, 50)
+```
+
+## Using multiple additional variable sources
+
+To use multiple additional data sources for clustering, each data source
+must be extracted separately and then joined together. Two point
+datasets are created containing the same habitat points, but different
+additional data columns. Once joined these additional data columns can
+be passed onto clustering.
+
+Using the above basic demonstration example while adding wave exposure
+as a second additional variable.
+
+``` r
+
+library(ReefPartitionUniversal)
+library(tidyverse)
+
+# Load input data (ensuring all are use the same CRS)
+target_reef <- sf::st_read("target_reef.gpkg") # Defines the spatial extent of the reef
+habitat <- terra::rast("habitat_raster.tif") # Defines the habitat points to extract from
+bathymetry <- terra::rast("bathymetry_raster.tif") # Contains additional variable values for extraction and clustering
+wave_exposure <- terra::rast("wave_exposure_raster.tif")
+
+habitat_categories <- c(1, 10, 20) # Assess only habitat points with these values
+
+# Extract point values from raster layers
+point_depth_data <- extract_point_pixels(
+    target_reef, 
+    habitat, 
+    bathymetry, 
+    habitat_categories,
+    additional_variable_name = "depth"
+)
+point_wave_data <- extract_point_pixels(
+    target_reef, 
+    habitat, 
+    wave_exposure, 
+    habitat_categories,
+    additional_variable_name = "wave_exposure"
+)
+
+# point_depth_data and point_wave_data contain the same habitat points, but
+# different extracted continuous variables. These can be combined using `left_join`.
+points <- left_join(
+    point_depth_data, 
+    point_wave_data[, c("X", "Y", "wave_exposure"), drop = TRUE],
+    by = c("X", "Y")
+)
+
+points <- points[!is.na(points$depth), ]
+points <- points[!is.na(points$wave_exposure), ]
+points$UNIQUE_ID <- "ReefOne"
+
+# Cluster points using adespatial::constr.hclust algorithm
+# The default column arguments must be altered to include wave exposure
+mst_hclust_points <- cluster_reef_points(
+    points,
+    additional_variable_cols = c("depth", "wave_exposure"),
+    clustering_function_args = list(
+        additional_variable_cols = c("depth_standard", "wave_exposure_standard")
+    )
+)
 ```
 
 # License

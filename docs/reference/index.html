@@ -52,24 +52,24 @@
 
       <dl><dt>
 
-          <code><a href="clustered_pixels_to_polygons.html">clustered_pixels_to_polygons()</a></code>
+          <code><a href="cells_to_polygons.html">cells_to_polygons()</a></code>
 
         </dt>
-        <dd>Convert pixels for an entire reef that have been allocated site IDs into site polygons.</dd>
+        <dd>Convert points for an entire reef that have been allocated site IDs into site polygons.</dd>
 
         <dt>
 
-          <code><a href="cluster_reef_pixels.html">cluster_reef_pixels()</a></code>
+          <code><a href="cluster_reef_points.html">cluster_reef_points</a></code>
 
         </dt>
-        <dd>Cluster pixels into sites based on geographical attributes and additional extracted pixel values.</dd>
+        <dd>Cluster points into sites based on geographical attributes and additional extracted point values.</dd>
 
         <dt>
 
           <code><a href="constrained_hclust.html">constrained_hclust()</a></code>
 
         </dt>
-        <dd>Cluster pixels together using the adespatial::constr.hclust algorithm.</dd>
+        <dd>Cluster points together using the adespatial::constr.hclust algorithm.</dd>
 
         <dt>
 
@@ -80,17 +80,45 @@
 
         <dt>
 
-          <code><a href="extract_pixel_points.html">extract_pixel_points()</a></code>
+          <code><a href="extract_point_cells.html">extract_point_cells()</a></code>
 
         </dt>
         <dd>Extract pixel data from selected habitats over a target reef.</dd>
 
         <dt>
 
+          <code><a href="extract_point_pixels.html">extract_point_pixels()</a></code>
+
+        </dt>
+        <dd>Extract pixel data from selected habitats over a target reef.</dd>
+
+        <dt>
+
+          <code><a href="fill_na_nearest.html">fill_na_nearest()</a></code>
+
+        </dt>
+        <dd>Internal helper function that fills NA values from columns with values from the nearest neighbouring points.</dd>
+
+        <dt>
+
+          <code><a href="generate_raster_template.html">generate_raster_template()</a></code>
+
+        </dt>
+        <dd>Generate a raster template based on sf <code>vector_data</code> at a specific <code>pixel_resolution</code>.</dd>
+
+        <dt>
+
           <code><a href="hex_to_polygons.html">hex_to_polygons()</a></code>
 
         </dt>
-        <dd>Helper function to convert pixels in a single site into an sf poylgon.</dd>
+        <dd>Helper function to convert points in a single site into an sf poylgon.</dd>
+
+        <dt>
+
+          <code><a href="input_check.html">input_check()</a></code>
+
+        </dt>
+        <dd>target reef.</dd>
 
         <dt>
 
@@ -101,10 +129,31 @@
 
         <dt>
 
+          <code><a href="pixels_to_polygons.html">pixels_to_polygons()</a></code>
+
+        </dt>
+        <dd>Convert clustered points into collated site polygons</dd>
+
+        <dt>
+
           <code><a href="prepare_mst.html">prepare_mst()</a></code>
 
         </dt>
-        <dd>Create a minimum spanning tree from geographic coordinates of pixels and extracted data.</dd>
+        <dd>Create a minimum spanning tree from geographic coordinates of points and extracted data.</dd>
+
+        <dt>
+
+          <code><a href="reef_skater.html">reef_skater()</a></code>
+
+        </dt>
+        <dd>Cluster points together using the spdep::skater algorithm.</dd>
+
+        <dt>
+
+          <code><a href="reef_skater_fast.html">reef_skater_fast()</a></code>
+
+        </dt>
+        <dd>Cluster points together using an optimized SKATER algorithm.</dd>
 
         <dt>
 
@@ -112,6 +161,27 @@
 
         </dt>
         <dd>Perform post-processing steps on site polygons.</dd>
+
+        <dt>
+
+          <code><a href="skater_igraph.html">skater_igraph()</a></code>
+
+        </dt>
+        <dd>An approximate Skater algorithm implemented using igraph methods.</dd>
+
+        <dt>
+
+          <code><a href="ssw.html">ssw()</a></code>
+
+        </dt>
+        <dd>Internal helper to compute the sum of square distances within cluster nodes. Follows spdep function, implementing igraph methods.</dd>
+
+        <dt>
+
+          <code><a href="vector_to_raster.html">vector_to_raster()</a></code>
+
+        </dt>
+        <dd>Convert vector data for a reef(s) to raster data for pixel extraction.</dd>
       </dl></div>
   </main></div>
 

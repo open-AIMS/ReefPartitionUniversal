@@ -1,9 +1,9 @@
-# Cluster pixels together using the spdep::skater algorithm.
+# Cluster points together using the spdep::skater algorithm.
 
-Take a dataframe of pixels containing geometries of pixels and
+Take a dataframe of points containing geometries of points and
 `additional_variable_cols` values and cluster using the skater
 algorithm. This clustering is performed top-down the costs of pruning
-each minimum spanning tree edge. Only pixels connected by `edges` are
+each minimum spanning tree edge. Only points connected by `edges` are
 able to cluster together. For additional information see **insert
 citation/link**.
 
@@ -11,8 +11,8 @@ citation/link**.
 
 ``` r
 reef_skater(
-  pixels,
-  n_clust = round(min(10000, nrow(pixels))/200),
+  points,
+  n_clust = round(min(10000, nrow(points))/200),
   site_size = 250 * 250,
   x_col = "X_standard",
   y_col = "Y_standard",
@@ -26,7 +26,7 @@ reef_skater(
 
 ## Arguments
 
-- pixels:
+- points:
 
   data.frame. Contains values for X and Y coordinates, as well as
   `additional_variable_cols`.
@@ -34,8 +34,8 @@ reef_skater(
 - n_clust:
 
   integer numeric. Number of clusters in result output. (Point to cut
-  hierarchical clustering tree). Default = (round(nrow(pixels) / 200))
-  (dividing habitat into clusters containing an average of 200 pixels).
+  hierarchical clustering tree). Default = (round(nrow(points) / 200))
+  (dividing habitat into clusters containing an average of 200 points).
 
 - site_size:
 
@@ -77,10 +77,10 @@ reef_skater(
 
 - hex_resolution:
 
-  integer numeric. H3 hexagon resolution used in pixel creation.
+  integer numeric. H3 hexagon resolution used in point creation.
 
 ## Value
 
-data.frame of pixels with allocated site_ids based on cluster outputs.
+data.frame of points with allocated site_ids based on cluster outputs.
 `site_id` values are a combination of the `id_col` value, `habitat_col`
 value and the cluster allocation.

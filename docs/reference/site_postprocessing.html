@@ -63,7 +63,7 @@ small, based on a user defined minimum site area.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">site_postprocessing</span><span class="op">(</span><span class="va">reef_site_polygons</span>, <span class="va">min_site_area</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">site_postprocessing</span><span class="op">(</span><span class="va">reef_site_polygons</span>, min_site_area <span class="op">=</span> <span class="fl">50</span> <span class="op">*</span> <span class="fl">307</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -77,7 +77,11 @@ a target reef of interest.</p></dd>
 
 <dt id="arg-min-site-area">min_site_area<a class="anchor" aria-label="anchor" href="#arg-min-site-area"></a></dt>
 <dd><p>numeric. Minimum threshold for removing sites that are too
-small in their total site area. Must be in the same units returned by <code><a href="https://r-spatial.github.io/sf/reference/geos_measures.html" class="external-link">sf::st_area()</a></code>.</p></dd>
+small in their total site area. This value should be smaller than the site_area
+used in other parts of the workflow as it is intended as an absolute minimum
+threshold. Must be in the same units returned by <code><a href="https://r-spatial.github.io/sf/reference/geos_measures.html" class="external-link">sf::st_area()</a></code>.
+Default value = 50 * 307, where 307 is the area (in m^2) of a H3 cell with
+resolution of 12 and 50 is the minimum number of hexagons per site.</p></dd>
 
 </dl></div>
     <div class="section level2">
