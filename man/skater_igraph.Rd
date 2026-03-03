@@ -16,6 +16,34 @@ skater_igraph(
   inverted = FALSE
 )
 }
+\arguments{
+\item{edges}{igraph edges. Graph edges of the minimum spanning tree object as returned
+by igraph::as_edgelist().}
+
+\item{data}{dataframe (columns of numeric values). Dataframe columns containing
+values for each graph node of the desired variables (referred to as additional_variable_cols elsewhere).}
+
+\item{ncuts}{integer. The number of cuts to make in the minimum spanning tree to generate
+the desired number of clusters.}
+
+\item{crit}{integer. The desired number of nodes required to form a cluster. Should align
+with ncuts to approximate the total number of data points in the input data.}
+
+\item{vec.crit}{numeric vector. The minimum and maximum crit values. If this
+argument is missing it defaults to c(crit, Inf), meaning no maximum cluster size.}
+
+\item{method}{character. Distance calculation method passed onto \code{ssw()} for
+computing edge costs. Euclidean, manhattan and mahalanobis are internally defined
+options, other options are passed onto \code{dist()}.}
+
+\item{p}{numeric. Power of the Minkowski distance, as in \code{spdep::ssw()}. Default = 2.}
+
+\item{cov}{numeric matrix. Covariance matrix used to compute mahalanobis distance
+in ssw. Only required if method="mahalanobis". Default = NULL.}
+
+\item{inverted}{Bool. If 'TRUE' \code{cov} is supposed to contain the inverse of the
+covariance matrix.}
+}
 \description{
 Leverages C implementations in igraph package.
 The approach collects all edges from all clusters, sorts by global cost, and

@@ -11,8 +11,8 @@ cluster_reef_points(
   y_col = "Y",
   additional_variable_cols = c("depth"),
   reef_id_col = "UNIQUE_ID",
-  clustering_function_args = list()
   habitat_clustering_function = reef_skater_fast,
+  clustering_function_args = list()
 )
 }
 \arguments{
@@ -41,6 +41,10 @@ a dataframe of input points with an additional column containing assigned \code{
 Additional arguments must include \code{px_per_cluster}, \code{habitat_col}, \code{x_col}, \code{y_col}
 and \code{additional_variable_cols}.
 Default options available include \code{reef_skater} and \code{constrained_hclust}.}
+
+\item{clustering_function_args}{named list. A named list where elements of the list are
+arguments that will be passed on to \code{habitat_clustering_function}. Defaults to an empty list
+default arguments of \code{habitat_clustering_function} are used.}
 }
 \value{
 data.frame containing points that have a site ID allocated in \code{site_id} column.

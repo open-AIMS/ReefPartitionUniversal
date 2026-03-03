@@ -14,9 +14,8 @@ reef_skater_fast(
   id_col = "UNIQUE_ID",
   additional_variable_cols = c("depth_standard"),
   point_area = 100,
-  mst_alpha = 0.5,
-  method = "euclidean",
-  interpolation_threshold = 30000
+  interpolation_threshold = 30000,
+  ...
 )
 }
 \arguments{
@@ -55,14 +54,16 @@ by the hexagon resolution (e.g. resolution 12 = cell area 307.2 m^2). Default
 point_area = 100 m^2.
 }}
 
-\item{method}{character. Distance metric for calculating dissimilarity between
-points. Options include "euclidean", "manhattan", "maximum", "canberra",
-"binary", "minkowski", "mahalanobis". Default = "euclidean".}
-
 \item{interpolation_threshold}{numeric. Threshold from where to sample random
 points and interpolate clusters for remaining points. This value should be
 scaled with reef area for larger reefs. Default value is 30,000, setting a higher
 threshold may result in long computation times and high RAM usage.}
+
+\item{...}{additional arguments. Additional arguments can be used here and will
+be passed onto \code{prepare_mst_edges()} and \code{skater_igraph()} functions.
+These arguments must be named. For information on arguments available in these
+functions and default values when arguments are not used, see \code{prepare_mst_edges()}
+and \code{skater_igraph()}.}
 }
 \value{
 data.frame of points with allocated site_ids based on cluster outputs.

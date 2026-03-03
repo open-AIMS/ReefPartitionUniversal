@@ -31,7 +31,7 @@ site polygon median and standard deviation values for all columns selected.}
 Default = "site_id".}
 
 \item{pixel_size}{numeric. Resolution of original habitat raster cells used to
-extract point data. Must be in the same units as \code{x_col}/\code{y_col}.}
+extract point data. Must be in the same units as values in \code{x_col}/\code{y_col}.}
 
 \item{x_col}{character or integer. Column containing x coordinates for points.}
 
