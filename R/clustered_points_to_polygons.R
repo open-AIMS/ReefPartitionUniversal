@@ -89,7 +89,7 @@ hex_to_polygons <- function(x, h3_id_col = "id", site_id_col = "site_id") {
 #' @param site_id_col character or integer. Column containing site allocations for points.
 #'   Default = "site_id".
 #' @param pixel_size numeric. Resolution of original habitat raster cells used to
-#'   extract point data. Must be in the same units as `x_col`/`y_col`.
+#'   extract point data. Must be in the same units as values in `x_col`/`y_col`.
 #' @param x_col character or integer. Column containing x coordinates for points.
 #' @param y_col character or integer. Column containing y coordinates for points.
 
