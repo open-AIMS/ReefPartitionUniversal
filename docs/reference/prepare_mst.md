@@ -1,8 +1,8 @@
-# Create a minimum spanning tree from geographic coordinates of pixels and extracted data.
+# Create a minimum spanning tree from geographic coordinates of points and extracted data.
 
-Take a dataframe of pixels `pixels` and create a minimum spanning tree
+Take a dataframe of points `points` and create a minimum spanning tree
 between pixel coordinates, using edge costs that are a combination of
-geographic distances and distances between pixels by
+geographic distances and distances between points by
 `additional_variable_cols` values. For additional details on minimum
 spanning tree creation see igraph::mst().
 
@@ -10,7 +10,7 @@ spanning tree creation see igraph::mst().
 
 ``` r
 prepare_mst(
-  pixels,
+  points,
   additional_variable_cols = c("depth_standard"),
   mst_alpha = 0.5,
   hex_resolution = 12
@@ -19,7 +19,7 @@ prepare_mst(
 
 ## Arguments
 
-- pixels:
+- points:
 
   sf data.frame. Holds values for pixel geometries and
   `additional_variable_cols`

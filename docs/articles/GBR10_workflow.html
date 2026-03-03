@@ -152,7 +152,7 @@
 <p>Once the input data and arguments have been set up, we can extract pixel data for One Tree Island Reef using our <code>target_reef</code> outline polygon. This process involves identifying selected pixels from the habitat raster object, converting pixels to H3 hexagon cells and extracting bathymetry data.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pixel_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_pixel_points.html">extract_pixel_points</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">pixel_data</span> <span class="op">&lt;-</span> <span class="fu">extract_pixel_points</span><span class="op">(</span></span>
 <span>  reef_polygon <span class="op">=</span> <span class="va">target_reef</span>,</span>
 <span>  habitat_raster <span class="op">=</span> <span class="va">habitat_raster</span>,</span>
 <span>  add_var_raster <span class="op">=</span> <span class="va">bathymetry_raster</span>,</span>
@@ -168,10 +168,10 @@
 </div>
 </section><section class="section level2"><h2 id="clustering-habitat-pixels-based-on-distance-and-depth">Clustering habitat pixels based on distance and depth<a class="anchor" aria-label="anchor" href="#clustering-habitat-pixels-based-on-distance-and-depth"></a>
 </h2>
-<p>Data for each required pixel have been extracted, and we can now cluster pixels based on their geographic distance and depth. Using the default arguments for <code><a href="../reference/cluster_reef_pixels.html">cluster_reef_pixels()</a></code> clusters pixels within each habitat type using a Minimum Spanning Tree and <code><a href="http://adeverse.github.io/adespatial/reference/constr.hclust.html" class="external-link">adespatial::constr.hclust</a></code> clustering algorithm. The returned dataframe contains a row for each pixel and an additional column containing the clustered <code>site_id</code>.</p>
+<p>Data for each required pixel have been extracted, and we can now cluster pixels based on their geographic distance and depth. Using the default arguments for <code>cluster_reef_pixels()</code> clusters pixels within each habitat type using a Minimum Spanning Tree and <code><a href="http://adeverse.github.io/adespatial/reference/constr.hclust.html" class="external-link">adespatial::constr.hclust</a></code> clustering algorithm. The returned dataframe contains a row for each pixel and an additional column containing the clustered <code>site_id</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mst_hclust_pixels</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cluster_reef_pixels.html">cluster_reef_pixels</a></span><span class="op">(</span><span class="va">pixel_data</span>, n_pixels <span class="op">=</span> <span class="va">n_pixels</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">mst_hclust_pixels</span> <span class="op">&lt;-</span> <span class="fu">cluster_reef_pixels</span><span class="op">(</span><span class="va">pixel_data</span>, n_pixels <span class="op">=</span> <span class="va">n_pixels</span><span class="op">)</span></span></code></pre></div>
 </div>
 </section><section class="section level2"><h2 id="creating-site-polygons">Creating site polygons<a class="anchor" aria-label="anchor" href="#creating-site-polygons"></a>
 </h2>
@@ -179,7 +179,7 @@
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Collate H3 cells that are assigned site IDs into polygons</span></span>
-<span><span class="va">mst_hclust_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clustered_pixels_to_polygons.html">clustered_pixels_to_polygons</a></span><span class="op">(</span><span class="va">mst_hclust_pixels</span><span class="op">)</span></span>
+<span><span class="va">mst_hclust_sites</span> <span class="op">&lt;-</span> <span class="fu">clustered_pixels_to_polygons</span><span class="op">(</span><span class="va">mst_hclust_pixels</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Site postprocessing with a minimum number of pixels per site of 50</span></span>
 <span><span class="va">processed_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/site_postprocessing.html">site_postprocessing</a></span><span class="op">(</span><span class="va">mst_hclust_sites</span>, min_site_area <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span></code></pre></div>

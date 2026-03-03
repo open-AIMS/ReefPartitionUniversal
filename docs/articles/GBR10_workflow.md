@@ -123,10 +123,8 @@ head(pixel_data)
 
 Data for each required pixel have been extracted, and we can now cluster
 pixels based on their geographic distance and depth. Using the default
-arguments for
-[`cluster_reef_pixels()`](https://open-aims.github.io/ReefPartitionUniversal/reference/cluster_reef_pixels.md)
-clusters pixels within each habitat type using a Minimum Spanning Tree
-and
+arguments for `cluster_reef_pixels()` clusters pixels within each
+habitat type using a Minimum Spanning Tree and
 [`adespatial::constr.hclust`](http://adeverse.github.io/adespatial/reference/constr.hclust.md)
 clustering algorithm. The returned dataframe contains a row for each
 pixel and an additional column containing the clustered `site_id`.
