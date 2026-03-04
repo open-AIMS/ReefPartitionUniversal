@@ -105,7 +105,6 @@ habitat_categories <- habitat_levels[
 ]$numeric_levels
 
 # Define the desired site size in terms of spatial area
-# and the number of H3 cells per site
 site_size <- 250 * 250 # set size size for our example to 625,000m~2~
 pixel_area <- res(habitat_raster)[1] * res(habitat_raster)[1] # Calculate raster pixel square area (m~2~)
 n_pixels <- site_size / pixel_area # Calculate desired number of points per site

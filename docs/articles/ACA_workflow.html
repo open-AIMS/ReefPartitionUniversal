@@ -148,7 +148,6 @@
 <span><span class="op">]</span><span class="op">$</span><span class="va">numeric_levels</span></span>
 <span></span>
 <span><span class="co"># Define the desired site size in terms of spatial area</span></span>
-<span><span class="co"># and the number of H3 cells per site</span></span>
 <span><span class="va">site_size</span> <span class="op">&lt;-</span> <span class="fl">250</span> <span class="op">*</span> <span class="fl">250</span> <span class="co"># set size size for our example to 625,000m~2~</span></span>
 <span><span class="va">pixel_area</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">res</a></span><span class="op">(</span><span class="va">habitat_raster</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">res</a></span><span class="op">(</span><span class="va">habitat_raster</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="co"># Calculate raster pixel square area (m~2~)</span></span>
 <span><span class="va">n_pixels</span> <span class="op">&lt;-</span> <span class="va">site_size</span> <span class="op">/</span> <span class="va">pixel_area</span> <span class="co"># Calculate desired number of points per site</span></span>

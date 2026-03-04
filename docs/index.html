@@ -70,7 +70,7 @@
 <h1 id="package-overview">Package overview<a class="anchor" aria-label="anchor" href="#package-overview"></a>
 </h1>
 <p>The ReefPartitionAllenAtlas R package provides functions for partitioning coral reef spatial areas into smaller sites (such as for logistic and monitoring purposes) based on raster data layers. The package provides functions for extracting points on a reef based on habitat types, extracting values for additional raster layers such as bathymetry. Points can then be clustered into sites within habitat types based on their geographic attributes as well as additional variable values such as point depth.</p>
-<p>The package uses a flexible framework allowing multiple additional raster layers to be used, along with user defined point clustering algorithms. The package itself defines two spatial clustering algorithm options, using adespatial::constr.hclust <a href="https://www.jstatsoft.org/article/view/v103i07" class="external-link">(Guénard and Legendre, 2022)</a> and spdep::skater <a href="https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e2053" class="external-link">(AssunÇão et al. 2007)</a>.</p>
+<p>The package uses a flexible framework allowing multiple additional raster layers to be used, along with user defined point clustering algorithms. The package itself defines three spatial clustering algorithm options, using adespatial::constr.hclust <a href="https://www.jstatsoft.org/article/view/v103i07" class="external-link">(Guénard and Legendre, 2022)</a>, spdep::skater <a href="https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e2053" class="external-link">(AssunÇão et al. 2007)</a>, and an adaptation of the skater algorithm that is optimised for performance using igraph methods.</p>
 </div>
 <div class="section level1">
 <h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -91,7 +91,7 @@
 <div class="section level1">
 <h1 id="basic-demonstration">Basic demonstration<a class="anchor" aria-label="anchor" href="#basic-demonstration"></a>
 </h1>
-<p>The following code demonstrates a basic usage of ReefPartitionUniversal using <code><a href="http://adeverse.github.io/adespatial/reference/constr.hclust.html" class="external-link">adespatial::constr.hclust</a></code> clustering algorithm and Minimum Spanning Tree inputs. For more</p>
+<p>The following code demonstrates a basic usage of ReefPartitionUniversal using an adapted version of the <code><a href="https://r-spatial.github.io/spdep/reference/skater.html" class="external-link">spdep::skater</a></code> clustering algorithm and Minimum Spanning Tree inputs. For more information on partitioning workflows using different types of data see <code>Articles</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://open-aims.github.io/ReefPartitionUniversal/">ReefPartitionUniversal</a></span><span class="op">)</span></span>
 <span></span>
@@ -104,19 +104,17 @@
 <span></span>
 <span><span class="co"># Extract point values from raster layers</span></span>
 <span><span class="va">points</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_point_pixels.html">extract_point_pixels</a></span><span class="op">(</span><span class="va">target_reef</span>, <span class="va">habitat</span>, <span class="va">bathymetry</span>, <span class="va">habitat_categories</span><span class="op">)</span></span>
-<span><span class="va">points</span> <span class="op">&lt;-</span> <span class="va">points</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">points</span><span class="op">$</span><span class="va">depth</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="va">points</span><span class="op">$</span><span class="va">UNIQUE_ID</span> <span class="op">&lt;-</span> <span class="st">"ReefOne"</span></span>
 <span></span>
-<span><span class="co"># Cluster points using adespatial::constr.hclust algorithm</span></span>
-<span><span class="co"># The</span></span>
-<span><span class="va">mst_hclust_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cluster_reef_points.html">cluster_reef_points</a></span><span class="op">(</span><span class="va">points</span><span class="op">)</span></span>
+<span><span class="co"># Cluster points using skater_igraph algorithm</span></span>
+<span><span class="va">clustered_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cluster_reef_points.html">cluster_reef_points</a></span><span class="op">(</span><span class="va">points</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Collate points from each site/cluster into polygons</span></span>
-<span><span class="va">mst_hclust_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pixels_to_polygons.html">pixels_to_polygons</a></span><span class="op">(</span><span class="va">mst_hclust_points</span><span class="op">)</span></span>
+<span><span class="va">clustered_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pixels_to_polygons.html">pixels_to_polygons</a></span><span class="op">(</span><span class="va">clustered_points</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Optional: Apply post-processing to point clusters to ensure that non-contiguous</span></span>
 <span><span class="co"># clusters adhere to a maximum distance between areas.</span></span>
-<span><span class="va">sites_post_processed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/site_postprocessing.html">site_postprocessing</a></span><span class="op">(</span><span class="va">mst_hclust_sites</span>, <span class="fl">50</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">sites_post_processed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/site_postprocessing.html">site_postprocessing</a></span><span class="op">(</span><span class="va">clustered_sites</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="using-multiple-additional-variable-sources">Using multiple additional variable sources<a class="anchor" aria-label="anchor" href="#using-multiple-additional-variable-sources"></a>
 </h2>
@@ -164,7 +162,7 @@
 <span></span>
 <span><span class="co"># Cluster points using adespatial::constr.hclust algorithm</span></span>
 <span><span class="co"># The default column arguments must be altered to include wave exposure</span></span>
-<span><span class="va">mst_hclust_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cluster_reef_points.html">cluster_reef_points</a></span><span class="op">(</span></span>
+<span><span class="va">clustered_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cluster_reef_points.html">cluster_reef_points</a></span><span class="op">(</span></span>
 <span>    <span class="va">points</span>,</span>
 <span>    additional_variable_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"depth"</span>, <span class="st">"wave_exposure"</span><span class="op">)</span>,</span>
 <span>    clustering_function_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
