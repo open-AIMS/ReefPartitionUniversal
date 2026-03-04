@@ -1,5 +1,6 @@
 #'  Internal helper to compute the sum of square distances within cluster nodes.
-#' Follows spdep function, implementing igraph methods.
+#'  Follows spdep function, implementing igraph methods.
+#'  For additional information see [spdep::ssw]
 ssw <- function(
   data,
   nodes,
@@ -50,6 +51,25 @@ ssw <- function(
 #' @description Leverages C implementations in igraph package.
 #' The approach collects all edges from all clusters, sorts by global cost, and
 #' iterates until a valid split is found.
+#'
+#' @param edges igraph edges. Graph edges of the minimum spanning tree object as returned
+#'   by igraph::as_edgelist().
+#' @param data dataframe (columns of numeric values). Dataframe columns containing
+#'   values for each graph node of the desired variables (referred to as additional_variable_cols elsewhere).
+#' @param ncuts integer. The number of cuts to make in the minimum spanning tree to generate
+#'   the desired number of clusters.
+#' @param crit integer. The desired number of nodes required to form a cluster. Should align
+#'   with ncuts to approximate the total number of data points in the input data.
+#' @param vec.crit numeric vector. The minimum and maximum crit values. If this
+#'   argument is missing it defaults to c(crit, Inf), meaning no maximum cluster size.
+#' @param method character. Distance calculation method passed onto `ssw()` for
+#'   computing edge costs. Euclidean, manhattan and mahalanobis are internally defined
+#'   options, other options are passed onto `dist()`.
+#' @param p numeric. Power of the Minkowski distance, as in `spdep::ssw()`. Default = 2.
+#' @param cov numeric matrix. Covariance matrix used to compute mahalanobis distance
+#'   in ssw. Only required if method="mahalanobis". Default = NULL.
+#' @param inverted Bool. If 'TRUE' `cov` is supposed to contain the inverse of the
+#'   covariance matrix.
 #'
 skater_igraph <- function(
   edges,
@@ -309,14 +329,15 @@ skater_igraph <- function(
 #'   * res(raster), if using H3 cells then this value is the H3 cell area determined
 #'   by the hexagon resolution (e.g. resolution 12 = cell area 307.2 m^2). Default
 #'   point_area = 100 m^2.
-#' @param method character. Distance metric for calculating dissimilarity between
-#'   points. Options include "euclidean", "manhattan", "maximum", "canberra",
-#'   "binary", "minkowski", "mahalanobis". Default = "euclidean".
 #' @param interpolation_threshold numeric. Threshold from where to sample random
 #'   points and interpolate clusters for remaining points. This value should be
 #'   scaled with reef area for larger reefs. Default value is 30,000, setting a higher
 #'   threshold may result in long computation times and high RAM usage.
-#'
+#' @param ... additional arguments. Additional arguments can be used here and will
+#'   be passed onto `prepare_mst_edges()` and `skater_igraph()` functions.
+#'   These arguments must be named. For information on arguments available in these
+#'   functions and default values when arguments are not used, see `prepare_mst_edges()`
+#'   and `skater_igraph()`.
 #' @return data.frame of points with allocated site_ids based on cluster outputs.
 #'   `site_id` values are a combination of the `id_col` value, `habitat_col` value
 #'   and the cluster allocation.
@@ -333,10 +354,17 @@ reef_skater_fast <- function(
   id_col = "UNIQUE_ID",
   additional_variable_cols = c("depth_standard"),
   point_area = 100,
-  mst_alpha = 0.5,
-  method = "euclidean",
-  interpolation_threshold = 30000
+  interpolation_threshold = 30000,
+  ...
 ) {
+  dots <- list(...)
+  passed_arguments <- names(dots)
+
+  mst_params <- dots[passed_arguments %in% names(formals(prepare_mst))]
+  skater_igraph_params <- dots[
+    passed_arguments %in% names(formals(skater_igraph))
+  ]
+
   site_prefix <- paste(
     unique(points[, id_col, drop = TRUE]),
     unique(points[, habitat_col, drop = TRUE]),
@@ -375,12 +403,7 @@ reef_skater_fast <- function(
 
   # Build minimum spanning tree
   message("Building minimum spanning tree...")
-  mst <- prepare_mst(
-    points,
-    additional_variable_cols = additional_variable_cols,
-    hex_resolution = 12,
-    mst_alpha = mst_alpha
-  )
+  mst <- do.call(prepare_mst, append(list(points = points), mst_params))
 
   # Convert MST to edge list for skater_igraph
   edges <- igraph::as_edgelist(mst)
@@ -392,12 +415,17 @@ reef_skater_fast <- function(
     n_clust
   ))
 
-  clusters <- skater_igraph(
-    edges = edges,
-    data = points[, additional_variable_cols, drop = FALSE],
-    ncuts = n_clust - 1, # ncuts is number of cuts, not final clusters
-    crit = c(min_counts, Inf),
-    method = method
+  clusters <- do.call(
+    skater_igraph,
+    append(
+      list(
+        edges = edges,
+        data = points[, additional_variable_cols, drop = FALSE],
+        ncuts = n_clust - 1,
+        crit = c(min_counts, Inf),
+      ),
+      skater_igraph_params
+    )
   )
 
   # Assign cluster labels with site prefix

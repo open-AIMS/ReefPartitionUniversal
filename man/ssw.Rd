@@ -3,11 +3,13 @@
 \name{ssw}
 \alias{ssw}
 \title{Internal helper to compute the sum of square distances within cluster nodes.
-Follows spdep function, implementing igraph methods.}
+Follows spdep function, implementing igraph methods.
+For additional information see \link[spdep:ssw]{spdep::ssw}}
 \usage{
 ssw(data, nodes, method = "euclidean", p = 2, cov = NULL, inverted = FALSE)
 }
 \description{
 Internal helper to compute the sum of square distances within cluster nodes.
 Follows spdep function, implementing igraph methods.
+For additional information see \link[spdep:ssw]{spdep::ssw}
 }

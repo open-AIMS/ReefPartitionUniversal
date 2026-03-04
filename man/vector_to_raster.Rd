@@ -30,7 +30,9 @@ existing raster data as a template if available.}
 \value{
 SpatRaster conversion of \code{vector_data} using a \code{raster_template}. Output
 raster is also saved to \code{output_file}, and a csv containing numerical allocations
-is saved if the values in \code{data_column} are characters.
+is saved if the values in \code{data_column} are characters. If \code{data_column} holds
+character data, then the levels assigned will also be returned (using a named list
+to hold both objects).
 }
 \description{
 Using terra this function converts vector data to raster data
