@@ -422,7 +422,7 @@ reef_skater_fast <- function(
         edges = edges,
         data = points[, additional_variable_cols, drop = FALSE],
         ncuts = n_clust - 1,
-        crit = c(min_counts, Inf),
+        crit = c(min_counts, Inf)
       ),
       skater_igraph_params
     )
