@@ -6,7 +6,7 @@
 
 # Package overview
 
-The ReefPartitionAllenAtlas R package provides functions for partitioning
+The ReefPartitionUniversal R package provides functions for partitioning
 coral reef spatial areas into smaller sites (such as for logistic and monitoring
 purposes) based on raster data layers. The package provides functions for extracting
 points on a reef based on habitat types, extracting values for additional
