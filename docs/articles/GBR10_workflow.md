@@ -82,11 +82,12 @@ hex_size <- data.frame(
   res = c(7:15),
   size = c(5161293, 737327, 105332, 15047, 2149, 307.09, 43.87, 6.267, 0.895)
 )
+hex_size <- hex_size[hex_size$res == hex_resolution, ]$size
 
 # Define the desired site size in terms of spatial area
 # and the number of H3 cells per site
 site_size <- 250 * 250 # set size size for our example to 625,000m~2~
-n_pixels <- site_size / hex_size[hex_size$res == hex_resolution, ]$size
+n_pixels <- site_size / hex_size
 
 # Select target reef outline. For this example we use
 # One Tree Island Reef from the Mackay - Capricorn region
@@ -104,7 +105,7 @@ bathymetry data.
 
 ``` r
 
-pixel_data <- extract_pixel_points(
+pixel_data <- extract_point_cells(
   reef_polygon = target_reef,
   habitat_raster = habitat_raster,
   add_var_raster = bathymetry_raster,
@@ -125,13 +126,17 @@ Data for each required pixel have been extracted, and we can now cluster
 pixels based on their geographic distance and depth. Using the default
 arguments for `cluster_reef_pixels()` clusters pixels within each
 habitat type using a Minimum Spanning Tree and
-[`adespatial::constr.hclust`](http://adeverse.github.io/adespatial/reference/constr.hclust.md)
-clustering algorithm. The returned dataframe contains a row for each
-pixel and an additional column containing the clustered `site_id`.
+[`reef_skater_fast()`](https://open-aims.github.io/ReefPartitionUniversal/reference/reef_skater_fast.md)
+skater clustering algorithm implemented using igraph. The returned
+dataframe contains a row for each pixel and an additional column
+containing the clustered `site_id`.
 
 ``` r
 
-mst_hclust_pixels <- cluster_reef_pixels(pixel_data, n_pixels = n_pixels)
+mst_hclust_pixels <- cluster_reef_pixels(
+  pixel_data,
+  clustering_function_args = list(point_area = hex_size)
+)
 ```
 
 ## Creating site polygons
@@ -143,10 +148,13 @@ contain large distances into smaller site IDs.
 ``` r
 
 # Collate H3 cells that are assigned site IDs into polygons
-mst_hclust_sites <- clustered_pixels_to_polygons(mst_hclust_pixels)
+mst_hclust_sites <- cells_to_polygons(mst_hclust_pixels)
 
 # Site postprocessing with a minimum number of pixels per site of 50
-processed_sites <- site_postprocessing(mst_hclust_sites, min_site_area = 50)
+processed_sites <- site_postprocessing(
+  mst_hclust_sites,
+  min_site_area = 50 * hex_size
+)
 ```
 
 ## Mapping outputs using ggplot2

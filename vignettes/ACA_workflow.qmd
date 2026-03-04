@@ -10,8 +10,8 @@ vignette: >
 ---
 
 This vignette sets out and example reef partitioning workflow using data from
-the Allen Coral Atlas. The data intended for use are accessible from the Allen
-Coral Atlas globally.
+the [Allen Coral Atlas](https://allencoralatlas.org/). The data intended for use 
+are accessible from the Allen Coral Atlas globally.
 
 While this example vignette refers to the Allen Coral Atlas, this approach is 
 flexible and can be used on any raster and vector data beyond habitat, bathymetry
@@ -60,7 +60,7 @@ output_crs <- 3857
 
 # Load reef outline vector data (reef extent)
 reef_polygons <- st_read(
-  "C:/Users/grier/Downloads/Scott-Reef-Cluster-20260225004425/Reef-Extent/reefextent.gpkg"
+  "Path to reef extent .gpkg"
 )
 
 # Ensure reef polygons are not segmented to ensure full clustering
@@ -72,13 +72,13 @@ reef_polygons <- reef_polygons %>%
 
 # Load bathymetry raster data from ACA dataset
 bathymetry_raster <- rast(
-  "C:/Users/grier/Downloads/Scott-Reef-Cluster-20260225004425/Bathymetry---composite-depth/bathymetry_0.tif"
+  "Path to reef bathymetry .tif"
 ) %>%
   project(., str_glue("epsg:{output_crs}"))
 
 # Load geomorphic habitat vector data from ACA dataset
 habitat_vector <- st_read(
-  "C:/Users/grier/Downloads/Scott-Reef-Cluster-20260225004425/Geomorphic-Map/geomorphic.gpkg"
+  "Path to geomorphic habitat .gpkg"
 ) %>%
   rename(habitat = class) %>%
   st_transform(crs = output_crs)
