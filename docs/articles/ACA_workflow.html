@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Partitioning workflow using GBRMPA data • ReefPartitionUniversal</title>
+<title>Partitioning workflow using Allen Coral Atlas data • ReefPartitionUniversal</title>
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="GBR10_workflow_files/libs/quarto-html/popper.min.js"></script><script src="GBR10_workflow_files/libs/quarto-html/tippy.umd.min.js"></script><link href="GBR10_workflow_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="GBR10_workflow_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Partitioning workflow using GBRMPA data">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="ACA_workflow_files/libs/quarto-html/popper.min.js"></script><script src="ACA_workflow_files/libs/quarto-html/tippy.umd.min.js"></script><link href="ACA_workflow_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="ACA_workflow_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Partitioning workflow using Allen Coral Atlas data">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -62,7 +62,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Partitioning workflow using GBRMPA data</h1>
+      <h1>Partitioning workflow using Allen Coral Atlas data</h1>
 
 
 
@@ -76,13 +76,14 @@
 
 
 
-    <p>This vignette sets out and example reef partitioning workflow using data available from GBRMPA for the Great Barrier Reef, Australia. The data intended for use include the canonical-reefs geopackage which defines reef vector outlines, GBR10 Geomorphic raster which contain benthic habitat data for the GBR, and GBR10 Bathymetry raster which contain bathymetry data for the GBR.</p>
-<p>While this example vignette is intended and contains context notes and arguments for the GBR, this approach is flexible and can be used on any raster and vector data beyond habitat, bathymetry and reef examples.</p>
+    <p>This vignette sets out and example reef partitioning workflow using data from the <a href="https://allencoralatlas.org/" class="external-link">Allen Coral Atlas</a>. The data intended for use are accessible from the Allen Coral Atlas globally.</p>
+<p>While this example vignette refers to the Allen Coral Atlas, this approach is flexible and can be used on any raster and vector data beyond habitat, bathymetry and reef examples.</p>
 <section class="section level2"><h2 id="required-packages">Required packages<a class="anchor" aria-label="anchor" href="#required-packages"></a>
 </h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://open-aims.github.io/ReefPartitionUniversal/">ReefPartitionUniversal</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
@@ -91,27 +92,47 @@
 </div>
 </section><section class="section level2"><h2 id="loading-and-formatting-required-data">Loading and formatting required data<a class="anchor" aria-label="anchor" href="#loading-and-formatting-required-data"></a>
 </h2>
-<p>GBRMPA GBR10 raster data is downloaded in UTM Projected Coordinate Reference Systems. ReefPartitionUniversal requires that all input data are in the same CRS before starting. To match the CRS we reproject <code>reef_polygons</code> from GDA2020 as reprojecting raster data is more computationally intensive. If all input data is already in the same CRS then this step is not required.</p>
+<p>The Allen Coral Atlas is aims to map coral reefs globally and provides accessible coral reef ecology and environmental data layers accessible <a href="https://allencoralatlas.org/" class="external-link">online</a>. Using the Allen Coral Atlas online map a reef area can be selected using the <code>Polygon tool</code>. Once selected, data are available for download. The minimum data required for this workflow are <code>Reef Extent</code> (reef outline polygons), <code>Geomorphic Map</code> (reef habitat data) and a continuous data layer (<code>Bathymetry - composite depth</code> or <code>Annual Turbidity</code>). In this example we use bathymetry data as the continuous <code>additional_variable</code> for partitioning.</p>
+<p>Allen Coral Atlas <code>Geomorphic Map</code> and <code>Benthic Map</code> data are downloaded in a vector format (e.g. .gpkg file) containing area polygons. To use these data as habitat layers for habitat layers to extract points from during analyses, these layers must be converted to raster data. This can be done using the <code><a href="../reference/vector_to_raster.html">ReefPartitionUniversal::vector_to_raster</a></code> function. As we have existing data for the workflow (bathymetry data) it is recommended to use that data as a template for vector -&gt; raster conversion. (If no template is available, <code><a href="../reference/generate_raster_template.html">ReefPartitionUniversal::generate_raster_template</a></code> can be used).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Load reef outline vector data (`canonical-reefs` used here)</span></span>
-<span><span class="va">reef_polygons</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">st_read</a></span><span class="op">(</span><span class="st">"Path to canonical reefs .gpkg"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">starting_crs</span> <span class="op">&lt;-</span> <span class="fl">4326</span></span>
+<span><span class="va">output_crs</span> <span class="op">&lt;-</span> <span class="fl">3857</span></span>
 <span></span>
-<span><span class="co"># Load bathymetry raster data from GBRMPA GBR10 dataset</span></span>
+<span><span class="co"># Load reef outline vector data (reef extent)</span></span>
+<span><span class="va">reef_polygons</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">st_read</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Path to reef extent .gpkg"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Ensure reef polygons are not segmented to ensure full clustering</span></span>
+<span><span class="va">reef_polygons</span> <span class="op">&lt;-</span> <span class="va">reef_polygons</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span><span class="va">output_crs</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>geometry <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_combine.html" class="external-link">st_union</a></span><span class="op">(</span><span class="va">geom</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_cast.html" class="external-link">st_cast</a></span><span class="op">(</span><span class="st">"POLYGON"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Load bathymetry raster data from ACA dataset</span></span>
 <span><span class="va">bathymetry_raster</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span></span>
-<span>  <span class="st">"Path to Mackay - Capricorn GBR10 bathymetry raster .tif"</span></span>
-<span><span class="op">)</span></span>
+<span>  <span class="st">"Path to reef bathymetry .tif"</span></span>
+<span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rspatial.github.io/terra/reference/project.html" class="external-link">project</a></span><span class="op">(</span><span class="va">.</span>, <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_glue.html" class="external-link">str_glue</a></span><span class="op">(</span><span class="st">"epsg:{output_crs}"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Load geomorphic habitat raster data from GBRMPA GBR10 dataset</span></span>
-<span><span class="va">habitat_raster</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span></span>
-<span>  <span class="st">"Path to Mackay - Capricorn GBR10 geomorphic habitat raster .tif"</span></span>
-<span><span class="op">)</span></span>
+<span><span class="co"># Load geomorphic habitat vector data from ACA dataset</span></span>
+<span><span class="va">habitat_vector</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">st_read</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Path to geomorphic habitat .gpkg"</span></span>
+<span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>habitat <span class="op">=</span> <span class="va">class</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span>crs <span class="op">=</span> <span class="va">output_crs</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Must ensure all input data are in the same CRS</span></span>
-<span><span class="va">reef_polygons</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/valid.html" class="external-link">st_make_valid</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span></span>
-<span>  <span class="va">reef_polygons</span>,</span>
-<span>  crs <span class="op">=</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">habitat_raster</span><span class="op">)</span></span>
-<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Convert habitat data to raster format</span></span>
+<span><span class="va">habitat_raster</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vector_to_raster.html">vector_to_raster</a></span><span class="op">(</span></span>
+<span>  <span class="va">habitat_vector</span>,</span>
+<span>  <span class="st">"habitat"</span>,</span>
+<span>  output_file <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  raster_template <span class="op">=</span> <span class="va">bathymetry_raster</span> <span class="co"># Use existing bathymetry raster as the template (i.e. grid format) for raster conversion</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">habitat_levels</span> <span class="op">&lt;-</span> <span class="va">habitat_raster</span><span class="op">$</span><span class="va">levels</span> <span class="co"># Store factor levels contained in new `habitat_raster</span></span>
+<span><span class="va">habitat_raster</span> <span class="op">&lt;-</span> <span class="va">habitat_raster</span><span class="op">$</span><span class="va">raster</span></span></code></pre></div>
 </div>
 </section><section class="section level2"><h2 id="define-arguments-for-workflow">Define arguments for workflow<a class="anchor" aria-label="anchor" href="#define-arguments-for-workflow"></a>
 </h2>
@@ -120,52 +141,37 @@
 <div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Define analysis parameters for example:</span></span>
-<span><span class="co"># Pixel values that are used to extract target habitats from</span></span>
-<span><span class="co"># `habitat_raster`</span></span>
-<span><span class="va">habitat_categories</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">22</span>, <span class="fl">14</span>, <span class="fl">21</span><span class="op">)</span></span>
-<span><span class="co"># 15: reef crest, 22: reef slope, 14: outer reef flat, 21: sheltered reef slope</span></span>
-<span></span>
-<span><span class="co"># Define hexagon resolution and unit for outputting hexagon area</span></span>
-<span><span class="co"># (same as function defaults)</span></span>
-<span><span class="va">hex_resolution</span> <span class="op">&lt;-</span> <span class="fl">12</span></span>
-<span><span class="va">unit</span> <span class="op">&lt;-</span> <span class="st">"m2"</span></span>
-<span></span>
-<span><span class="co"># Dataframe containing the H3 cell sizes for each resolution</span></span>
-<span><span class="co"># (from https://h3geo.org/docs/core-library/restable/#average-area-in-m2).</span></span>
-<span><span class="va">hex_size</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  res <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span><span class="op">:</span><span class="fl">15</span><span class="op">)</span>,</span>
-<span>  size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5161293</span>, <span class="fl">737327</span>, <span class="fl">105332</span>, <span class="fl">15047</span>, <span class="fl">2149</span>, <span class="fl">307.09</span>, <span class="fl">43.87</span>, <span class="fl">6.267</span>, <span class="fl">0.895</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">hex_size</span> <span class="op">&lt;-</span> <span class="va">hex_size</span><span class="op">[</span><span class="va">hex_size</span><span class="op">$</span><span class="va">res</span> <span class="op">==</span> <span class="va">hex_resolution</span>, <span class="op">]</span><span class="op">$</span><span class="va">size</span></span>
+<span><span class="co"># Select habitat levels that correspond to desired habitat categories</span></span>
+<span><span class="va">habitat_categories</span> <span class="op">&lt;-</span> <span class="va">habitat_levels</span><span class="op">[</span></span>
+<span>  <span class="va">habitat_levels</span><span class="op">$</span><span class="va">character</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reef Crest"</span>, <span class="st">"Reef Slope"</span>, <span class="st">"Outer Reef Flat"</span>, <span class="st">"Sheltered Reef Slope"</span><span class="op">)</span>,</span>
+<span><span class="op">]</span><span class="op">$</span><span class="va">numeric_levels</span></span>
 <span></span>
 <span><span class="co"># Define the desired site size in terms of spatial area</span></span>
 <span><span class="co"># and the number of H3 cells per site</span></span>
 <span><span class="va">site_size</span> <span class="op">&lt;-</span> <span class="fl">250</span> <span class="op">*</span> <span class="fl">250</span> <span class="co"># set size size for our example to 625,000m~2~</span></span>
-<span><span class="va">n_pixels</span> <span class="op">&lt;-</span> <span class="va">site_size</span> <span class="op">/</span> <span class="va">hex_size</span></span>
+<span><span class="va">pixel_area</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">res</a></span><span class="op">(</span><span class="va">habitat_raster</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">res</a></span><span class="op">(</span><span class="va">habitat_raster</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="co"># Calculate raster pixel square area (m~2~)</span></span>
+<span><span class="va">n_pixels</span> <span class="op">&lt;-</span> <span class="va">site_size</span> <span class="op">/</span> <span class="va">pixel_area</span> <span class="co"># Calculate desired number of points per site</span></span>
 <span></span>
-<span><span class="co"># Select target reef outline. For this example we use</span></span>
-<span><span class="co"># One Tree Island Reef from the Mackay - Capricorn region</span></span>
-<span><span class="va">OTIR_ID</span> <span class="op">&lt;-</span> <span class="st">"23055101104"</span> <span class="co"># One Tree Island Reef</span></span>
-<span><span class="va">target_reef</span> <span class="op">&lt;-</span> <span class="va">reef_polygons</span><span class="op">[</span><span class="va">reef_polygons</span><span class="op">$</span><span class="va">UNIQUE_ID</span> <span class="op">==</span> <span class="va">OTIR_ID</span>, <span class="op">]</span></span></code></pre></div>
+<span><span class="co"># Select a target reef from the reef polygons available</span></span>
+<span><span class="va">target_reef</span> <span class="op">&lt;-</span> <span class="va">reef_polygons</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span></span></code></pre></div>
 </div>
 </section><section class="section level2"><h2 id="extracting-pixel-data-for-the-target-reef">Extracting pixel data for the target reef<a class="anchor" aria-label="anchor" href="#extracting-pixel-data-for-the-target-reef"></a>
 </h2>
-<p>Once the input data and arguments have been set up, we can extract pixel data for One Tree Island Reef using our <code>target_reef</code> outline polygon. This process involves identifying selected pixels from the habitat raster object, converting pixels to H3 hexagon cells and extracting bathymetry data.</p>
+<p>The remainder of the workflow using Allen Coral Atlas data follows other reef partitioning workflows. Once the input data and arguments have been set up, we can extract pixel data for our reef using the <code>target_reef</code> outline polygon. This process involves identifying selected pixels from the habitat raster object and extracting bathymetry data.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pixel_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_point_cells.html">extract_point_cells</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">pixel_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_point_pixels.html">extract_point_pixels</a></span><span class="op">(</span></span>
 <span>  reef_polygon <span class="op">=</span> <span class="va">target_reef</span>,</span>
 <span>  habitat_raster <span class="op">=</span> <span class="va">habitat_raster</span>,</span>
 <span>  add_var_raster <span class="op">=</span> <span class="va">bathymetry_raster</span>,</span>
-<span>  habitat_categories <span class="op">=</span> <span class="va">habitat_categories</span></span>
+<span>  habitat_categories <span class="op">=</span> <span class="va">habitat_categories</span>,</span>
+<span>  output_epsg <span class="op">=</span> <span class="va">output_crs</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># We must also attach a reef ID to the dataframe and</span></span>
 <span><span class="co"># remove any pixels with invalid depth data</span></span>
-<span><span class="va">pixel_data</span><span class="op">$</span><span class="va">UNIQUE_ID</span> <span class="op">&lt;-</span> <span class="va">OTIR_ID</span></span>
-<span><span class="va">pixel_data</span> <span class="op">&lt;-</span> <span class="va">pixel_data</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">pixel_data</span><span class="op">$</span><span class="va">depth</span><span class="op">)</span>, <span class="op">]</span></span>
-<span></span>
+<span><span class="va">pixel_data</span><span class="op">$</span><span class="va">UNIQUE_ID</span> <span class="op">&lt;-</span> <span class="st">"Reef 1"</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pixel_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 </section><section class="section level2"><h2 id="clustering-habitat-pixels-based-on-distance-and-depth">Clustering habitat pixels based on distance and depth<a class="anchor" aria-label="anchor" href="#clustering-habitat-pixels-based-on-distance-and-depth"></a>
@@ -173,9 +179,12 @@
 <p>Data for each required pixel have been extracted, and we can now cluster pixels based on their geographic distance and depth. Using the default arguments for <code>cluster_reef_pixels()</code> clusters pixels within each habitat type using a Minimum Spanning Tree and <code><a href="../reference/reef_skater_fast.html">reef_skater_fast()</a></code> skater clustering algorithm implemented using igraph. The returned dataframe contains a row for each pixel and an additional column containing the clustered <code>site_id</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mst_hclust_pixels</span> <span class="op">&lt;-</span> <span class="fu">cluster_reef_pixels</span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">clustered_pixels</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cluster_reef_points.html">cluster_reef_points</a></span><span class="op">(</span></span>
 <span>  <span class="va">pixel_data</span>,</span>
-<span>  clustering_function_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>point_area <span class="op">=</span> <span class="va">hex_size</span><span class="op">)</span></span>
+<span>  clustering_function_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    point_area <span class="op">=</span> <span class="va">pixel_area</span>,</span>
+<span>    site_size <span class="op">=</span> <span class="va">site_size</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 </section><section class="section level2"><h2 id="creating-site-polygons">Creating site polygons<a class="anchor" aria-label="anchor" href="#creating-site-polygons"></a>
@@ -184,12 +193,18 @@
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Collate H3 cells that are assigned site IDs into polygons</span></span>
-<span><span class="va">mst_hclust_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cells_to_polygons.html">cells_to_polygons</a></span><span class="op">(</span><span class="va">mst_hclust_pixels</span><span class="op">)</span></span>
+<span><span class="va">clustered_polygons</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pixels_to_polygons.html">pixels_to_polygons</a></span><span class="op">(</span></span>
+<span>  <span class="va">clustered_pixels</span>,</span>
+<span>  <span class="va">UNIQUE_ID</span>,</span>
+<span>  <span class="va">habitat</span>,</span>
+<span>  <span class="va">depth</span>,</span>
+<span>  pixel_size <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">res</a></span><span class="op">(</span><span class="va">habitat_raster</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Site postprocessing with a minimum number of pixels per site of 50</span></span>
 <span><span class="va">processed_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/site_postprocessing.html">site_postprocessing</a></span><span class="op">(</span></span>
-<span>  <span class="va">mst_hclust_sites</span>,</span>
-<span>  min_site_area <span class="op">=</span> <span class="fl">50</span> <span class="op">*</span> <span class="va">hex_size</span></span>
+<span>  <span class="va">clustered_polygons</span>,</span>
+<span>  min_site_area <span class="op">=</span> <span class="fl">50</span> <span class="op">*</span> <span class="va">pixel_area</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 </section><section class="section level2"><h2 id="mapping-outputs-using-ggplot2">Mapping outputs using ggplot2<a class="anchor" aria-label="anchor" href="#mapping-outputs-using-ggplot2"></a>
@@ -220,8 +235,7 @@
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">processed_sites</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">depth</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_fill_fermenter</a></span><span class="op">(</span></span>
 <span>    palette <span class="op">=</span> <span class="st">"greens"</span>,</span>
-<span>    direction <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>    breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.5</span>, <span class="fl">5</span>, <span class="fl">7.5</span>, <span class="fl">10</span>, <span class="fl">12.5</span>, <span class="fl">15</span>, <span class="fl">17.5</span>, <span class="fl">20</span><span class="op">)</span></span>
+<span>    direction <span class="op">=</span> <span class="fl">1</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 </div>
 </section><script id="quarto-html-after-body" type="application/javascript">
