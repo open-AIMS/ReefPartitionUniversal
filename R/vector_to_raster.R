@@ -61,7 +61,9 @@ generate_raster_template <- function(vector_data, pixel_resolution = NA) {
 #'
 #' @return SpatRaster conversion of `vector_data` using a `raster_template`. Output
 #'   raster is also saved to `output_file`, and a csv containing numerical allocations
-#'   is saved if the values in `data_column` are characters.
+#'   is saved if the values in `data_column` are characters. If `data_column` holds
+#'   character data, then the levels assigned will also be returned (using a named list
+#'   to hold both objects).
 #'
 #' @export
 #'
@@ -78,7 +80,7 @@ vector_to_raster <- function(
   }
 
   column_name <- data_column
-  if (class(vector_data[, data_column, drop = TRUE]) == "character") {
+  if (inherits(vector_data[, data_column, drop = TRUE], "character")) {
     column_name <- paste0(data_column, "_num")
 
     value_levels <- levels(factor(vector_data[, data_column, drop = TRUE]))
@@ -118,6 +120,10 @@ vector_to_raster <- function(
       background = NA,
       touches = TRUE
     )
+  }
+
+  if (inherits(vector_data[, data_column, drop = TRUE], "character")) {
+    return(list(raster = raster_output, levels = value_levels))
   }
 
   return(raster_output)

@@ -38,7 +38,7 @@ site_postprocessing <- function(reef_site_polygons, min_site_area = 50 * 307) {
       RowsToRemove <- c(RowsToRemove, i)
       print(glue::glue("{i} too small"))
     } else {
-      if (class(reef_site_polygons$geometry[i])[1] == "sfc_MULTIPOLYGON") {
+      if (inherits(reef_site_polygons$geometry[i][1], "sfc_MULTIPOLYGON")) {
         # Processing Multi-polygons:
         # When a site consists of multiple polygons (sfc_MULTIPOLYGON)
         # Separates multi-polygons into individual polygons
