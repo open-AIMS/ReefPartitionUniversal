@@ -16,8 +16,10 @@ values such as point depth.
 
 The package uses a flexible framework allowing multiple additional raster layers
 to be used, along with user defined point clustering algorithms. The package itself
-defines two spatial clustering algorithm options, using adespatial::constr.hclust
-[(Guénard and Legendre, 2022)](https://www.jstatsoft.org/article/view/v103i07) and spdep::skater [(AssunÇão et al. 2007)](https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e2053).
+defines three spatial clustering algorithm options, using adespatial::constr.hclust
+[(Guénard and Legendre, 2022)](https://www.jstatsoft.org/article/view/v103i07),
+spdep::skater [(AssunÇão et al. 2007)](https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e2053),
+and an adaptation of the skater algorithm that is optimised for performance using igraph methods.
 
 # Installation
 ```R
@@ -41,8 +43,8 @@ devtools::install("path to package folder")
 # Basic demonstration
 
 The following code demonstrates a basic usage of ReefPartitionUniversal using
-`adespatial::constr.hclust` clustering algorithm and Minimum Spanning Tree inputs.
-For more
+an adapted version of the `spdep::skater` clustering algorithm and Minimum Spanning Tree inputs.
+For more information on partitioning workflows using different types of data see `Articles`.
 
 ```R
 library(ReefPartitionUniversal)
@@ -56,19 +58,17 @@ habitat_categories <- c(1, 10, 20) # Assess only habitat points with these value
 
 # Extract point values from raster layers
 points <- extract_point_pixels(target_reef, habitat, bathymetry, habitat_categories)
-points <- points[!is.na(points$depth), ]
 points$UNIQUE_ID <- "ReefOne"
 
-# Cluster points using adespatial::constr.hclust algorithm
-# The
-mst_hclust_points <- cluster_reef_points(points)
+# Cluster points using skater_igraph algorithm
+clustered_points <- cluster_reef_points(points)
 
 # Collate points from each site/cluster into polygons
-mst_hclust_sites <- pixels_to_polygons(mst_hclust_points)
+clustered_sites <- pixels_to_polygons(clustered_points)
 
 # Optional: Apply post-processing to point clusters to ensure that non-contiguous
 # clusters adhere to a maximum distance between areas.
-sites_post_processed <- site_postprocessing(mst_hclust_sites, 50)
+sites_post_processed <- site_postprocessing(clustered_sites)
 ```
 
 ## Using multiple additional variable sources
@@ -123,7 +123,7 @@ points$UNIQUE_ID <- "ReefOne"
 
 # Cluster points using adespatial::constr.hclust algorithm
 # The default column arguments must be altered to include wave exposure
-mst_hclust_points <- cluster_reef_points(
+clustered_points <- cluster_reef_points(
     points,
     additional_variable_cols = c("depth", "wave_exposure"),
     clustering_function_args = list(
@@ -152,4 +152,3 @@ linespace and punctuation to follow the tidyverse styleguide.
 
 Additionally, Air has been set up to check file formatting when a new Pull Request
 is made.
-
