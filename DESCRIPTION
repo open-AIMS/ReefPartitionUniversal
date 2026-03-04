@@ -26,7 +26,6 @@ Imports:
     sf,
     terra,
     sfnetworks,
-    h3,
     igraph,
     spdep,
     adespatial,
@@ -36,5 +35,9 @@ Imports:
     quarto,
     class,
     tidygraph
+Remotes: github::crazycapivara/h3-r
 VignetteBuilder: quarto
 URL: https://open-aims.github.io/ReefPartitionUniversal/
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
