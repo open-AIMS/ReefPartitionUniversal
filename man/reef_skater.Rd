@@ -19,7 +19,8 @@ reef_skater(
 }
 \arguments{
 \item{points}{data.frame. Contains values for X and Y coordinates, as well as
-\code{additional_variable_cols}.}
+\code{additional_variable_cols}. Must use projected coordinate reference system
+to ensure accurate distance calculations.}
 
 \item{n_clust}{integer numeric. Number of clusters in result output. (Point to
 cut hierarchical clustering tree). Default = (round(nrow(points) / 200))

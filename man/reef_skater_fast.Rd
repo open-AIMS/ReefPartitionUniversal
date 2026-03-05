@@ -20,7 +20,8 @@ reef_skater_fast(
 }
 \arguments{
 \item{points}{data.frame. Contains values for X and Y coordinates, as well as
-\code{additional_variable_cols}.}
+\code{additional_variable_cols}. Must use projected coordinate reference system
+for accurate distance calculations.}
 
 \item{n_clust}{integer numeric. Number of clusters in result output. Default =
 (round(nrow(points) / 200)) (dividing habitat into clusters containing an

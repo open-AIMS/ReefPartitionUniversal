@@ -11,7 +11,8 @@
 #'   points using nearest neighbour interpolation.
 #'
 #' @param points data.frame. Contains values for X and Y coordinates, as well as
-#'   `additional_variable_cols`.
+#'   `additional_variable_cols`. Must use projected coordinate reference system
+#'   to ensure accurate distance calculations.
 #' @param edges matrix. Matrix containing edges between points in `points`.
 #' @param x_col character. Name of the column holding X coordinates. Default = "X_standard".
 #' @param y_col character. Name of the column holding Y coordinates. Default = "Y_standard".
@@ -58,6 +59,16 @@ constrained_hclust <- function(
   n_clust = (round(nrow(points) / n_points)),
   method = "ward.D2"
 ) {
+  if (!check_unit(points, "metre")) {
+    rlang::abort(
+      "
+      For accurate distance calculations, `points` must be in a projected coordinate
+      reference system (i.e. in metres units), examples include UTM zones or Pseudo-Mercator:3857.
+      ",
+      class = "crs_units"
+    )
+  }
+
   site_prefix <- paste(
     unique(points[, id_col, drop = TRUE]),
     unique(points[, habitat_col, drop = TRUE]),

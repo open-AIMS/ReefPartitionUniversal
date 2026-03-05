@@ -306,7 +306,8 @@ skater_igraph <- function(
 #'   via nearest neighbor assignment.
 #'
 #' @param points data.frame. Contains values for X and Y coordinates, as well as
-#'   `additional_variable_cols`.
+#'   `additional_variable_cols`. Must use projected coordinate reference system
+#'   for accurate distance calculations.
 #' @param n_clust integer numeric. Number of clusters in result output. Default =
 #'   (round(nrow(points) / 200)) (dividing habitat into clusters containing an
 #'   average of 200 points).
@@ -357,6 +358,16 @@ reef_skater_fast <- function(
   interpolation_threshold = 30000,
   ...
 ) {
+  if (!check_unit(points, "metre")) {
+    rlang::abort(
+      "
+      For accurate distance calculations, `points` must be in a projected coordinate
+      reference system (i.e. in metres units), examples include UTM zones or Pseudo-Mercator:3857.
+      ",
+      class = "crs_units"
+    )
+  }
+
   dots <- list(...)
   passed_arguments <- names(dots)
 

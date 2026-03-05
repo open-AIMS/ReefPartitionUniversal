@@ -9,12 +9,13 @@ prepare_mst(
   points,
   additional_variable_cols = c("depth_standard"),
   mst_alpha = 0.5,
-  hex_resolution = 12
+  point_jitter = 1e-04
 )
 }
 \arguments{
 \item{points}{sf data.frame. Holds values for pixel geometries and
-\code{additional_variable_cols}}
+\code{additional_variable_cols}. Must use a projected coordinate reference system
+for accurate distance calculations.}
 
 \item{additional_variable_cols}{character vector. Names of the columns to extract
 additional (non-geometric) data from for cost weighting.}
@@ -24,7 +25,10 @@ distance in edge cost weighting when combining with geographic distances.
 (1 - alpha) weight is applied to the geographic distance. Default = 0.5
 (same weight for \code{additional_variable_cols} and geographic distances).}
 
-\item{hex_resolution}{integer. H3 hex resolution of pixels. Default = 12.}
+\item{point_jitter}{float numeric. Jitter applied to point coordinates for the
+sole purpose of triangulation. This allows points that are in straight lines
+(e.g. from raster pixel extraction) to be triangulated. A default jitter value
+of 0.0001 metres is used.}
 }
 \value{
 igraph::mst Minimum spanning tree object.

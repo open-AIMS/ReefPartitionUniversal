@@ -22,7 +22,8 @@ constrained_hclust(
 }
 \arguments{
 \item{points}{data.frame. Contains values for X and Y coordinates, as well as
-\code{additional_variable_cols}.}
+\code{additional_variable_cols}. Must use projected coordinate reference system
+to ensure accurate distance calculations.}
 
 \item{edges}{matrix. Matrix containing edges between points in \code{points}.}
 
