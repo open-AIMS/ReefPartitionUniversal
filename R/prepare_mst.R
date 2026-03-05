@@ -7,14 +7,18 @@
 #'   For additional details on minimum spanning tree creation see igraph::mst().
 #'
 #' @param points sf data.frame. Holds values for pixel geometries and
-#'   `additional_variable_cols`
+#'   `additional_variable_cols`. Must use a projected coordinate reference system
+#'   for accurate distance calculations.
 #' @param additional_variable_cols character vector. Names of the columns to extract
 #'   additional (non-geometric) data from for cost weighting.
 #' @param mst_alpha float numeric. Weighting applied to `additional_variable_cols`
 #'   distance in edge cost weighting when combining with geographic distances.
 #'   (1 - alpha) weight is applied to the geographic distance. Default = 0.5
 #'   (same weight for `additional_variable_cols` and geographic distances).
-#' @param hex_resolution integer. H3 hex resolution of pixels. Default = 12.
+#' @param point_jitter float numeric. Jitter applied to point coordinates for the
+#'   sole purpose of triangulation. This allows points that are in straight lines
+#'   (e.g. from raster pixel extraction) to be triangulated. A default jitter value
+#'   of 0.0001 metres is used.
 #'
 #' @return igraph::mst Minimum spanning tree object.
 #'
@@ -26,14 +30,28 @@ prepare_mst <- function(
   points,
   additional_variable_cols = c("depth_standard"),
   mst_alpha = 0.5,
-  hex_resolution = 12
+  point_jitter = 0.0001
 ) {
+  if (!check_unit(points, "metre")) {
+    rlang::abort(
+      "
+      For accurate distance calculations, `points` must be in a projected coordinate
+      reference system (i.e. in metres units), examples include UTM zones or Pseudo-Mercator:3857.
+      ",
+      class = "crs_units"
+    )
+  }
+
   add_var_weight <- mst_alpha
   geo_weight <- 1 - mst_alpha
-  coords <- sf::st_centroid(sf::st_geometry(points))
+  coords <- sf::st_geometry(points)
+
+  coord_vals <- sf::st_coordinates(coords)
+
+  jittered_vals <- jitter(coord_vals, amount = point_jitter)
 
   # Triangulate edges between pixel points
-  tri <- spdep::tri2nb(coords)
+  tri <- spdep::tri2nb(jittered_vals)
   Costs_tri <- spdep::nbcosts(
     tri,
     data = points[, additional_variable_cols, drop = TRUE],

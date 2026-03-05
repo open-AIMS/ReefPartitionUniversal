@@ -112,3 +112,8 @@ input_check <- function(
 
   return(NULL)
 }
+
+# Helper function to check unit of spatial data
+check_unit <- function(data, unit) {
+  return(sf::st_crs(data)$units_gdal == unit)
+}
