@@ -49,7 +49,7 @@ extract_point_cells <- function(
   hex_resolution = 12,
   unit = "km2",
   additional_variable_name = "depth",
-  output_epsg = 3112,
+  output_epsg = 3857,
   resample_method = "bilinear",
   interpolation = TRUE
 ) {
@@ -172,6 +172,8 @@ extract_point_cells <- function(
   if (interpolation) {
     hab_pts <- fill_na_nearest(hab_pts, additional_variable_name)
   }
+
+  message(glue::glue("Point output will be output in EPSG:{output_epsg}"))
 
   return(hab_pts)
 }

@@ -38,7 +38,7 @@ extract_point_pixels <- function(
   add_var_raster,
   habitat_categories,
   additional_variable_name = "depth",
-  output_epsg = 3112,
+  output_epsg = 3857,
   interpolation = TRUE
 ) {
   # Perform input data checks before proceeding with computations
@@ -104,6 +104,8 @@ extract_point_pixels <- function(
   if (interpolation) {
     hab_pts <- fill_na_nearest(hab_pts, additional_variable_name)
   }
+
+  message(glue::glue("Point output will be output in EPSG:{output_epsg}"))
 
   return(hab_pts)
 }
