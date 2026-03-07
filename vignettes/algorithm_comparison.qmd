@@ -65,9 +65,9 @@ points in some cases compared to a more connected graph such as a triangulation 
 ::: {.table-algorithms}
 | Algorithm | Package source | Reference | Function | Runtime | Inputs | Pros | Cons |
 |-----------|----------------|-----------|----------|---------|--------|------|------|
-| skater - spdep | spdep | AssunÇão et al. 2007 | reef_skater | x | Minimum Spanning Tree |   | - not computationally efficient - clusters are limited to the MST shape |
-| skater - fast | uses igraph methods | AssunÇão et al. 2007 | reef_skater_fast | x | Minimum Spanning Tree | - computationally efficient implementation of igraph methods in C - may prevent low occupancy clusters | - clusters are limited to the MST shape |   
-| constr.hclust | adespatial | Guénard and Legendre 2022 | constrained_hclust | y | Graph edges (e.g. Minimum Spanning Tree, triangulation network) | - computationally efficient - allows flexible edge inputs, which can help minimise within-cluster variance | may result in a proportion of clusters with lower point occupancy than desired |
+| skater - spdep | spdep | AssunÇão et al. 2007 | reef_skater | x | Minimum Spanning Tree |   | - not computationally efficient <br> - clusters are limited to the MST shape |
+| skater - fast | uses igraph methods | AssunÇão et al. 2007 | reef_skater_fast | x | Minimum Spanning Tree | - efficient implementation of igraph methods in C <br> - may prevent low occupancy clusters | - clusters are limited to the MST shape |   
+| constr.hclust | adespatial | Guénard and Legendre 2022 | constrained_hclust | y | Graph edges (e.g. Minimum Spanning Tree, triangulation network) | - efficient performance <br> - allows flexible edge inputs, which can help minimise within-cluster variance | may result in a proportion of clusters with lower point occupancy than desired |
 :::
 
 Comparison of the default clustering algorithms implemented in ReefPartitionUniversal.

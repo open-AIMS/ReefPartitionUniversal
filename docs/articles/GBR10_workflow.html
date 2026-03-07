@@ -35,14 +35,19 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/ACA_workflow.html">Partitioning workflow using Allen Coral Atlas data</a></li>
-    <li><a class="dropdown-item" href="../articles/algorithm_comparison.html">Clustering algorithms</a></li>
-    <li><a class="dropdown-item" href="../articles/dependencies.html">Dependencies</a></li>
+<li><h6 class="dropdown-header" data-toc-skip>Workflows</h6></li>
     <li><a class="dropdown-item" href="../articles/GBR10_workflow.html">Partitioning workflow using GBRMPA data</a></li>
+    <li><a class="dropdown-item" href="../articles/ACA_workflow.html">Partitioning workflow using Allen Coral Atlas data</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Package information</h6></li>
+    <li><a class="dropdown-item" href="../articles/algorithm_comparison.html">Clustering algorithms</a></li>
+    <li><a class="dropdown-item" href="../articles/dependencies.html">Package dependencies</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../articles/publications.html">Publications</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/open-aims/ReefPartitionUniversal/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
@@ -68,7 +73,7 @@
 
 
 
-
+      <small class="dont-index">Source: <a href="https://github.com/open-aims/ReefPartitionUniversal/blob/HEAD/vignettes/GBR10_workflow.qmd" class="external-link"><code>vignettes/GBR10_workflow.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -83,7 +88,7 @@
 </h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://open-aims.github.io/ReefPartitionUniversal/">ReefPartitionUniversal</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/open-aims/ReefPartitionUniversal/" class="external-link">ReefPartitionUniversal</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>

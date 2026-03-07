@@ -35,14 +35,19 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/ACA_workflow.html">Partitioning workflow using Allen Coral Atlas data</a></li>
-    <li><a class="dropdown-item" href="../articles/algorithm_comparison.html">Clustering algorithms</a></li>
-    <li><a class="dropdown-item" href="../articles/dependencies.html">Dependencies</a></li>
+<li><h6 class="dropdown-header" data-toc-skip>Workflows</h6></li>
     <li><a class="dropdown-item" href="../articles/GBR10_workflow.html">Partitioning workflow using GBRMPA data</a></li>
+    <li><a class="dropdown-item" href="../articles/ACA_workflow.html">Partitioning workflow using Allen Coral Atlas data</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Package information</h6></li>
+    <li><a class="dropdown-item" href="../articles/algorithm_comparison.html">Clustering algorithms</a></li>
+    <li><a class="dropdown-item" href="../articles/dependencies.html">Package dependencies</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../articles/publications.html">Publications</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/open-aims/ReefPartitionUniversal/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
@@ -68,7 +73,7 @@
 
 
 
-
+      <small class="dont-index">Source: <a href="https://github.com/open-aims/ReefPartitionUniversal/blob/HEAD/vignettes/algorithm_comparison.qmd" class="external-link"><code>vignettes/algorithm_comparison.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -90,67 +95,64 @@
 <p><code>constr.hclust</code> deviates from other hierarchical clustering algorithms as it implements a spatial contiguity constraint to control which points can be joined into a cluster. As the algorithm progresses through points, it is restricted to clustering points that are joined by a network edge. These edges can be defined using multiple graph based methods. In ReefPartitionUniversal, we define <code>constrained_hclust_mst</code> which uses a minimum spanning tree to defined the edges between points, resulting in spatially similar points to the <code>skater</code> algorithms. Other alternatives for defining edges include network edge triangulation and k-nearest-neighbour methods (accessible via the <code>spdep</code> package). Input flexibility may allow <code>constr.hclust</code> to achieve lower within-cluster variance than <code>skater</code> algorithms as utilising only an MST can hinder the clustering of similar points in some cases compared to a more connected graph such as a triangulation network.</p>
 </section><section class="level2"><h3 id="algorithm-comparison">Algorithm comparison<a class="anchor" aria-label="anchor" href="#algorithm-comparison"></a>
 </h3>
-<table class="table caption-top" style="width:93%;">
-<caption>Comparison of the default clustering algorithms implemented in ReefPartitionUniversal.</caption>
+<div class="table-algorithms">
+<table class="table caption-top">
 <colgroup>
+<col style="width: 14%">
+<col style="width: 20%">
+<col style="width: 14%">
+<col style="width: 12%">
+<col style="width: 11%">
 <col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 17%">
-<col style="width: 10%">
+<col style="width: 7%">
+<col style="width: 7%">
 </colgroup>
 <thead><tr class="header">
-<th>Al gorithm</th>
+<th>Algorithm</th>
 <th>Package source</th>
-<th>Re ference</th>
-<th>F unction</th>
-<th>Runtime (10,000 points)</th>
+<th>Reference</th>
+<th>Function</th>
+<th>Runtime</th>
 <th>Inputs</th>
 <th>Pros</th>
 <th>Cons</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>s kater - spdep</td>
+<td>skater - spdep</td>
 <td>spdep</td>
-<td>A ssunÇão et al. 2007</td>
-<td>reef _skater</td>
+<td>AssunÇão et al. 2007</td>
+<td>reef_skater</td>
 <td>x</td>
-<td>Minimum S panning Tree, data values (e.g. depth)</td>
+<td>Minimum Spanning Tree</td>
 <td></td>
-<td>- not c omputat ionally effi cient - c lusters are limited to the MST shape</td>
+<td>- not computationally efficient <br> - clusters are limited to the MST shape</td>
 </tr>
 <tr class="even">
-<td>s kater - fast</td>
-<td>R eefPart itionUn iversal (using igraph m ethods)</td>
-<td>A ssunÇão et al. 2007</td>
-<td>re ef_skat er_fast</td>
-<td>y</td>
-<td>Minimum S panning Tree, data values (e.g. depth)</td>
-<td>
-<p>- co mputationally efficient i mplementation of igraph methods in C</p>
-<p>- may prevent low occupancy clusters</p>
-</td>
-<td>- c lusters are limited to the MST shape</td>
+<td>skater - fast</td>
+<td>uses igraph methods</td>
+<td>AssunÇão et al. 2007</td>
+<td>reef_skater_fast</td>
+<td>x</td>
+<td>Minimum Spanning Tree</td>
+<td>- efficient implementation of igraph methods in C <br> - may prevent low occupancy clusters</td>
+<td>- clusters are limited to the MST shape</td>
 </tr>
 <tr class="odd">
-<td>constr .hclust</td>
-<td>ade spatial</td>
-<td>Guénard and L egendre 2022</td>
-<td>cons trained _hclust</td>
-<td>z</td>
-<td>Graph edges (e.g. Minimum S panning Tree, triang ulation n etwork)</td>
-<td>
-<p>- co mputationally efficient</p>
-<p>- allows flexible edge inputs allowing flexibility, which can help minimise within cluster variance</p>
-</td>
-<td>- may result in a pro portion of c lusters with lower point oc cupancy than desired</td>
+<td>constr.hclust</td>
+<td>adespatial</td>
+<td>Guénard and Legendre 2022</td>
+<td>constrained_hclust</td>
+<td>y</td>
+<td>Graph edges (e.g. Minimum Spanning Tree, triangulation network)</td>
+<td>- efficient performance <br> - allows flexible edge inputs, which can help minimise within-cluster variance</td>
+<td>may result in a proportion of clusters with lower point occupancy than desired</td>
 </tr>
 </tbody>
-</table></section><section class="level2"><h3 id="defining-a-custom-clustering-algorithm">Defining a custom clustering algorithm<a class="anchor" aria-label="anchor" href="#defining-a-custom-clustering-algorithm"></a>
+</table>
+</div>
+<p>Comparison of the default clustering algorithms implemented in ReefPartitionUniversal.</p>
+</section><section class="level2"><h3 id="defining-a-custom-clustering-algorithm">Defining a custom clustering algorithm<a class="anchor" aria-label="anchor" href="#defining-a-custom-clustering-algorithm"></a>
 </h3>
 <p>ReefPartitionUniversal also supports the use of custom point clustering functions with the use of <code>cluster_reef_points</code>. This is demonstrated in the following example implementing a custom kmeans clustering algorithm.</p>
 <div class="cell">
