@@ -62,58 +62,15 @@ than `skater` algorithms as utilising only an MST can hinder the clustering of s
 points in some cases compared to a more connected graph such as a triangulation network.
 
 ## Algorithm comparison
+::: {.table-algorithms}
+| Algorithm | Package source | Reference | Function | Runtime | Inputs | Pros | Cons |
+|-----------|----------------|-----------|----------|---------|--------|------|------|
+| skater - spdep | spdep | AssunÇão et al. 2007 | reef_skater | x | Minimum Spanning Tree |   | - not computationally efficient - clusters are limited to the MST shape |
+| skater - fast | uses igraph methods | AssunÇão et al. 2007 | reef_skater_fast | x | Minimum Spanning Tree | - computationally efficient implementation of igraph methods in C - may prevent low occupancy clusters | - clusters are limited to the MST shape |   
+| constr.hclust | adespatial | Guénard and Legendre 2022 | constrained_hclust | y | Graph edges (e.g. Minimum Spanning Tree, triangulation network) | - computationally efficient - allows flexible edge inputs, which can help minimise within-cluster variance | may result in a proportion of clusters with lower point occupancy than desired |
+:::
 
-+---------+---------+---------+---------+---------+---------+---------------+---------+
-| Al      | Package | Re      | F       | Runtime | Inputs  | Pros          | Cons    |
-| gorithm | source  | ference | unction | (10,000 |         |               |         |
-|         |         |         |         | points) |         |               |         |
-+=========+=========+=========+=========+=========+=========+===============+=========+
-| s       | spdep   | A       | reef    | x       | Minimum |               | \- not  |
-| kater - |         | ssunÇão | _skater |         | S       |               | c       |
-| spdep   |         | et al.  |         |         | panning |               | omputat |
-|         |         | 2007    |         |         | Tree,   |               | ionally |
-|         |         |         |         |         | data    |               | effi    |
-|         |         |         |         |         | values  |               | cient - |
-|         |         |         |         |         | (e.g.   |               | c       |
-|         |         |         |         |         | depth)  |               | lusters |
-|         |         |         |         |         |         |               | are     |
-|         |         |         |         |         |         |               | limited |
-|         |         |         |         |         |         |               | to the  |
-|         |         |         |         |         |         |               | MST     |
-|         |         |         |         |         |         |               | shape   |
-+---------+---------+---------+---------+---------+---------+---------------+---------+
-| s       | R       | A       | re      | y       | Minimum | \-            | \-      |
-| kater - | eefPart | ssunÇão | ef_skat |         | S       | co            | c       |
-| fast    | itionUn | et al.  | er_fast |         | panning | mputationally | lusters |
-|         | iversal | 2007    |         |         | Tree,   | efficient     | are     |
-|         | (using  |         |         |         | data    | i             | limited |
-|         | igraph  |         |         |         | values  | mplementation | to the  |
-|         | m       |         |         |         | (e.g.   | of igraph     | MST     |
-|         | ethods) |         |         |         | depth)  | methods in C  | shape   |
-|         |         |         |         |         |         |               |         |
-|         |         |         |         |         |         | \- may        |         |
-|         |         |         |         |         |         | prevent low   |         |
-|         |         |         |         |         |         | occupancy     |         |
-|         |         |         |         |         |         | clusters      |         |
-+---------+---------+---------+---------+---------+---------+---------------+---------+
-| constr  | ade     | Guénard | cons    | z       | Graph   | \-            | \- may  |
-| .hclust | spatial | and     | trained |         | edges   | co            | result  |
-|         |         | L       | _hclust |         | (e.g.   | mputationally | in a    |
-|         |         | egendre |         |         | Minimum | efficient     | pro     |
-|         |         | 2022    |         |         | S       |               | portion |
-|         |         |         |         |         | panning | \- allows     | of      |
-|         |         |         |         |         | Tree,   | flexible edge | c       |
-|         |         |         |         |         | triang  | inputs        | lusters |
-|         |         |         |         |         | ulation | allowing      | with    |
-|         |         |         |         |         | n       | flexibility,  | lower   |
-|         |         |         |         |         | etwork) | which can     | point   |
-|         |         |         |         |         |         | help minimise | oc      |
-|         |         |         |         |         |         | within        | cupancy |
-|         |         |         |         |         |         | cluster       | than    |
-|         |         |         |         |         |         | variance      | desired |
-+---------+---------+---------+---------+---------+---------+---------------+---------+
-
-: Comparison of the default clustering algorithms implemented in ReefPartitionUniversal.
+Comparison of the default clustering algorithms implemented in ReefPartitionUniversal.
 
 ## Defining a custom clustering algorithm
 
