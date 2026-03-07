@@ -72,7 +72,7 @@ connected graph such as a triangulation network.
 [TABLE]
 
 Comparison of the default clustering algorithms implemented in
-ReefPartitionUniversal. {.table .caption-top style="width:93%;"}
+ReefPartitionUniversal.
 
 ### Defining a custom clustering algorithm
 
