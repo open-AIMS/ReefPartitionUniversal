@@ -36,3 +36,17 @@ test_that("extracted depth mean around 10", {
     tolerance = 0.1
   )
 })
+
+test_that("extracted depth column contains no NAs (interpolation = TRUE)", {
+  expect_false(any(is.na(extracted_points$depth)))
+})
+
+test_that("output data frame contains all default required columns for later operations", {
+  expect_true(all(
+    c("habitat", "depth", "X", "Y", "geometry") %in% names(extracted_points)
+  ))
+})
+
+test_that("goemetries are points", {
+  expect_true(inherits(sf::st_geometry(extracted_points), "sfc_POINT"))
+})

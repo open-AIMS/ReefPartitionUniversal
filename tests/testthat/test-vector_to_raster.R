@@ -13,6 +13,10 @@ habitat_raster_gen <- vector_to_raster(
   raster_template = generate_raster_template(habitat_vector, 0.25)
 )
 
+test_that("generated output is raster format", {
+  expect_true(inherits(habitat_raster_gen, "SpatRaster"))
+})
+
 test_that("the generated habitat raster values are identical to the original", {
   expect_identical(
     as.double(terra::values(habitat_raster_gen)),
