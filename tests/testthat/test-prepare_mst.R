@@ -23,6 +23,10 @@ habitat_points <- extracted_points[extracted_points$habitat == 1, ]
 # Test the outputs of prepare_mst function
 mst <- prepare_mst(sf::st_transform(habitat_points, crs = 3857))
 
+test_that("output is igraph format", {
+  expect_true(inherits(mst, "igraph"))
+})
+
 test_that("all points accounted", {
   expect_equal(length(mst), nrow(habitat_points))
 })

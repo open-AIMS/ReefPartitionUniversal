@@ -32,3 +32,16 @@ test_that("Numbers of clusters allocated across 2 even habitats is around equal"
     tolerance = 0.25
   )
 })
+
+test_that("clustering output contains the strictly required columns for later operations (including id column)", {
+  expect_true(
+    all(
+      c("habitat", "depth", "X", "Y", "UNIQUE_ID", "site_id", "geometry") %in%
+        names(clustered_points)
+    )
+  )
+})
+
+test_that("clustering output points are SF POINT", {
+  expect_true(inherits(sf::st_geometry(clustered_points), "sfc_POINT"))
+})
