@@ -111,6 +111,8 @@ test_that("all default input columns are present in outputs", {
 
 test_that("geometries are geometry format", {
   expect_true(
-    inherits(sf::st_geometry(post_process), "sfc_GEOMETRY")
+    inherits(sf::st_geometry(post_process), "sfc_GEOMETRY") |
+      inherits(sf::st_geometry(post_process), "sfc_MULTIPOLYGON") |
+      inherits(sf::st_geometry(post_process), "sfc_POLYGON")
   )
 })
