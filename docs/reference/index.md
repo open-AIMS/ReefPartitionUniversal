@@ -6,7 +6,7 @@
   : Convert points for an entire reef that have been allocated site IDs
   into site polygons.
 
-- [`cluster_reef_points`](https://open-aims.github.io/ReefPartitionUniversal/reference/cluster_reef_points.md)
+- [`cluster_reef_points()`](https://open-aims.github.io/ReefPartitionUniversal/reference/cluster_reef_points.md)
   : Cluster points into sites based on geographical attributes and
   additional extracted point values.
 
@@ -68,8 +68,12 @@
   : An approximate Skater algorithm implemented using igraph methods.
 
 - [`ssw()`](https://open-aims.github.io/ReefPartitionUniversal/reference/ssw.md)
-  : Internal helper to compute the sum of square distances within
-  cluster nodes. Follows spdep function, implementing igraph methods.
+  :
+
+  Internal helper to compute the sum of square distances within cluster
+  nodes. Follows spdep function, implementing igraph methods. For
+  additional information see
+  [spdep::ssw](https://r-spatial.github.io/spdep/reference/ssw.html)
 
 - [`vector_to_raster()`](https://open-aims.github.io/ReefPartitionUniversal/reference/vector_to_raster.md)
   : Convert vector data for a reef(s) to raster data for pixel

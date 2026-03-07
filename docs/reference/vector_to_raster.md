@@ -50,4 +50,6 @@ vector_to_raster(
 
 SpatRaster conversion of `vector_data` using a `raster_template`. Output
 raster is also saved to `output_file`, and a csv containing numerical
-allocations is saved if the values in `data_column` are characters.
+allocations is saved if the values in `data_column` are characters. If
+`data_column` holds character data, then the levels assigned will also
+be returned (using a named list to hold both objects).

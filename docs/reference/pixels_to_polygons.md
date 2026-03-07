@@ -53,7 +53,7 @@ pixels_to_polygons(
 - pixel_size:
 
   numeric. Resolution of original habitat raster cells used to extract
-  point data. Must be in the same units as `x_col`/`y_col`.
+  point data. Must be in the same units as values in `x_col`/`y_col`.
 
 - x_col:
 

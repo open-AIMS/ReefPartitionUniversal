@@ -11,7 +11,11 @@ small, based on a user defined minimum site area.
 ## Usage
 
 ``` r
-site_postprocessing(reef_site_polygons, min_site_area = 50 * 307)
+site_postprocessing(
+  reef_site_polygons,
+  min_site_area = 50 * 307,
+  max_distance = 100
+)
 ```
 
 ## Arguments
