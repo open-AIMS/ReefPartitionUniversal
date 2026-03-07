@@ -52,3 +52,24 @@ test_that("
     tolerance = 0.25
   )
 })
+
+test_that("columns that are strictly required by later operations are present", {
+  expect_true(all(
+    c(
+      "site_id",
+      "UNIQUE_ID",
+      "habitat",
+      "depth_median",
+      "depth_sd",
+      "geometry"
+    ) %in%
+      names(clust_poly)
+  ))
+})
+
+test_that("geometries are polygons", {
+  expect_true(
+    inherits(sf::st_geometry(clust_poly), "sfc_MULTIPOLYGON") |
+      inherits(sf::st_geometry(clust_poly), "sfc_POLYGON")
+  )
+})

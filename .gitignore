@@ -4,3 +4,6 @@
 .Ruserdata
 
 outputs/
+
+vignettes/*_files
+vignettes/.quarto/
