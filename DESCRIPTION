@@ -37,7 +37,8 @@ Imports:
     tidygraph
 Remotes: github::crazycapivara/h3-r
 VignetteBuilder: quarto
-URL: https://open-aims.github.io/ReefPartitionUniversal/
+URL: https://github.com/open-aims/ReefPartitionUniversal/
+BugReports: https://github.com/open-aims/ReefPartitionUniversal/
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
