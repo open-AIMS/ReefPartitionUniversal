@@ -23,6 +23,7 @@ both geographical data and additional extracted data (such as depth)."></head><b
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/ACA_workflow.html">Partitioning workflow using Allen Coral Atlas data</a></li>
+    <li><a class="dropdown-item" href="../articles/algorithm_comparison.html">Clustering algorithms</a></li>
     <li><a class="dropdown-item" href="../articles/dependencies.html">Dependencies</a></li>
     <li><a class="dropdown-item" href="../articles/GBR10_workflow.html">Partitioning workflow using GBRMPA data</a></li>
   </ul></li>
@@ -55,16 +56,16 @@ both geographical data and additional extracted data (such as depth).</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre><code>cluster_reef_points(
-  points,
-  habitat_col = "habitat",
-  x_col = "X",
-  y_col = "Y",
-  additional_variable_cols = c("depth"),
-  reef_id_col = "UNIQUE_ID",
-  clustering_function_args = list()
-  habitat_clustering_function = reef_skater_fast,
-)</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cluster_reef_points</span><span class="op">(</span></span>
+<span>  <span class="va">points</span>,</span>
+<span>  habitat_col <span class="op">=</span> <span class="st">"habitat"</span>,</span>
+<span>  x_col <span class="op">=</span> <span class="st">"X"</span>,</span>
+<span>  y_col <span class="op">=</span> <span class="st">"Y"</span>,</span>
+<span>  additional_variable_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"depth"</span><span class="op">)</span>,</span>
+<span>  reef_id_col <span class="op">=</span> <span class="st">"UNIQUE_ID"</span>,</span>
+<span>  habitat_clustering_function <span class="op">=</span> <span class="va">reef_skater_fast</span>,</span>
+<span>  clustering_function_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -109,6 +110,12 @@ a dataframe of input points with an additional column containing assigned <code>
 Additional arguments must include <code>px_per_cluster</code>, <code>habitat_col</code>, <code>x_col</code>, <code>y_col</code>
 and <code>additional_variable_cols</code>.
 Default options available include <code>reef_skater</code> and <code>constrained_hclust</code>.</p></dd>
+
+
+<dt id="arg-clustering-function-args">clustering_function_args<a class="anchor" aria-label="anchor" href="#arg-clustering-function-args"></a></dt>
+<dd><p>named list. A named list where elements of the list are
+arguments that will be passed on to <code>habitat_clustering_function</code>. Defaults to an empty list
+default arguments of <code>habitat_clustering_function</code> are used.</p></dd>
 
 </dl></div>
     <div class="section level2">

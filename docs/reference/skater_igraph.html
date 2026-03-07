@@ -23,6 +23,7 @@ iterates until a valid split is found."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/ACA_workflow.html">Partitioning workflow using Allen Coral Atlas data</a></li>
+    <li><a class="dropdown-item" href="../articles/algorithm_comparison.html">Clustering algorithms</a></li>
     <li><a class="dropdown-item" href="../articles/dependencies.html">Dependencies</a></li>
     <li><a class="dropdown-item" href="../articles/GBR10_workflow.html">Partitioning workflow using GBRMPA data</a></li>
   </ul></li>
@@ -68,8 +69,58 @@ iterates until a valid split is found.</p>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
-  </main></div>
+
+<dl><dt id="arg-edges">edges<a class="anchor" aria-label="anchor" href="#arg-edges"></a></dt>
+<dd><p>igraph edges. Graph edges of the minimum spanning tree object as returned
+by igraph::as_edgelist().</p></dd>
+
+
+<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
+<dd><p>dataframe (columns of numeric values). Dataframe columns containing
+values for each graph node of the desired variables (referred to as additional_variable_cols elsewhere).</p></dd>
+
+
+<dt id="arg-ncuts">ncuts<a class="anchor" aria-label="anchor" href="#arg-ncuts"></a></dt>
+<dd><p>integer. The number of cuts to make in the minimum spanning tree to generate
+the desired number of clusters.</p></dd>
+
+
+<dt id="arg-crit">crit<a class="anchor" aria-label="anchor" href="#arg-crit"></a></dt>
+<dd><p>integer. The desired number of nodes required to form a cluster. Should align
+with ncuts to approximate the total number of data points in the input data.</p></dd>
+
+
+<dt id="arg-vec-crit">vec.crit<a class="anchor" aria-label="anchor" href="#arg-vec-crit"></a></dt>
+<dd><p>numeric vector. The minimum and maximum crit values. If this
+argument is missing it defaults to c(crit, Inf), meaning no maximum cluster size.</p></dd>
+
+
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>character. Distance calculation method passed onto <code><a href="ssw.html">ssw()</a></code> for
+computing edge costs. Euclidean, manhattan and mahalanobis are internally defined
+options, other options are passed onto <code><a href="https://rdrr.io/r/stats/dist.html" class="external-link">dist()</a></code>.</p></dd>
+
+
+<dt id="arg-p">p<a class="anchor" aria-label="anchor" href="#arg-p"></a></dt>
+<dd><p>numeric. Power of the Minkowski distance, as in <code><a href="https://r-spatial.github.io/spdep/reference/ssw.html" class="external-link">spdep::ssw()</a></code>. Default = 2.</p></dd>
+
+
+<dt id="arg-cov">cov<a class="anchor" aria-label="anchor" href="#arg-cov"></a></dt>
+<dd><p>numeric matrix. Covariance matrix used to compute mahalanobis distance
+in ssw. Only required if method="mahalanobis". Default = NULL.</p></dd>
+
+
+<dt id="arg-inverted">inverted<a class="anchor" aria-label="anchor" href="#arg-inverted"></a></dt>
+<dd><p>Bool. If 'TRUE' <code>cov</code> is supposed to contain the inverse of the
+covariance matrix.</p></dd>
+
+</dl></div>
+
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

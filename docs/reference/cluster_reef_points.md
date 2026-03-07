@@ -7,16 +7,18 @@ data (such as depth).
 
 ## Usage
 
-    cluster_reef_points(
-      points,
-      habitat_col = "habitat",
-      x_col = "X",
-      y_col = "Y",
-      additional_variable_cols = c("depth"),
-      reef_id_col = "UNIQUE_ID",
-      clustering_function_args = list()
-      habitat_clustering_function = reef_skater_fast,
-    )
+``` r
+cluster_reef_points(
+  points,
+  habitat_col = "habitat",
+  x_col = "X",
+  y_col = "Y",
+  additional_variable_cols = c("depth"),
+  reef_id_col = "UNIQUE_ID",
+  habitat_clustering_function = reef_skater_fast,
+  clustering_function_args = list()
+)
+```
 
 ## Arguments
 
@@ -62,6 +64,13 @@ data (such as depth).
   include `px_per_cluster`, `habitat_col`, `x_col`, `y_col` and
   `additional_variable_cols`. Default options available include
   `reef_skater` and `constrained_hclust`.
+
+- clustering_function_args:
+
+  named list. A named list where elements of the list are arguments that
+  will be passed on to `habitat_clustering_function`. Defaults to an
+  empty list default arguments of `habitat_clustering_function` are
+  used.
 
 ## Value
 

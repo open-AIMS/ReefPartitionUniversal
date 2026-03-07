@@ -35,6 +35,7 @@ is fine resolution."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/ACA_workflow.html">Partitioning workflow using Allen Coral Atlas data</a></li>
+    <li><a class="dropdown-item" href="../articles/algorithm_comparison.html">Clustering algorithms</a></li>
     <li><a class="dropdown-item" href="../articles/dependencies.html">Dependencies</a></li>
     <li><a class="dropdown-item" href="../articles/GBR10_workflow.html">Partitioning workflow using GBRMPA data</a></li>
   </ul></li>
@@ -112,7 +113,9 @@ existing raster data as a template if available.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>SpatRaster conversion of <code>vector_data</code> using a <code>raster_template</code>. Output
 raster is also saved to <code>output_file</code>, and a csv containing numerical allocations
-is saved if the values in <code>data_column</code> are characters.</p>
+is saved if the values in <code>data_column</code> are characters. If <code>data_column</code> holds
+character data, then the levels assigned will also be returned (using a named list
+to hold both objects).</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
