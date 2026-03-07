@@ -94,3 +94,23 @@ test_that("
 test_that("Ensure that post processing has not resulted in any site multipolygons that are smaller than min_site_area.", {
   expect_false(any(as.numeric(sf::st_area(post_process)) < min_site_area))
 })
+
+test_that("all default input columns are present in outputs", {
+  expect_true(all(
+    c(
+      "site_id",
+      "habitat",
+      "UNIQUE_ID",
+      "depth_median",
+      "depth_sd",
+      "geometry"
+    ) %in%
+      names(post_process)
+  ))
+})
+
+test_that("geometries are geometry format", {
+  expect_true(
+    inherits(sf::st_geometry(post_process), "sfc_GEOMETRY")
+  )
+})
