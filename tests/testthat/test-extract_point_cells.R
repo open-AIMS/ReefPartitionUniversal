@@ -1,9 +1,9 @@
-# testing pixel extraction
+# testing H3 cell extraction
 
 # Define shared testing data that is valid
 source(test_path("setup_test_inputs.R"))
 
-# 1. Test the outputs of extract_pixel_points()
+# 1. Test the outputs of extract_point_cells()
 extracted_points <- extract_point_cells(
   reef_polygon,
   habitat_raster,
