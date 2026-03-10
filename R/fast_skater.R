@@ -353,7 +353,7 @@ reef_skater_fast <- function(
   habitat_col = "habitat",
   id_col = "UNIQUE_ID",
   additional_variable_cols = c("depth_standard"),
-  point_area = 100,
+  point_area = 307.092,
   interpolation_threshold = 30000,
   ...
 ) {
