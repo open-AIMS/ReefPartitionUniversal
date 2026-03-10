@@ -1,0 +1,15 @@
+---
+title: "Publications"
+format:
+  html:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Publications}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Peer-reviewed journal publications
+
+Publications will be listed here...
+

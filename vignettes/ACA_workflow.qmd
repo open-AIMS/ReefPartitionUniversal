@@ -1,0 +1,221 @@
+---
+title: "Partitioning workflow using Allen Coral Atlas data"
+format:
+  html:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Partitioning workflow using Allen Coral Atlas data}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette sets out and example reef partitioning workflow using data from
+the [Allen Coral Atlas](https://allencoralatlas.org/). The data intended for use 
+are accessible from the Allen Coral Atlas globally.
+
+While this example vignette refers to the Allen Coral Atlas, this approach is 
+flexible and can be used on any raster and vector data beyond habitat, bathymetry
+and reef examples.
+
+# Required packages
+
+```{r package loading}
+#| eval: false
+
+library(ReefPartitionUniversal)
+library(tidyverse)
+library(terra)
+library(sf)
+library(ggplot2)
+library(RColorBrewer)
+library(exactextractr)
+```
+
+# Loading and formatting required data
+
+The Allen Coral Atlas is aims to map coral reefs globally and provides accessible
+coral reef ecology and environmental data layers accessible [online](https://allencoralatlas.org/).
+Using the Allen Coral Atlas online map a reef area can be selected using the `Polygon tool`.
+Once selected, data are available for download. The minimum data required for this
+workflow are `Reef Extent` (reef outline polygons), `Geomorphic Map` (reef habitat data)
+and a continuous data layer (`Bathymetry - composite depth` or `Annual Turbidity`).
+In this example we use bathymetry data as the continuous `additional_variable` for
+partitioning.
+
+Allen Coral Atlas `Geomorphic Map` and `Benthic Map` data are downloaded in a
+vector format (e.g. .gpkg file) containing area polygons. To use these data as
+habitat layers for habitat layers to extract points from during analyses, these
+layers must be converted to raster data. This can be done using the 
+`ReefPartitionUniversal::vector_to_raster` function. As we have existing data for
+the workflow (bathymetry data) it is recommended to use that data as a template
+for vector -> raster conversion. (If no template is available, 
+`ReefPartitionUniversal::generate_raster_template` can be used).
+
+
+
+```{r data preparation}
+#| eval: false
+starting_crs <- 4326
+output_crs <- 3857
+
+# Load reef outline vector data (reef extent)
+reef_polygons <- st_read(
+  "Path to reef extent .gpkg"
+)
+
+# Ensure reef polygons are not segmented to ensure full clustering
+reef_polygons <- reef_polygons %>%
+  st_transform(output_crs) %>%
+  summarise(geometry = st_union(geom)) %>%
+  st_cast("POLYGON") %>%
+  mutate(id = 1:n())
+
+# Load bathymetry raster data from ACA dataset
+bathymetry_raster <- rast(
+  "Path to reef bathymetry .tif"
+) %>%
+  project(., str_glue("epsg:{output_crs}"))
+
+# Load geomorphic habitat vector data from ACA dataset
+habitat_vector <- st_read(
+  "Path to geomorphic habitat .gpkg"
+) %>%
+  rename(habitat = class) %>%
+  st_transform(crs = output_crs)
+
+# Convert habitat data to raster format
+habitat_raster <- vector_to_raster(
+  habitat_vector,
+  "habitat",
+  output_file = NA,
+  raster_template = bathymetry_raster # Use existing bathymetry raster as the template (i.e. grid format) for raster conversion
+)
+habitat_levels <- habitat_raster$levels # Store factor levels contained in new `habitat_raster
+habitat_raster <- habitat_raster$raster
+```
+
+# Define arguments for workflow
+
+The following code defines arguments for use in our example workflow with One
+Tree Island Reef. This includes defining the target habitat types from `habitat_raster`,
+defining the desired H3 cell resolution for pixel extraction, and the desired
+site size for clustering.
+
+```{r defining arguments}
+#| eval: false
+
+set.seed(123)
+
+# Select habitat levels that correspond to desired habitat categories
+habitat_categories <- habitat_levels[
+  habitat_levels$character %in%
+    c("Reef Crest", "Reef Slope", "Outer Reef Flat", "Sheltered Reef Slope"),
+]$numeric_levels
+
+# Define the desired site size in terms of spatial area
+site_size <- 250 * 250 # set size size for our example to 625,000m~2~
+pixel_area <- res(habitat_raster)[1] * res(habitat_raster)[1] # Calculate raster pixel square area (m~2~)
+n_pixels <- site_size / pixel_area # Calculate desired number of points per site
+
+# Select a target reef from the reef polygons available
+target_reef <- reef_polygons[1, ]
+```
+
+# Extracting pixel data for the target reef
+
+The remainder of the workflow using Allen Coral Atlas data follows other reef partitioning
+workflows.
+Once the input data and arguments have been set up, we can extract pixel data for
+our reef using the `target_reef` outline polygon. 
+This process involves identifying selected pixels from the habitat raster object
+and extracting bathymetry data.
+
+```{r pixel extraction}
+#| eval: false
+pixel_data <- extract_point_pixels(
+  reef_polygon = target_reef,
+  habitat_raster = habitat_raster,
+  add_var_raster = bathymetry_raster,
+  habitat_categories = habitat_categories,
+  output_epsg = output_crs
+)
+
+# We must also attach a reef ID to the dataframe and
+# remove any pixels with invalid depth data
+pixel_data$UNIQUE_ID <- "Reef 1"
+head(pixel_data)
+```
+
+# Clustering habitat pixels based on distance and depth
+Data for each required pixel have been extracted, and we can now cluster pixels
+based on their geographic distance and depth. Using the default arguments for
+`cluster_reef_pixels()` clusters pixels within each habitat type using a Minimum
+Spanning Tree and `reef_skater_fast()` skater clustering algorithm implemented 
+using igraph. The returned dataframe contains a row for each pixel and an additional
+column containing the clustered `site_id`.
+
+```{r cluster pixels}
+#| eval: false
+clustered_pixels <- cluster_reef_points(
+  pixel_data,
+  clustering_function_args = list(
+    point_area = pixel_area,
+    site_size = site_size
+  )
+)
+```
+
+# Creating site polygons
+Once pixels for the reef have been assigned site IDs we can collate them into site
+polygons and use post-processing to separate site areas that contain large distances
+into smaller site IDs.
+
+```{r cluster polygons}
+#| eval: false
+
+# Collate H3 cells that are assigned site IDs into polygons
+clustered_polygons <- pixels_to_polygons(
+  clustered_pixels,
+  UNIQUE_ID,
+  habitat,
+  depth,
+  pixel_size = res(habitat_raster)[1]
+)
+
+# Site postprocessing with a minimum number of pixels per site of 50
+processed_sites <- site_postprocessing(
+  clustered_polygons,
+  min_site_area = 50 * pixel_area
+)
+```
+
+# Mapping outputs using ggplot2
+```{r mapping}
+#| eval: false
+# Reorder site ID labels to improve readability
+sampled_ids <- sample(levels(processed_sites$site_id))
+processed_sites$sampled_id <- factor(
+  processed_sites$site_id,
+  levels = sampled_ids
+)
+
+# Plot site polygons coloured by IDs (colours are repeated)
+id_map <- ggplot() +
+  geom_sf(data = processed_sites, aes(fill = sampled_id)) +
+  theme(legend.position = "none") # Remove legend due to too many site ID labels
+
+# Re-extract depth data for site polygons for plotting
+processed_sites$depth <- abs(exact_extract(
+  bathymetry_raster,
+  processed_sites,
+  "mean"
+))
+
+# Plot sites coloured by mean depth
+depth_map <- ggplot() +
+  geom_sf(data = processed_sites, aes(fill = depth)) +
+  scale_fill_fermenter(
+    palette = "greens",
+    direction = 1
+  )
+```

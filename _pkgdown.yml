@@ -1,0 +1,29 @@
+url: https://open-aims.github.io/ReefPartitionUniversal/
+template:
+  bootstrap: 5
+  light-switch: true
+  bootswatch: cosmo
+navbar:
+  structure:
+    left:  [intro, reference, articles, publications]
+    right: [github, search, lightswitch]
+  components:
+    publications:
+      text: "Publications"
+      href: articles/publications.html
+    articles:
+      text: "Articles"
+      menu:
+        - text: "Workflows"
+        - text: "Partitioning workflow using GBRMPA data"
+          href: articles/GBR10_workflow.html
+        - text: "Partitioning workflow using Allen Coral Atlas data"
+          href: articles/ACA_workflow.html
+        - text: -------
+        - text: "Package information"
+        - text: "Clustering algorithms"
+          href: articles/algorithm_comparison.html
+        - text: "Package dependencies"
+          href: articles/dependencies.html
+        - text: "Function benchmarking"
+          href: articles/benchmarking.html

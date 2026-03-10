@@ -4,6 +4,7 @@
 .Ruserdata
 
 outputs/
+inst/doc
 
 vignettes/*_files
 vignettes/.quarto/

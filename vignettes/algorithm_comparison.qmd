@@ -1,0 +1,112 @@
+---
+title: "Clustering algorithms"
+format:
+  html:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Clustering algorithms}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Predefined clustering algorithms
+
+ReefPartitionUniversal defines three point clustering algorithms that can be used to cluster
+points and partition reefs into sites. These algorithms include `spdep::skater`,
+`adespatial::constr.hclust` and a performance optimised adaptation of skater that uses
+`igraph` methods.
+
+## Skater algorithms
+
+The `skater` algorithms are based on a methodology developed by [AssunÇão et al.
+(2007)](https://www.tandfonline.com/doi/full/10.1080/13658810600665111#d1e2053) that
+outlines a spatial clustering algorithm that partitions points into clusters using a minimum
+spanning tree (mst). Partitioning is performed by removing edges of the mst so that
+resulting clusters have minimal within-cluster variance. In ReefPartitionUniversal we
+construct a minimum spanning tree based on geographic distance, with edges between points
+weighted by an additional data variable (e.g. depth). This method of mst creation means that
+`skater` clusters points based on this additional variable. Skater algorithms are described
+as top-down clustering as they begin with every point joined in a network, and divide points
+into new clusters by removing edges in the mst. The skater algorithm must be paired with a
+minimum spanning tree as input.
+
+The `spdep` package defines a `skater` algorithm with a function of the same name. Access to
+this function is implemented in `reef_skater` in ReefPartitionUniversal.
+ReefPartitionUniversal also defines a function `reef_skater_fast` which implements the same
+algorithm as `spdep` based on AssunÇão et al. (2007), but uses `igraph` package methods for
+edge cost calculations, substantially improving algorithm performance. For comparison,
+clustering 30,000 points using `reef_skater` (`spdep::skater`) may take multiple hours,
+while clustering 30,000 points using `reef_skater_fast` will take less than 5 minutes.
+
+## Constr.hclust algorithm
+
+`adespatial::constr.hclust` is an implementation of a contiguous hierarchical clustering
+algorithm developed by [Guénard and Legendre
+(2022)](https://www.jstatsoft.org/article/view/v103i07). This algorithm clusters points
+based on distance data (geographical or otherwise). `constr.hclust` is a bottom-up
+clustering algorithm that starts with all points separated and progressively joins points
+together, based on distances, to greate a single clustering tree. This tree can be cut at
+any point to achieve an ideal number of clusters. Distances can be based on geographical
+points (x and y coordinates), or non-spatial data such as depth alone, or a combination.
+
+`constr.hclust` deviates from other hierarchical clustering algorithms as it implements a
+spatial contiguity constraint to control which points can be joined into a cluster. As the
+algorithm progresses through points, it is restricted to clustering points that are joined
+by a network edge. These edges can be defined using multiple graph based methods. In
+ReefPartitionUniversal, we define `constrained_hclust_mst` which uses a minimum spanning
+tree to defined the edges between points, resulting in spatially similar points to the
+`skater` algorithms. Other alternatives for defining edges include network edge
+triangulation and k-nearest-neighbour methods (accessible via the `spdep` package).
+Input flexibility may allow `constr.hclust` to achieve lower within-cluster variance
+than `skater` algorithms as utilising only an MST can hinder the clustering of similar
+points in some cases compared to a more connected graph such as a triangulation network.
+
+## Algorithm comparison
+::: {.table-algorithms}
+| Algorithm | Package source | Reference | Function | Runtime | Inputs | Pros | Cons |
+|-----------|----------------|-----------|----------|---------|--------|------|------|
+| skater - spdep | spdep | AssunÇão et al. 2007 | reef_skater | x | Minimum Spanning Tree |   | - not computationally efficient <br> - clusters are limited to the MST shape |
+| skater - fast | uses igraph methods | AssunÇão et al. 2007 | reef_skater_fast | x | Minimum Spanning Tree | - efficient implementation of igraph methods in C <br> - may prevent low occupancy clusters | - clusters are limited to the MST shape |   
+| constr.hclust | adespatial | Guénard and Legendre 2022 | constrained_hclust | y | Graph edges (e.g. Minimum Spanning Tree, triangulation network) | - efficient performance <br> - allows flexible edge inputs, which can help minimise within-cluster variance | may result in a proportion of clusters with lower point occupancy than desired |
+:::
+
+Comparison of the default clustering algorithms implemented in ReefPartitionUniversal.
+
+## Defining a custom clustering algorithm
+
+ReefPartitionUniversal also supports the use of custom point clustering functions
+with the use of `cluster_reef_points`. This is demonstrated in the following example
+implementing a custom kmeans clustering algorithm.
+
+```{R}
+#| eval: false
+
+# Define a custom clustering function. This function must take point inputs as a
+# dataframe containing a single habitat type. The function must output a dataframe
+# of the same format, with an additional column `site_id` attached that defines
+# unique cluster assignments.
+# The clustering function can also take additional arguments, passed into `cluster_reef_points`
+# via the `clustering_function_args` list argument. 
+# For example, this could be a function that takes the input dataframe, performs
+# kmeans clustering, with a user defined k value, and outputs data with assignments.
+
+#' Define helper clustering function that applied kmeans clustering to a points
+#' of a single habitat.
+kmeans_clustering <- function(habitat_points, k) {
+    distance_matrix <- dist(habitat_points$depth)
+    clusters <- kmeans(distance_matrix, k)
+    habitat_points$site_id <- clusters$cluster
+
+    return(habitat_points)
+}
+
+# Apply kmeans clustering using ReefPartitionUniversal::cluster_reef_points and
+# a custom defined k value
+clustered_points <- cluster_reef_points(
+    extracted_points,
+    habitat_clustering_function = kmeans_clustering,
+    clustering_function_args = list(k = 10)
+)
+
+# The remainder of the ReefPartitionUniversal partioning workflow remains the same.
+```
