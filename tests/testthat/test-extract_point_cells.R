@@ -1,19 +1,20 @@
-# testing pixel extraction
+# testing H3 cell extraction
 
 # Define shared testing data that is valid
 source(test_path("setup_test_inputs.R"))
 
-# 1. Test the outputs of extract_point_pixels()
-extracted_points <- extract_point_pixels(
+# 1. Test the outputs of extract_point_cells()
+extracted_points <- extract_point_cells(
   reef_polygon,
   habitat_raster,
   add_var_raster,
   habitat_categories,
+  hex_resolution = 4,
   output_epsg = 4326
 )
 
 test_that("number of points extracted", {
-  expect_equal(nrow(extracted_points), 1129)
+  expect_equal(nrow(extracted_points), 748)
 })
 
 test_that("extracted only requested habitats", {
@@ -43,7 +44,8 @@ test_that("extracted depth column contains no NAs (interpolation = TRUE)", {
 
 test_that("output data frame contains all default required columns for later operations", {
   expect_true(all(
-    c("habitat", "depth", "X", "Y", "geometry") %in% names(extracted_points)
+    c("h3_index", "habitat", "depth", "X", "Y", "geometry") %in%
+      names(extracted_points)
   ))
 })
 

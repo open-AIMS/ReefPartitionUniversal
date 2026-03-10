@@ -47,3 +47,22 @@ test_that("points per cluster", {
     tolerance = 0.25
   )
 })
+
+test_that("ensure all required columns are present in output", {
+  expect_true(all(
+    c(
+      "habitat",
+      "X_standard",
+      "Y_standard",
+      "depth_standard",
+      "UNIQUE_ID",
+      "site_id",
+      "geometry"
+    ) %in%
+      names(clustered_points)
+  ))
+})
+
+test_that("ensure geometries are points", {
+  expect_true(inherits(sf::st_geometry(clustered_points), "sfc_POINT"))
+})
