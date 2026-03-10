@@ -20,7 +20,7 @@ reef_skater(
   id_col = "UNIQUE_ID",
   additional_variable_cols = c("depth_standard"),
   parallelisation = "Windows",
-  hex_resolution = 12
+  point_area = 307.092
 )
 ```
 
@@ -75,9 +75,11 @@ reef_skater(
   not set to "Windows", no parallelisation will occur. Default =
   "Windows".
 
-- hex_resolution:
+- point_area:
 
-  integer numeric. H3 hexagon resolution used in point creation.
+  numeric. Area of each point, used to calculate the desired number of
+  points per site, and therefore the number of clusters per habitat.
+  Value should be in the same units as `site_size`.
 
 ## Value
 

@@ -78,7 +78,7 @@ together. For additional information see <strong>insert citation/link</strong>.<
 <span>  id_col <span class="op">=</span> <span class="st">"UNIQUE_ID"</span>,</span>
 <span>  additional_variable_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"depth_standard"</span><span class="op">)</span>,</span>
 <span>  parallelisation <span class="op">=</span> <span class="st">"Windows"</span>,</span>
-<span>  hex_resolution <span class="op">=</span> <span class="fl">12</span></span>
+<span>  point_area <span class="op">=</span> <span class="fl">307.092</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -132,9 +132,10 @@ prunecost calculations within spdep::skater(). If <code>parallelisation</code> i
 set to "Windows", no parallelisation will occur. Default = "Windows".</p></dd>
 
 
-<dt id="arg-hex-resolution">hex_resolution<a class="anchor" aria-label="anchor" href="#arg-hex-resolution"></a></dt>
-<dd><p>integer numeric. H3 hexagon resolution used in point
-creation.</p></dd>
+<dt id="arg-point-area">point_area<a class="anchor" aria-label="anchor" href="#arg-point-area"></a></dt>
+<dd><p>numeric. Area of each point, used to calculate the desired
+number of points per site, and therefore the number of clusters per habitat.
+Value should be in the same units as <code>site_size</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
