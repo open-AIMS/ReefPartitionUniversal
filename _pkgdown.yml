@@ -25,3 +25,5 @@ navbar:
           href: articles/algorithm_comparison.html
         - text: "Package dependencies"
           href: articles/dependencies.html
+        - text: "Function benchmarking"
+          href: articles/benchmarking.html
