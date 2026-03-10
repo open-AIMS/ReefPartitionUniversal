@@ -106,12 +106,17 @@ extract_point_cells <- function(
   })
 
   # Collate grid square sf polygons and convert to h3 indices
-  point_cells <- sf::st_sfc(squares_list, crs = reef_crs) %>%
+  point_pixels <- sf::st_sfc(squares_list, crs = reef_crs) %>%
     sf::st_sf(data = pts[, !names(pts) %in% c("x", "y")])
-  hexid <- h3::geo_to_h3(point_cells, res = hex_resolution)
+
+  #H3 index extraction appears to break when input sf objects use a projected CRS
+  # so we temporarily transform to EPSG:4326
+  point_pixels <- st_transform(point_pixels, 4326)
+  hexid <- h3::geo_to_h3(point_pixels, res = hex_resolution)
 
   hexid <- unique(hexid) # Remove pixels with the same coordinates
-  point_cells <- h3::h3_to_geo_sf(hexid) # Get the centers of the given H3 indexes as sf object.
+  point_cells <- h3::h3_to_geo_sf(hexid) %>% # Get the centers of the given H3 indexes as sf object.
+    st_transform(reef_crs) # Transform after converting from H3 cells to sf objects
 
   if (length(hexid) < 10) {
     rlang::abort(
