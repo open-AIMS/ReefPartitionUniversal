@@ -108,6 +108,19 @@ input_check <- function(
     )
   }
 
+  if (
+    sum(
+      terra::values(terra::mask(habitat_cropped, reef_polygon)) %in%
+        habitat_categories
+    ) <
+      10
+  ) {
+    rlang::abort(
+      "Cropping resulted in less than 10 valid habitat points - check if reef_polygon overlaps with valid habitat raster data.",
+      class = "low_sample_size"
+    )
+  }
+
   if (all(is.na(terra::values(add_var_cropped)))) {
     rlang::abort(
       "Cropping resulted in empty additional variable raster - check if reef_polygon overlaps with valid additional variable raster data.",
