@@ -36,7 +36,7 @@ Imports:
     class,
     tidygraph,
     h3
-Remotes: h3=crazycapivara/h3-r
+Remotes: h3=github::crazycapivara/h3-r
 VignetteBuilder: quarto
 URL: https://github.com/open-aims/ReefPartitionUniversal/
 BugReports: https://github.com/open-aims/ReefPartitionUniversal/

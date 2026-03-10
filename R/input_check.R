@@ -96,10 +96,28 @@ input_check <- function(
     mask = TRUE
   )
 
-  if (!any((terra::values(habitat_cropped) %in% habitat_categories))) {
+  if (
+    !any(
+      (terra::values(terra::mask(habitat_cropped, reef_polygon)) %in%
+        habitat_categories)
+    )
+  ) {
     rlang::abort(
       "Cropping resulted in empty habitat raster - check if reef_polygon overlaps with valid habitat raster data.",
       class = "invalid_data"
+    )
+  }
+
+  if (
+    sum(
+      terra::values(terra::mask(habitat_cropped, reef_polygon)) %in%
+        habitat_categories
+    ) <
+      10
+  ) {
+    rlang::abort(
+      "Cropping resulted in less than 10 valid habitat points - check if reef_polygon overlaps with valid habitat raster data.",
+      class = "low_sample_size"
     )
   }
 

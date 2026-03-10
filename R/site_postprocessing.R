@@ -30,16 +30,15 @@ site_postprocessing <- function(
 ) {
   reef_site_polygons$area <- sf::st_area(reef_site_polygons)
 
-  RowsToRemove <- c()
-  ExtraSites <- c("a", "b", "c", "d", "e", "f")
-  NewSites <- reef_site_polygons[1, ]
+  rows_to_remove <- c()
+  extra_sites <- letters
+  new_sites <- reef_site_polygons[1, ]
   site_polygons_crs <- sf::st_crs(reef_site_polygons)
 
   for (i in 1:nrow(reef_site_polygons)) {
-    # print(i)
     if (as.numeric(reef_site_polygons$area[i]) < min_site_area) {
       # Removes sites that are smaller than a minimum threshold
-      RowsToRemove <- c(RowsToRemove, i)
+      rows_to_remove <- c(rows_to_remove, i)
       print(glue::glue("Polygon {i} too small"))
     } else {
       if (inherits(reef_site_polygons$geometry[i][1], "sfc_MULTIPOLYGON")) {
@@ -48,56 +47,60 @@ site_postprocessing <- function(
         # Separates multi-polygons into individual polygons
         # Assigns new IDs using letters (a,b,c,d,e,f)
         # Creates new rows for each separated polygon
-        NewPolygons <- multipolygon_processing(
+        new_polygons <- multipolygon_processing(
           polygon = reef_site_polygons[i, ],
           min_site_area,
           site_polygons_crs,
           max_distance = max_distance
         )
 
-        if (is.null(NewPolygons)) {
-          RowsToRemove <- c(RowsToRemove, i)
+        if (is.null(new_polygons)) {
+          rows_to_remove <- c(rows_to_remove, i)
           print(glue::glue("Polygon {i} contains 0 rows after filtering."))
           next
         }
 
-        RowsToRemove <- c(RowsToRemove, i)
+        rows_to_remove <- c(rows_to_remove, i)
 
-        NewRows <- reef_site_polygons[i, ] %>%
-          dplyr::slice(rep(1:n(), each = nrow(NewPolygons)))
-        for (m in 1:nrow(NewPolygons)) {
-          NewRows$geometry[m] <- NewPolygons$geometry[m]
+        new_rows <- reef_site_polygons[i, ] %>%
+          dplyr::slice(rep(1:n(), each = nrow(new_polygons)))
+        for (m in 1:nrow(new_polygons)) {
+          new_rows$geometry[m] <- new_polygons$geometry[m]
         }
 
-        NewRows$site_id <- paste0(
-          NewRows$site_id,
-          ExtraSites[1:nrow(NewPolygons)]
+        new_rows$site_id <- paste0(
+          new_rows$site_id,
+          extra_sites[1:nrow(new_polygons)]
         )
 
-        NewSites <- rbind(NewSites, NewRows)
+        new_sites <- rbind(new_sites, new_rows)
       }
     }
   }
 
-  reef_site_polygons <- reef_site_polygons[-RowsToRemove, ]
-  NewSites <- NewSites[-1, ]
-  reef_site_polygons <- rbind(reef_site_polygons, NewSites)
+  if (length(rows_to_remove) > 0) {
+    reef_site_polygons <- reef_site_polygons[-rows_to_remove, ]
+    new_sites <- new_sites[-1, ]
+    reef_site_polygons <- rbind(reef_site_polygons, new_sites)
+  }
+
+  return(reef_site_polygons)
 }
 
 multipolygon_processing <- function(
   polygon,
   min_site_area = 50 * 307,
-  site_polygons_crs = 4326,
+  site_polygons_crs = sf::st_crs(polygon),
   max_distance = 100
 ) {
-  PolygonSeperate <- data.frame(index = 1:length(polygon$geometry[[1]]))
-  NewPolygons <- data.frame(index = 1)
-  NumberPolygons <- 1
-  PolygonSeperate$area <- NA
-  PolygonSeperate$geometry <- NA
-  NewPolygons$geometry <- NA
-  PolygonSeperate$Number <- NA
-  NewPolygons$area <- NA
+  separate_polygons <- data.frame(index = 1:length(polygon$geometry[[1]]))
+  new_polygons <- data.frame(index = 1)
+  poly_indices <- 1
+  separate_polygons$area <- NA
+  separate_polygons$geometry <- NA
+  new_polygons$geometry <- NA
+  separate_polygons$Number <- NA
+  new_polygons$area <- NA
 
   # Separate the polygons that are contained in the target multipolygon feature
   # into individual polygon elements in a data frame.
@@ -109,42 +112,44 @@ multipolygon_processing <- function(
       crs = site_polygons_crs
     ) %>%
       sf::st_set_crs(site_polygons_crs)
-    PolygonSeperate$geometry[
+    separate_polygons$geometry[
       lists
     ] <- individual_poly
-    PolygonSeperate$area[lists] <- sf::st_area(individual_poly)
+    separate_polygons$area[lists] <- sf::st_area(individual_poly)
   }
 
-  PolygonSeperate <- sf::st_as_sf(PolygonSeperate, crs = site_polygons_crs)
+  separate_polygons <- sf::st_as_sf(separate_polygons, crs = site_polygons_crs)
 
-  while (nrow(PolygonSeperate) > 0) {
-    LargestIndex <- which(PolygonSeperate$area == max(PolygonSeperate$area))[1]
-    Dist <- sf::st_distance(PolygonSeperate)
-    Dist <- as.numeric(Dist[LargestIndex, ])
+  while (nrow(separate_polygons) > 0) {
+    largest_poly <- which(
+      separate_polygons$area == max(separate_polygons$area)
+    )[1]
+    distances <- sf::st_distance(separate_polygons)
+    distances <- as.numeric(distances[largest_poly, ])
 
-    if (any(Dist[-LargestIndex] < max_distance)) {
+    if (any(distances[-largest_poly] < max_distance)) {
       # combine polygons into multipolygon
-      Indices <- which(Dist < max_distance)
-      Multi <- sf::st_union(sf::st_sfc(PolygonSeperate$geometry[Indices]))
-      NewPolygons[NumberPolygons, ] <- NumberPolygons
-      NewPolygons$geometry[NumberPolygons] <- Multi
-      NewPolygons$area[NumberPolygons] <- sum(PolygonSeperate$area[Indices])
-      PolygonSeperate <- PolygonSeperate[-Indices, ]
-      NumberPolygons <- NumberPolygons + 1
+      Indices <- which(distances < max_distance)
+      multi <- sf::st_union(sf::st_sfc(separate_polygons$geometry[Indices]))
+      new_polygons[poly_indices, ] <- poly_indices
+      new_polygons$geometry[poly_indices] <- multi
+      new_polygons$area[poly_indices] <- sum(separate_polygons$area[Indices])
+      separate_polygons <- separate_polygons[-Indices, ]
+      poly_indices <- poly_indices + 1
     } else {
-      NewPolygons[NumberPolygons, ] <- NumberPolygons
-      NewPolygons$geometry[NumberPolygons] <- PolygonSeperate$geometry[
-        LargestIndex
+      new_polygons[poly_indices, ] <- poly_indices
+      new_polygons$geometry[poly_indices] <- separate_polygons$geometry[
+        largest_poly
       ]
-      NewPolygons$area[NumberPolygons] <- PolygonSeperate$area[LargestIndex]
-      PolygonSeperate <- PolygonSeperate[-LargestIndex, ]
-      NumberPolygons <- NumberPolygons + 1
+      new_polygons$area[poly_indices] <- separate_polygons$area[largest_poly]
+      separate_polygons <- separate_polygons[-largest_poly, ]
+      poly_indices <- poly_indices + 1
     }
   }
 
-  NewPolygons <- NewPolygons[which(NewPolygons$area > min_site_area), ] # minmum polygon size to filter with
+  new_polygons <- new_polygons[which(new_polygons$area > min_site_area), ] # minmum polygon size to filter with
 
-  if (nrow(NewPolygons) == 0) {
+  if (nrow(new_polygons) == 0) {
     rlang::warn(
       "Multipolygon processing using min_site_area has resulted in 0 remaining polygons, please check area threshold.",
       class = "multipolygon_filtering"
@@ -153,5 +158,5 @@ multipolygon_processing <- function(
     return(NULL)
   }
 
-  return(NewPolygons)
+  return(new_polygons)
 }

@@ -25,8 +25,9 @@
 #'   option sets up a parallel::Cluster using detectCores() - 2 cores. This parallelises
 #'   prunecost calculations within spdep::skater(). If `parallelisation` is not
 #'   set to "Windows", no parallelisation will occur. Default = "Windows".
-#' @param hex_resolution integer numeric. H3 hexagon resolution used in point
-#'   creation.
+#' @param point_area numeric. Area of each point, used to calculate the desired
+#'   number of points per site, and therefore the number of clusters per habitat.
+#'   Value should be in the same units as `site_size`.
 #'
 #' @return data.frame of points with allocated site_ids based on cluster outputs.
 #'   `site_id` values are a combination of the `id_col` value, `habitat_col` value
@@ -44,7 +45,7 @@ reef_skater <- function(
   id_col = "UNIQUE_ID",
   additional_variable_cols = c("depth_standard"),
   parallelisation = "Windows",
-  hex_resolution = 12
+  point_area = 307.092
 ) {
   site_prefix <- paste(
     unique(points[, id_col, drop = TRUE]),
@@ -52,13 +53,6 @@ reef_skater <- function(
     sep = "_"
   )
   points$npoints <- nrow(points)
-
-  # H3 hexagon average size
-  hex_size <- data.frame(
-    Res = c(7:15),
-    Size = c(5161293, 737327, 105332, 15047, 2149, 307.09, 43.87, 6.267, 0.895)
-  )
-  min_counts <- round(site_size / hex_size$Size[hex_size$Res == hex_resolution])
 
   # If points contains > 10,000 points interpolation should be used. This clusters only 10,000
   # randomly sampled points from points and uses nearest neighbour interpolation to assign

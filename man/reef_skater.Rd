@@ -14,7 +14,7 @@ reef_skater(
   id_col = "UNIQUE_ID",
   additional_variable_cols = c("depth_standard"),
   parallelisation = "Windows",
-  hex_resolution = 12
+  point_area = 307.092
 )
 }
 \arguments{
@@ -46,8 +46,9 @@ option sets up a parallel::Cluster using detectCores() - 2 cores. This paralleli
 prunecost calculations within spdep::skater(). If \code{parallelisation} is not
 set to "Windows", no parallelisation will occur. Default = "Windows".}
 
-\item{hex_resolution}{integer numeric. H3 hexagon resolution used in point
-creation.}
+\item{point_area}{numeric. Area of each point, used to calculate the desired
+number of points per site, and therefore the number of clusters per habitat.
+Value should be in the same units as \code{site_size}.}
 }
 \value{
 data.frame of points with allocated site_ids based on cluster outputs.
