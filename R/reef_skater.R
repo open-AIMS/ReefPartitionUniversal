@@ -28,6 +28,11 @@
 #' @param point_area numeric. Area of each point, used to calculate the desired
 #'   number of points per site, and therefore the number of clusters per habitat.
 #'   Value should be in the same units as `site_size`.
+#' @param mst_alpha numeric. Weighting applied to `additional_variable_cols` relative
+#'   to geographic position when building the minimum spanning tree. Passed through
+#'   to `prepare_mst()`. Default = 0.5.
+#' @param hex_resolution integer. H3 resolution of the input point cells, passed
+#'   through to `prepare_mst()`. Default = 12.
 #'
 #' @return data.frame of points with allocated site_ids based on cluster outputs.
 #'   `site_id` values are a combination of the `id_col` value, `habitat_col` value
@@ -45,7 +50,9 @@ reef_skater <- function(
   id_col = "UNIQUE_ID",
   additional_variable_cols = c("depth_standard"),
   parallelisation = "Windows",
-  point_area = 307.092
+  point_area = 307.092,
+  mst_alpha = 0.5,
+  hex_resolution = 12
 ) {
   site_prefix <- paste(
     unique(points[, id_col, drop = TRUE]),
@@ -53,6 +60,7 @@ reef_skater <- function(
     sep = "_"
   )
   points$npoints <- nrow(points)
+  min_counts <- round(site_size / point_area)
 
   # If points contains > 10,000 points interpolation should be used. This clusters only 10,000
   # randomly sampled points from points and uses nearest neighbour interpolation to assign
@@ -74,7 +82,9 @@ reef_skater <- function(
 
   mst <- prepare_mst(
     points,
-    additional_variable_cols = additional_variable_cols
+    additional_variable_cols = additional_variable_cols,
+    mst_alpha = mst_alpha,
+    hex_resolution = hex_resolution
   )
 
   if (parallelisation == "Windows") {
