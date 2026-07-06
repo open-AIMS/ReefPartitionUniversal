@@ -84,7 +84,7 @@ extract_point_cells <- function(
 
   # Convert cell points into cell grid squares using the resolution of the raster
   # to emulate the result obtained using a stars object
-  squares_list <- lapply(1:nrow(pts), function(i) {
+  squares_list <- lapply(seq_len(nrow(pts)), function(i) {
     x <- pts$x[i]
     y <- pts$y[i]
     sf::st_polygon(list(matrix(

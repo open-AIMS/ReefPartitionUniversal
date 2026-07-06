@@ -96,25 +96,24 @@ input_check <- function(
     mask = TRUE
   )
 
-  if (
-    !any(
-      (terra::values(terra::mask(habitat_cropped, reef_polygon)) %in%
-        habitat_categories)
-    )
-  ) {
+  # Use terra::extract() rather than terra::values() so that categorical
+  # rasters are compared using their labels (matching how extract_point_cells()
+  # and extract_point_pixels() filter pts$categorical_habitat downstream),
+  # instead of the underlying raw integer codes.
+  habitat_vals <- terra::extract(
+    terra::mask(habitat_cropped, reef_polygon),
+    reef_polygon,
+    ID = FALSE
+  )[[1]]
+
+  if (!any(habitat_vals %in% habitat_categories)) {
     rlang::abort(
       "Cropping resulted in empty habitat raster - check if reef_polygon overlaps with valid habitat raster data.",
       class = "invalid_data"
     )
   }
 
-  if (
-    sum(
-      terra::values(terra::mask(habitat_cropped, reef_polygon)) %in%
-        habitat_categories
-    ) <
-      10
-  ) {
+  if (sum(habitat_vals %in% habitat_categories, na.rm = TRUE) < 10) {
     rlang::abort(
       "Cropping resulted in less than 10 valid habitat points - check if reef_polygon overlaps with valid habitat raster data.",
       class = "low_sample_size"
