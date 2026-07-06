@@ -24,6 +24,7 @@ performance using igraph methods.
 # Installation
 
 ``` r
+
 # Install package using GitHub repo
 remotes::install_github("open-AIMS/ReefPartitionUniversal")
 ```
@@ -39,6 +40,7 @@ to clone the GitHub repository, create a branch and use the following
 command to install the package from source code.
 
 ``` r
+
 # Install package from local source folder/repo
 devtools::install("path to package folder")
 ```
@@ -53,6 +55,7 @@ information on partitioning workflows using different types of data see
 `Articles`.
 
 ``` r
+
 library(ReefPartitionUniversal)
 
 # Load input data (ensuring all are use the same CRS)
@@ -89,6 +92,7 @@ Using the above basic demonstration example while adding wave exposure
 as a second additional variable.
 
 ``` r
+
 library(ReefPartitionUniversal)
 library(tidyverse)
 

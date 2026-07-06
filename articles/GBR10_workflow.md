@@ -14,6 +14,7 @@ raster and vector data beyond habitat, bathymetry and reef examples.
 ## Required packages
 
 ``` r
+
 library(ReefPartitionUniversal)
 library(terra)
 library(sf)
@@ -32,6 +33,7 @@ computationally intensive. If all input data is already in the same CRS
 then this step is not required.
 
 ``` r
+
 # Load reef outline vector data (`canonical-reefs` used here)
 reef_polygons <- st_read("Path to canonical reefs .gpkg")
 
@@ -60,6 +62,7 @@ types from `habitat_raster`, defining the desired H3 cell resolution for
 pixel extraction, and the desired site size for clustering.
 
 ``` r
+
 set.seed(123)
 
 # Define analysis parameters for example:
@@ -101,6 +104,7 @@ raster object, converting pixels to H3 hexagon cells and extracting
 bathymetry data.
 
 ``` r
+
 pixel_data <- extract_point_cells(
   reef_polygon = target_reef,
   habitat_raster = habitat_raster,
@@ -128,6 +132,7 @@ dataframe contains a row for each pixel and an additional column
 containing the clustered `site_id`.
 
 ``` r
+
 mst_hclust_pixels <- cluster_reef_pixels(
   pixel_data,
   clustering_function_args = list(point_area = hex_size)
@@ -141,6 +146,7 @@ into site polygons and use post-processing to separate site areas that
 contain large distances into smaller site IDs.
 
 ``` r
+
 # Collate H3 cells that are assigned site IDs into polygons
 mst_hclust_sites <- cells_to_polygons(mst_hclust_pixels)
 
@@ -154,6 +160,7 @@ processed_sites <- site_postprocessing(
 ## Mapping outputs using ggplot2
 
 ``` r
+
 # Reorder site ID labels to improve readability
 sampled_ids <- sample(levels(processed_sites$site_id))
 processed_sites$sampled_id <- factor(

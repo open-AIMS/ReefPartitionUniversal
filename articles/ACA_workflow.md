@@ -11,6 +11,7 @@ beyond habitat, bathymetry and reef examples.
 ## Required packages
 
 ``` r
+
 library(ReefPartitionUniversal)
 library(tidyverse)
 library(terra)
@@ -46,6 +47,7 @@ conversion. (If no template is available,
 can be used).
 
 ``` r
+
 starting_crs <- 4326
 output_crs <- 3857
 
@@ -93,6 +95,7 @@ types from `habitat_raster`, defining the desired H3 cell resolution for
 pixel extraction, and the desired site size for clustering.
 
 ``` r
+
 set.seed(123)
 
 # Select habitat levels that correspond to desired habitat categories
@@ -119,6 +122,7 @@ outline polygon. This process involves identifying selected pixels from
 the habitat raster object and extracting bathymetry data.
 
 ``` r
+
 pixel_data <- extract_point_pixels(
   reef_polygon = target_reef,
   habitat_raster = habitat_raster,
@@ -145,6 +149,7 @@ dataframe contains a row for each pixel and an additional column
 containing the clustered `site_id`.
 
 ``` r
+
 clustered_pixels <- cluster_reef_points(
   pixel_data,
   clustering_function_args = list(
@@ -161,6 +166,7 @@ into site polygons and use post-processing to separate site areas that
 contain large distances into smaller site IDs.
 
 ``` r
+
 # Collate H3 cells that are assigned site IDs into polygons
 clustered_polygons <- pixels_to_polygons(
   clustered_pixels,
@@ -180,6 +186,7 @@ processed_sites <- site_postprocessing(
 ## Mapping outputs using ggplot2
 
 ``` r
+
 # Reorder site ID labels to improve readability
 sampled_ids <- sample(levels(processed_sites$site_id))
 processed_sites$sampled_id <- factor(

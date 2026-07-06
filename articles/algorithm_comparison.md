@@ -81,6 +81,7 @@ functions with the use of `cluster_reef_points`. This is demonstrated in
 the following example implementing a custom kmeans clustering algorithm.
 
 ``` r
+
 # Define a custom clustering function. This function must take point inputs as a
 # dataframe containing a single habitat type. The function must output a dataframe
 # of the same format, with an additional column `site_id` attached that defines
