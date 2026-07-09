@@ -158,9 +158,11 @@ constrained_hclust_mst <- function(
     x_old <- points
     points <- points[samplepoints, ]
 
-    n_clust <- round(nrow(points) / n_points)
-    constrained_clust_params["n_clust"] <- n_clust
   }
+  
+  n_clust <- round(nrow(points) / n_points)
+  constrained_clust_params["n_clust"] <- n_clust
+  
 
   mst <- do.call(prepare_mst, append(list(points = points), mst_params))
   mst_edges <- igraph::as_edgelist(mst)
