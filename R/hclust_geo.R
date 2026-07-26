@@ -49,7 +49,7 @@ hclust_geo <- function(
   habitat_col = "habitat",
   distance_method = "euclidean",
   n_points = 204,
-  n_clust = round(nrow(points) / n_points),
+  n_clust = max(1, round(nrow(points) / n_points)),
   method = "ward.D2",
   interpolation_threshold = 30000
 ) {
@@ -68,7 +68,9 @@ hclust_geo <- function(
     samplepoints <- sample(seq_len(nrow(points)), interpolation_threshold)
     x_old <- points
     points <- points[samplepoints, ]
-    n_clust <- round(nrow(points) / n_points)
+    # Floor at 1: a habitat with fewer points than n_points/2 would
+    # otherwise round to 0 clusters, and stats::cutree() errors on k < 1.
+    n_clust <- max(1, round(nrow(points) / n_points))
   }
 
   coordinates <- sf::st_drop_geometry(points[, c(x_col, y_col)])
