@@ -97,6 +97,17 @@ reef_skater <- function(
     spdep::set.ClusterOption(cl)
   }
 
+ if (is.integer(parallelisation) ) {
+    num_cores <- parallelisation
+    spdep::set.coresOption(num_cores)
+    spdep::set.mcOption(FALSE)
+
+    cl <- parallel::makeCluster(spdep::get.coresOption())
+
+    spdep::set.ClusterOption(cl)
+  }
+
+
   # Clustering minimum spanning tree
   clusters <- spdep::skater(
     edges = igraph::as_edgelist(mst),
@@ -105,7 +116,7 @@ reef_skater <- function(
     crit = c(min_counts, Inf)
   ) # this seems quite intensive in terms of time
 
-  if (parallelisation == "Windows") {
+  if (parallelisation == "Windows" || is.integer(parallelisation)) {
     spdep::set.ClusterOption(NULL)
     parallel::stopCluster(cl)
   }
