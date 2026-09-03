@@ -14,13 +14,13 @@ Source:
 [`DESCRIPTION`](https://github.com/open-aims/ReefPartitionUniversal/blob/main/DESCRIPTION)
 
 Haller-Bull V, Grier B, Iwanaga T (2026). *ReefPartitionUniversal:
-Partition reef habitats into sites*. R package version 0.0.0.9000,
+Partition reef habitats into sites*. R package version 1.0.1,
 <https://github.com/open-aims/ReefPartitionUniversal/>.
 
     @Manual{,
       title = {ReefPartitionUniversal: Partition reef habitats into sites},
       author = {Vanessa Haller-Bull and Benjamin Grier and Takuya Iwanaga},
       year = {2026},
-      note = {R package version 0.0.0.9000},
+      note = {R package version 1.0.1},
       url = {https://github.com/open-aims/ReefPartitionUniversal/},
     }

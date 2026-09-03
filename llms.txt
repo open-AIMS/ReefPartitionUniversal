@@ -201,6 +201,10 @@ Pull Request is made.
   Generate a raster template based on sf `vector_data` at a specific
   `pixel_resolution`.
 
+- [`hclust_geo()`](https://open-aims.github.io/ReefPartitionUniversal/reference/hclust_geo.md)
+  : Cluster points using standard hierarchical clustering on geographic
+  distance only (no depth, no spatial contiguity constraint).
+
 - [`hex_to_polygons()`](https://open-aims.github.io/ReefPartitionUniversal/reference/hex_to_polygons.md)
   : Helper function to convert points in a single site into an sf
   poylgon.
