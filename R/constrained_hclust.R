@@ -55,7 +55,7 @@ constrained_hclust <- function(
   distance_alpha = 0.5,
   beta = -1,
   n_points = 204,
-  n_clust = (round(nrow(points) / n_points)),
+  n_clust = max(1, round(nrow(points) / n_points)),
   method = "ward.D2"
 ) {
   site_prefix <- paste(
@@ -160,7 +160,9 @@ constrained_hclust_mst <- function(
 
   }
   
-  n_clust <- round(nrow(points) / n_points)
+  # Floor at 1: a habitat with fewer points than n_points/2 would otherwise
+  # round to 0 clusters, and stats::cutree() errors on k < 1.
+  n_clust <- max(1, round(nrow(points) / n_points))
   constrained_clust_params["n_clust"] <- n_clust
   
 
