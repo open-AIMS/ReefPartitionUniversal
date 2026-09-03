@@ -1,6 +1,6 @@
 Package: ReefPartitionUniversal
 Title: Partition reef habitats into sites
-Version: 0.0.0.9000
+Version: 1.0.1
 Authors@R: c(
     person(given = "Vanessa", family = "Haller-Bull", email = "V.Haller@aims.gov.au", role = c("aut", "cre")),
     person(given = "Benjamin", family = "Grier", role = c("aut")),
