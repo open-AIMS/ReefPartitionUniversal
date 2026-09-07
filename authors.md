@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/open-aims/ReefPartitionUniversal/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/open-aims/ReefPartitionUniversal/blob/v.1.0.2/DESCRIPTION)
 
 Haller-Bull V, Grier B, Iwanaga T (2026). *ReefPartitionUniversal:
 Partition reef habitats into sites*. R package version 1.0.2,
