@@ -21,6 +21,6 @@ Partition reef habitats into sites*. R package version 1.0.1,
       title = {ReefPartitionUniversal: Partition reef habitats into sites},
       author = {Vanessa Haller-Bull and Benjamin Grier and Takuya Iwanaga},
       year = {2026},
-      note = {R package version 1.0.1},
+      note = {R package version 1.0.2},
       url = {https://github.com/open-aims/ReefPartitionUniversal/},
     }
