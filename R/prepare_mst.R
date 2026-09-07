@@ -76,27 +76,23 @@ prepare_mst <- function(
   mst_tri
 }
 
-#' Helper function taken from package `expp` on 2025-01-20 that converts an
-#' spdep::nb neighbors object into a dataframe with columns `id` and `id_neigh`.
-#' Function copied from `expp` package to avoid expp dependency as this package
-#' is no longer maintained.
+#' Convert an spdep::nb neighbors object into a dataframe with columns `id`
+#' and `id_neigh`, one row per (node, neighbor) pair, in the same natural
+#' per-node order that `spdep::nbcosts()` produces its cost vector in.
+#'
+#' Originally adapted from package `expp` (function copied on 2025-01-20 to
+#' avoid an `expp` dependency, as that package is no longer maintained).
+#' Reimplemented with direct vectorized indexing (instead of `expp`'s
+#' `merge()`-based join) because `merge()` sorts its output by join key,
+#' which silently reordered rows relative to `nb`'s natural order and desynced
+#' this function's output from `spdep::nbcosts()`'s output when the two were
+#' zipped together by position in `prepare_mst()`.
 neighborsDataFrame <- function(nb) {
   stopifnot(inherits(nb, "nb"))
 
-  ks <- data.frame(
-    k = unlist(mapply(
-      rep,
-      1:length(nb),
-      sapply(nb, length),
-      SIMPLIFY = FALSE
-    )),
-    k_nb = unlist(nb)
-  )
+  k <- unlist(mapply(rep, seq_along(nb), sapply(nb, length), SIMPLIFY = FALSE))
+  k_nb <- unlist(nb)
+  region_id <- attributes(nb)$region.id
 
-  nams <- data.frame(id = attributes(nb)$region.id, k = 1:length(nb))
-
-  o <- merge(ks, nams, by.x = "k", by.y = "k")
-  o <- merge(o, nams, by.x = "k_nb", by.y = "k", suffixes = c("", "_neigh"))
-
-  o[, c("id", "id_neigh")]
+  data.frame(id = region_id[k], id_neigh = region_id[k_nb])
 }
