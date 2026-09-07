@@ -11,10 +11,10 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/open-aims/ReefPartitionUniversal/blob/v1.0.1/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/open-aims/ReefPartitionUniversal/blob/main/DESCRIPTION)
 
 Haller-Bull V, Grier B, Iwanaga T (2026). *ReefPartitionUniversal:
-Partition reef habitats into sites*. R package version 1.0.1,
+Partition reef habitats into sites*. R package version 1.0.2,
 <https://github.com/open-aims/ReefPartitionUniversal/>.
 
     @Manual{,
